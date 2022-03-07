@@ -136,52 +136,8 @@ class Module extends AbstractModule
         ) {
             return;
         }
-
-        // Don't log admin pages.
-        $services = $this->getServiceLocator();
-
-        /** @var \Omeka\Mvc\Status $status */
-        $status = $services->get('Omeka\Status');
-        if ($status->isAdminRequest()) {
-            return;
-        }
-
-        // If the request is a download, don't log it for admin.
-        // It's not simple to determine from server if the request comes from a
-        // visitor on the site or something else. So use referrer and identity.
-        $referrer = $_SERVER['HTTP_REFERER'] ?? null;
-        if ($referrer
-            && strpos($referrer, '/admin/')
-            && $status->getRouteMatch()->getMatchedRouteName() === 'download'
-            && $services->get('Omeka\AuthenticationService')->getIdentity()
-        ) {
-            $urlAdminTop = $services->get('ControllerPluginManager')->get('url')->fromRoute('admin', [], ['force_canonical' => true]) . '/';
-            if (strpos($referrer, $urlAdminTop) === 0) {
-                return;
-            }
-        }
-
-        // For performance, use the adapter directly, not the api.
-        // TODO Use direct sql query to store hits?
-        /** @var \Statistics\Api\Adapter\HitAdapter $adapter */
-        $adapter = $services->get('Omeka\ApiAdapterManager')->get('hits');
-
-        $includeBots = (bool) $services->get('Omeka\Settings')->get('statistics_include_bots');
-        if (empty($includeBots)) {
-            $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
-            if ($adapter->isBot($userAgent)) {
-                return;
-            }
-        }
-
-        $request = new Request(Request::CREATE, 'hits');
-        $request
-            ->setOption('initialize', false)
-            ->setOption('finalize', false)
-            ->setOption('returnScalar', 'id')
-        ;
-        // The entity manager is automatically flushed by default.
-        $adapter->create($request);
+        $logCurrentUrl = $this->getServiceLocator()->get('ControllerPluginManager')->get('logCurrentUrl');
+        $logCurrentUrl();
     }
 
     public function displayPublic(Event $event): void

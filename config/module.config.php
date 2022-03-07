@@ -41,6 +41,11 @@ return [
             'Statistics\Controller\Download' => Service\Controller\DownloadControllerFactory::class,
         ],
     ],
+    'controller_plugins' => [
+        'factories' => [
+            'logCurrentUrl' => Service\ControllerPlugin\LogCurrentUrlFactory::class,
+        ],
+    ],
     // TODO Merge bulk navigation and route with module BulkImport (require a main page?).
     'navigation' => [
         'AdminModule' => [
