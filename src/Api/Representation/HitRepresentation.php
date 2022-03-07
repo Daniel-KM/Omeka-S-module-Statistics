@@ -422,7 +422,6 @@ class HitRepresentation extends AbstractEntityRepresentation
             : 0 ;
     }
 
-
     /**
      * Helper to get the singular human name of the resource type.
      *

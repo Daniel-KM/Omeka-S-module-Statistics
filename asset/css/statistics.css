@@ -2,7 +2,7 @@
     header nav .statistics::before,
     .statistics .subhead::before,
     .statistics .no-resources:before {
-      content: '';
+        content: '';
     }
     .statistics-hover {
         overflow: hidden;

@@ -2,7 +2,7 @@
 
 namespace Statistics\Controller;
 
-use Laminas\Http\Response as HttpResponse;;
+use Laminas\Http\Response as HttpResponse;
 use Laminas\Mvc\Controller\AbstractActionController;
 
 /**

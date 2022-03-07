@@ -947,11 +947,11 @@ class HitAdapter extends AbstractEntityAdapter
         $query = [];
         $query['field'] = $field;
         $query['user_status'] = $userStatus;
-        $query['sort_field'] = array(
+        $query['sort_field'] = [
             'hits' => 'DESC',
             // This order is needed in order to manage ex-aequos.
             'created' => 'ASC',
-        );
+        ];
         return $this->frequents($query, $page, $limit);
     }
 
@@ -998,7 +998,7 @@ class HitAdapter extends AbstractEntityAdapter
             ->createQueryBuilder()
             ->select(
                 'omeka_root.url AS url',
-                'omeka_root.entity_name AS entity_name' ,
+                'omeka_root.entity_name AS entity_name',
                 'omeka_root.entity_id AS entity_id',
                 'COUNT(url) AS hits'
                 // "@position:=@position+1 AS position"
@@ -1056,7 +1056,7 @@ class HitAdapter extends AbstractEntityAdapter
      *
      * Zero viewed resources are never returned.
      *
-     * @param string|Resource|array $resourceType If array, may contain multiple
+     * @param string|array|\Omeka\Api\Representation\AbstractResourceEntityRepresentation $resourceType If array, may contain multiple
      *   resource types.
      * @param string $userStatus Can be hits (default), anonymous or identified.
      * @param int $page Page to retrieve.
@@ -1105,7 +1105,7 @@ class HitAdapter extends AbstractEntityAdapter
      *
      * Zero viewed resources are never returned.
      *
-     * @param string|Resource|array $entityName If array, may contain multiple
+     * @param string|array|\Omeka\Api\Representation\AbstractResourceEntityRepresentation $entityName If array, may contain multiple
      *   resource types.
      * @param string $userStatus Can be hits (default), anonymous or identified.
      * @param int $page Page to retrieve.
@@ -1132,7 +1132,7 @@ class HitAdapter extends AbstractEntityAdapter
             'url' => 'url',
             'entity_name' => 'entityName',
             'entity_id' => 'entityId',
-            'user_id'=> 'userId',
+            'user_id' => 'userId',
             'ip' => 'ip',
             'query' => 'query',
             'referrer' => 'referrer',
@@ -1142,7 +1142,7 @@ class HitAdapter extends AbstractEntityAdapter
             // For simplicity, but not recommended.
             'entityName' => 'entityName',
             'entityId' => 'entityId',
-            'userId'=> 'userId',
+            'userId' => 'userId',
             'userAgent' => 'userAgent',
             'acceptLanguage' => 'acceptLanguage',
         ];
@@ -1157,7 +1157,7 @@ class HitAdapter extends AbstractEntityAdapter
         $fields = [
             'entityName' => 'entity_name',
             'entityId' => 'entity_id',
-            'userId'=> 'user_id',
+            'userId' => 'user_id',
             'userAgent' => 'user_agent',
             'acceptLanguage' => 'accept_language',
         ];

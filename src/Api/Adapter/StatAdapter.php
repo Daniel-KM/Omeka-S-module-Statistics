@@ -391,17 +391,16 @@ class StatAdapter extends AbstractEntityAdapter
     /**
      * @param string $userStatus Can be hits (default), anonymous or identified.
      */
-    public function totalOfResources(?string $entityName, $userStatus = null): int
+    public function totalOfResources(?string $entityName = null, $userStatus = null): int
     {
-        if (!$entityName) {
-            return 0;
+        if (is_null($entityName)) {
+            $entityName = $this->resource->getEntityName();
         }
         $request = new Request(Request::SEARCH, $entityName);
         // Here, it's not possible to check identified user.
         if ($userStatus === 'anonymous') {
             $request->setContent(['is_public' => 1]);
         }
-        $entityName = $this->resource->getEntityName();
         return $this->getAdapter($entityName)
             ->search($request)
             ->getTotalResults();

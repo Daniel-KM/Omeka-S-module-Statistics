@@ -219,7 +219,6 @@ HTML;
 
         $userStatus = $settings->get('statistics_default_user_status_admin');
         $totalHits = $api->search('hits', ['user_status' => $userStatus])->getTotalResults();
-        $entityResource = null;
 
         $statsTitle = $translate('Statistics'); // @translate
         $html = <<<HTML
@@ -286,7 +285,8 @@ HTML;
                 $html .= '<ul>';
                 $html .= sprintf($translate('%s (%d views)'), // @translate
                     $stat->linkEntity(),
-                    $stat->totalHits($userStatus));
+                    $stat->totalHits($userStatus)
+                );
                 $html .= '</ul>';
             }
 
@@ -301,7 +301,8 @@ HTML;
                 $html .= '<ul>';
                 $html .= sprintf($translate('%s (%d views)'), // @translate
                     $stat->linkEntity(),
-                    $stat->totalHits($userStatus));
+                    $stat->totalHits($userStatus)
+                );
                 $html .= '</ul>';
             }
 
@@ -316,7 +317,8 @@ HTML;
                 $html .= '<ul>';
                 $html .= sprintf($translate('%s (%d downloads)'), // @translate
                     $stat->linkEntity(),
-                    $stat->totalHits($userStatus));
+                    $stat->totalHits($userStatus)
+                );
                 $html .= '</ul>';
             }
 

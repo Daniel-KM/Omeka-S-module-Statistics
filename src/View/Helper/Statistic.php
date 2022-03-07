@@ -3,7 +3,6 @@
 namespace Statistics\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
-use Omeka\Api\Representation\AbstractResourceRepresentation;
 use Statistics\Api\Adapter\HitAdapter;
 use Statistics\Api\Adapter\StatAdapter;
 use Statistics\Entity\Stat;

@@ -96,6 +96,8 @@ class Hit extends AbstractEntity
     protected $userId = 0;
 
     /**
+     * May be ipv4 or ipv6.
+     *
      * @var string
      *
      * @Column(
