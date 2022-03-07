@@ -123,6 +123,12 @@ class Module extends AbstractModule
             'form.add_elements',
             [$this, 'handleMainSettings']
         );
+
+        $sharedEventManager->attach(
+            \BulkImport\Processor\EprintsProcessor::class,
+            'bulk.import.after',
+            [$this, 'handleBulkImportAfter']
+        );
     }
 
     /**
@@ -339,5 +345,27 @@ HTML;
 
         $html .= '</div>';
         echo $html;
+    }
+
+    public function handleBulkImportAfter(Event $event): void
+    {
+        /** @var \BulkImport\Processor\AbstractFullProcessor $processor */
+        $processor = $event->getTarget();
+        $toImport = $processor->getParam('types') ?: [];
+        if (!in_array('hits', $toImport)) {
+            return;
+        }
+
+        /** @var \Omeka\Mvc\Controller\Plugin\JobDispatcher $dispatcher */
+        $services = $this->getServiceLocator();
+        $strategy = $services->get(\Omeka\Job\DispatchStrategy\Synchronous::class);
+        $dispatcher = $services->get(\Omeka\Job\Dispatcher::class);
+
+        $logger = $event->getParam('logger');
+        $logger->notice('Update of aggregated statistics: Start'); // @translate
+
+        $dispatcher->dispatch(\Statistics\Job\AggregateHits::class, [], $strategy);
+
+        $logger->notice('Update of aggregated statistics: Ended.'); // @translate
     }
 }
