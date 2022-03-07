@@ -791,7 +791,7 @@ class StatAdapter extends AbstractEntityAdapter
         // For dev purpose.
         // print "<!-- UA : " . $this->resource->getUserAgent() . " -->";
         $crawlers = 'bot|crawler|slurp|spider|check_http';
-        return $userAgent && preg_match("~$crawlers~", (string) $userAgent);
+        return (bool) preg_match("~$crawlers~", strtolower((string) $userAgent));
     }
 
     /**
