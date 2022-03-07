@@ -562,12 +562,9 @@ class Statistic extends AbstractHelper
     /**
      * Check if url is a page one or a download one.
      */
-    public function isDownload(string $url): bool
+    public function isDownload(?string $url): bool
     {
-        return (strpos($url, '/files/original/') === 0)
-            || (strpos($url, '/files/large/') === 0)
-            // For migration from Omeka Classic.
-            || (strpos($url, '/files/fullsize/') === 0);
+        return strpos((string) $url, '/files/') === 0;
     }
 
     /**

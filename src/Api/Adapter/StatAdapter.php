@@ -804,10 +804,6 @@ class StatAdapter extends AbstractEntityAdapter
      */
     public function isDownload(?string $url): bool
     {
-        $url = (string) $url;
-        return strpos($url, '/files/original/') === 0
-            || strpos($url, '/files/large/') === 0
-            // For migration from Omeka Classic.
-            || strpos($url, '/files/fullsize/') === 0;
+        return strpos((string) $url, '/files/') === 0;
     }
 }

@@ -70,8 +70,7 @@ class StatRepresentation extends AbstractEntityRepresentation
     /**
      * Url is not the full url, but only the Omeka one: no domain, no specific
      * path. So `https://example.org/item/1` is saved as `/item/1` and home page
-     * as `/`. For downloads, url stats with "/files/original/" or "/files/large/"
-     * ("/files/fullsize/" for Omeka Classic).
+     * as `/`. For downloads, url stats with "/files/".
      */
     public function hitUrl(): string
     {

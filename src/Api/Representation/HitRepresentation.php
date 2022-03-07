@@ -185,11 +185,7 @@ class HitRepresentation extends AbstractEntityRepresentation
      */
     public function isDownload(): bool
     {
-        $url = $this->resource->getUrl();
-        return strpos($url, '/files/original/') === 0
-            || strpos($url, '/files/large/') === 0
-            // For migration from Omeka Classic.
-            || strpos($url, '/files/fullsize/') === 0;
+        return strpos($this->resource->getUrl(), '/files/') === 0;
     }
 
     /**

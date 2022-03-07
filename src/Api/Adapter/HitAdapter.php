@@ -167,12 +167,12 @@ class HitAdapter extends AbstractEntityAdapter
             if ($query['is_download']) {
                 $qb->andWhere($expr->like(
                     'omeka_root.url',
-                    $this->createNamedParameter($qb, '/files/original/%')
+                    $this->createNamedParameter($qb, '/files/%')
                 ));
             } else {
                 $qb->andWhere($expr->notLike(
                     'omeka_root.url',
-                    $this->createNamedParameter($qb, '/files/original/%')
+                    $this->createNamedParameter($qb, '/files/%')
                 ));
             }
         }
@@ -738,11 +738,7 @@ class HitAdapter extends AbstractEntityAdapter
      */
     public function isDownload(?string $url): bool
     {
-        $url = (string) $url;
-        return strpos($url, '/files/original/') === 0
-            || strpos($url, '/files/large/') === 0
-            // For migration from Omeka Classic.
-            || strpos($url, '/files/fullsize/') === 0;
+        return strpos((string) $url, '/files/') === 0;
     }
 
     /**
