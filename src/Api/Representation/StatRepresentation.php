@@ -181,6 +181,40 @@ class StatRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the resource object link or a string when deleted
+     */
+    public function linkEntity(?string $text = null): ?string
+    {
+        $name = $this->resource->getEntityName();
+        $id = $this->resource->getEntityId();
+        if (empty($name) || empty($id)) {
+            return null;
+        }
+        try {
+            $adapter = $this->getAdapter($name);
+            $entity = $adapter->findEntity(['id' => $id]);
+            $representation = $adapter->getRepresentation($entity);
+            if (is_null($text)) {
+                if (method_exists($representation, 'displayTitle')) {
+                    $text = $representation->displayTitle();
+                } elseif (method_exists($representation, 'title')) {
+                    $text = $representation->title();
+                } elseif (method_exists($representation, 'label')) {
+                    $text = $representation->label();
+                } else {
+                    $text = $this->translator->translate('[untitled]'); // @translate
+                }
+            }
+            return $representation->link($text);
+        } catch (NotFoundException $e) {
+            return sprintf('<span class="unavailable">%s</span>', is_null($text)
+                ? sprintf('%s #%s', $this->getHumanResourceType(), $id)
+                : $this->getViewHelper('escapeHtml')($text)
+            );
+        }
+    }
+
+    /**
      * Get the specified count of hits of the current type (page, resource or download).
      *
      * @param string $userStatus Can be hits (default), anonymous or identified.

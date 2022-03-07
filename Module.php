@@ -279,7 +279,7 @@ HTML;
                 $stat = reset($stats);
                 $html .= '<ul>';
                 $html .= sprintf($translate('%s (%d views)'), // @translate
-                    $entityResource = $stat->entityResource() ? $entityResource->linkRaw() : $translate('Unavailable'), // @translate
+                    $stat->linkEntity(),
                     $stat->totalHits($userStatus));
                 $html .= '</ul>';
             }
@@ -294,7 +294,7 @@ HTML;
                 $stat = reset($stats);
                 $html .= '<ul>';
                 $html .= sprintf($translate('%s (%d views)'), // @translate
-                    $entityResource = $stat->entityResource() ? $entityResource->linkRaw() : $translate('Unavailable'), // @translate
+                    $stat->linkEntity(),
                     $stat->totalHits($userStatus));
                 $html .= '</ul>';
             }
@@ -309,7 +309,7 @@ HTML;
                 $stat = reset($stats);
                 $html .= '<ul>';
                 $html .= sprintf($translate('%s (%d downloads)'), // @translate
-                    $entityResource = $stat->entityResource() ? $entityResource->linkRaw() : $translate('Unavailable'), // @translate
+                    $stat->linkEntity(),
                     $stat->totalHits($userStatus));
                 $html .= '</ul>';
             }
@@ -324,13 +324,13 @@ HTML;
                 'user_agent' => $translate('User Agent'), // @translate
                 'accept_language' => $translate('Accepted Language'), // @translate
             ] as $field => $label) {
-                $hits = $statistic->mostFrequents($field, $userStatus, 1);
+                $results = $statistic->mostFrequents($field, $userStatus, 1);
                 $html .= '<li>';
-                if (empty($hits)) {
+                if (empty($results)) {
                     $html .= sprintf($translate('%s: None'), $label);
                 } else {
-                    $hit = reset($hits);
-                    $html .= sprintf('%s: %s (%d%%)', sprintf('<a href="%s">%s</a>', $url('admin/statistics/default', ['action' => 'by-field'], true) . '?field=' . $field, $label), $hit->$field(), $hit->totalPage($userStatus) * 100 / $totalHits);
+                    $result = reset($results);
+                    $html .= sprintf('%s: %s (%d%%)', sprintf('<a href="%s">%s</a>', $url('admin/statistics/default', ['action' => 'by-field'], true) . '?field=' . $field, $label), $result[$field], $result['hits'] * 100 / $totalHits);
                 }
                 $html .= '</li>';
             }
