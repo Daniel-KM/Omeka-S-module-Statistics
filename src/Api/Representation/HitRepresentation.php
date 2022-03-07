@@ -208,6 +208,40 @@ class HitRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the resource object link or a string when deleted
+     */
+    public function linkEntity(?string $text = null): ?string
+    {
+        $name = $this->resource->getEntityName();
+        $id = $this->resource->getEntityId();
+        if (empty($name) || empty($id)) {
+            return null;
+        }
+        try {
+            $adapter = $this->getAdapter($name);
+            $entity = $adapter->findEntity(['id' => $id]);
+            $representation = $adapter->getRepresentation($entity);
+            if (is_null($text)) {
+                if (method_exists($representation, 'displayTitle')) {
+                    $text = $representation->displayTitle();
+                } elseif (method_exists($representation, 'title')) {
+                    $text = $representation->title();
+                } elseif (method_exists($representation, 'label')) {
+                    $text = $representation->label();
+                } else {
+                    $text = $this->translator->translate('[untitled]'); // @translate
+                }
+            }
+            return $representation->link($text);
+        } catch (NotFoundException $e) {
+            return sprintf('<span class="unavailable">%s</span>', is_null($text)
+                ? sprintf('%s #%s', $this->getHumanResourceType(), $id)
+                : $this->getViewHelper('escapeHtml')($text)
+            );
+        }
+    }
+
+    /**
      * Get the user object if any and not deleted.
      */
     public function user(): ?UserRepresentation
@@ -386,5 +420,25 @@ class HitRepresentation extends AbstractEntityRepresentation
         return $stat
             ? $stat->positionDownload($userStatus)
             : 0 ;
+    }
+
+
+    /**
+     * Helper to get the singular human name of the resource type.
+     *
+     * @param string $default Return this string if empty, or default if set.
+     */
+    public function getHumanResourceType(?string $default = null): string
+    {
+        $types = [
+            'items' => 'item',
+            'item_sets' => 'item set',
+            'media' => 'media',
+            'site_pages' => 'site page',
+            'annotation' => 'annotation',
+            'pages' => 'page',
+        ];
+        $entityName = $this->resource->getEntityName();
+        return $types[$entityName] ?? $default ?? $entityName;
     }
 }

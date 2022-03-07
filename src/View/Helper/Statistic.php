@@ -461,31 +461,6 @@ class Statistic extends AbstractHelper
     }
 
     /**
-     * Helper to select the good link maker according to type.
-     *
-     *@deprecated Useless in Omeka S.
-     *
-     * @param Resource $resource
-     * @return string Html code from the theme.
-     */
-    public function linkToResource(?AbstractResourceRepresentation $resource): string
-    {
-        if (empty($resource)) {
-            return $this->view->translate('Unavailable'); // @translate
-        }
-        if (method_exists($resource, 'displayTitle')) {
-            $title = $resource->displayTitle();
-        } elseif (method_exists($resource, 'title')) {
-            $title = $resource->title();
-        } elseif (method_exists($resource, 'label')) {
-            $title = $resource->label();
-        } else {
-            $title = '[untitled]'; // @translate
-        }
-        return $resource->linkRaw($title);
-    }
-
-    /**
      * Helper to get the human name of the resource type.
      *
      * @param string $resourceType
