@@ -2,12 +2,8 @@
 
 namespace Statistics\Controller;
 
+use Laminas\Http\Response as HttpResponse;;
 use Laminas\Mvc\Controller\AbstractActionController;
-use Omeka\Api\Adapter\MediaAdapter;
-use Omeka\Api\Request;
-use Omeka\Entity\Media;
-use Omeka\Mvc\Exception;
-use Statistics\Api\Adapter\HitAdapter;
 
 /**
  * The download controller class.
@@ -19,57 +15,12 @@ use Statistics\Api\Adapter\HitAdapter;
 class DownloadController extends AbstractActionController
 {
     /**
-     * @var \Omeka\Api\Adapter\MediaAdapter;
-     */
-    protected $mediaAdapter;
-
-    /**
-     * @var ?\Statistics\Api\Adapter\HitAdapter;
-     */
-    protected $hitAdapter;
-
-    /**
      * @var string
      */
     protected $basePath;
 
-    /**
-     * @var Media
-     */
-    protected $media;
-
-    /**
-     * @var string
-     */
-    protected $storageType;
-
-    /**
-     * @var string
-     */
-    protected $filename;
-
-    /**
-     * @var string
-     */
-    protected $mediaType;
-
-    /**
-     * @var string
-     */
-    protected $filepath;
-
-    /**
-     * @var int
-     */
-    protected $fileSize;
-
-    public function __construct(
-        MediaAdapter $mediaAdapter,
-        ?HitAdapter $hitAdapter,
-        string $basePath
-    ) {
-        $this->mediaAdapter = $mediaAdapter;
-        $this->hitAdapter = $hitAdapter;
+    public function __construct(string $basePath)
+    {
         $this->basePath = $basePath;
     }
 
@@ -90,25 +41,50 @@ class DownloadController extends AbstractActionController
      *
      * Unlike Omeka Classic, the current file is already logged in main event
      * "view.layout" (see main Module and HitAdapter::currentRequest()).
+     * So, just send the file.
+     *
+     * @todo Manage other storage than local one.
      */
     public function filesAction()
     {
-        // When the media is private for the user, it is not available, in any
-        // case. This check is done automatically directly at database level.
-        $resource = $this->prepareMedia();
-        // There may be a resource, but not a file.
-        if (!$resource) {
-            throw new Exception\NotFoundException;
+        $params = $this->params()->fromRoute();
+        $storageType = $params['type'] ?? '';
+        $filename = $params['filename'] ?? '';
+        $filepath = sprintf('%s/%s/%s', $this->basePath, $storageType, $filename);
+        $result = $this->sendFile($filepath);
+        if (empty($result)) {
+            return $this->notFoundAction();
         }
-
-        $this->sendFile();
+        // Return response to avoid default view rendering and to manage events.
+        // Since there is no more event in Omeka, the url is logged directly.
+        $this->logCurrentUrl();
+        return $result;
     }
 
     /**
-     * Send file as stream.
+     * Send file as stream. The file should exist.
+     *
+     * @todo Use Laminas stream response.
      */
-    protected function sendFile()
+    protected function sendFile(string $filepath): ?HttpResponse
     {
+        // A security. Don't check the realpath to avoid issue on some configs.
+        if (strpos($filepath, '../') !== false
+            || !file_exists($filepath)
+            || !is_readable($filepath)
+        ) {
+            return null;
+        }
+
+        $fileSize = filesize($filepath);
+        if (!$fileSize) {
+            return null;
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mediaType = $finfo->file($filepath);
+        $mediaType = \Omeka\File\TempFile::MEDIA_TYPE_ALIASES[$mediaType] ?? $mediaType;
+
         // Everything has been checked.
         $dispositionMode = 'inline';
 
@@ -116,9 +92,9 @@ class DownloadController extends AbstractActionController
         $response = $this->getResponse();
         // Write headers.
         $response->getHeaders()
-            ->addHeaderLine(sprintf('Content-Type: %s', $this->mediaType))
-            ->addHeaderLine(sprintf('Content-Disposition: %s; filename="%s"', $dispositionMode, pathinfo($this->filepath, PATHINFO_BASENAME)))
-            ->addHeaderLine(sprintf('Content-Length: %s', $this->fileSize))
+            ->addHeaderLine(sprintf('Content-Type: %s', $mediaType))
+            ->addHeaderLine(sprintf('Content-Disposition: %s; filename="%s"', $dispositionMode, pathinfo($filepath, PATHINFO_BASENAME)))
+            ->addHeaderLine(sprintf('Content-Length: %s', $fileSize))
             ->addHeaderLine('Content-Transfer-Encoding: binary')
             // Use this to open files directly.
             // Cache for 30 days.
@@ -128,85 +104,17 @@ class DownloadController extends AbstractActionController
         // Send headers separately to handle large files.
         $response->sendHeaders();
 
-        // TODO Use Laminas stream response.
-
         // Clears all active output buffers to avoid memory overflow.
         $response->setContent('');
         while (ob_get_level()) {
             ob_end_clean();
         }
-        readfile($this->filepath);
+        readfile($filepath);
 
         // TODO Fix issue with session. See readme of module XmlViewer.
         ini_set('display_errors', '0');
 
         // Return response to avoid default view rendering and to manage events.
         return $response;
-    }
-
-    /**
-     * Check if the request is fine and save results.
-     */
-    protected function prepareMedia(): ?Media
-    {
-        $this->media = null;
-        $this->storageType = null;
-        $this->filename = null;
-        $this->mediaType = null;
-        $this->filepath = null;
-        $this->fileSize = null;
-
-        $this->filename = $this->params()->fromRoute('filename');
-        if (!$this->filename) {
-            return null;
-        }
-
-        // For compatibility with module ArchiveRepertory, don't take the
-        // filename, but remove the extension.
-        // $storageId = pathinfo($filename, PATHINFO_FILENAME);
-        $extension = pathinfo($this->filename, PATHINFO_EXTENSION);
-        $storageId = mb_strlen($extension)
-            ? mb_substr($this->filename, 0, -mb_strlen($extension) - 1)
-            : $this->filename;
-
-        // "storage_id" is not available through default api, so use core entity
-        // manager. Nevertheless, the call to the api allows to check rights.
-        if (!$storageId) {
-            return null;
-        }
-
-        try {
-            $this->media = $this->mediaAdapter->findEntity(['storageId' => $storageId]);
-        } catch (\Omeka\Api\Exception\NotFoundException $e) {
-            return null;
-        }
-
-        $this->storageType = $this->params()->fromRoute('type');
-        if ($this->storageType === 'original') {
-            if (!$this->media->hasOriginal()) {
-                return null;
-            }
-            // Reset the filename for case sensitivity purpose.
-            $this->filename = $this->media->getFilename();
-        } elseif (!$this->media->hasThumbnails()) {
-            return null;
-        } else {
-            $this->filename = $storageId . '.jpg';
-        }
-
-        $this->filepath = sprintf('%s/%s/%s', $this->basePath, $this->storageType, $this->filename);
-        if (!is_readable($this->filepath)) {
-            return null;
-        }
-
-        if ($this->storageType === 'original') {
-            $this->fileSize = (int) $this->media->getSize();
-            $this->mediaType = $this->media->getMediaType();
-        } else {
-            $this->fileSize = (int) filesize($this->filepath);
-            $this->mediaType = 'image/jpeg';
-        }
-
-        return $this->media;
     }
 }

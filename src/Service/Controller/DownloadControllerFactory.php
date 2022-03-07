@@ -10,13 +10,8 @@ class DownloadControllerFactory implements FactoryInterface
 {
     public function __invoke(ContainerInterface $services, $requestedName, array $options = null)
     {
-        $config = $services->get('Config');
-        $basePath = $config['file_store']['local']['base_path'] ?: OMEKA_PATH . '/files';
-        $adapterManager = $services->get('Omeka\ApiAdapterManager');
         return new DownloadController(
-            $adapterManager->get('media'),
-            $adapterManager->get('hits'),
-            $basePath
+            $services->get('Config')['file_store']['local']['base_path'] ?: OMEKA_PATH . '/files'
         );
     }
 }
