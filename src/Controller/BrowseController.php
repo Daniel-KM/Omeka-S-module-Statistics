@@ -162,7 +162,7 @@ class BrowseController extends AbstractActionController
         // Don't use api, because this is a synthesis, not a list of resources.
         /** @var \Statistics\View\Helper\Statistic $statistic */
         $statistic = $this->viewHelpers()->get('statistic');
-        $results = $statistic->frequents($query, $resourcesPerPage, $currentPage);
+        $results = $statistic->frequents($query, $currentPage, $resourcesPerPage);
         $totalResults = $statistic->countFrequents($query);
         $totalHits = $this->api()->search('hits', ['user_status' => $userStatus])->getTotalResults();
         $totalNotEmpty = $this->api()->search('hits', ['field' => $field, 'user_status' => $userStatus, 'not_empty' => $field])->getTotalResults();

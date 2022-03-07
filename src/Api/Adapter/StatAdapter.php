@@ -547,11 +547,11 @@ class StatAdapter extends AbstractEntityAdapter
      *
      * @param array $params A set of parameters by which to filter the objects
      * that get returned from the database.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return StatRepresentation[]
      */
-    public function vieweds(array $params = [], ?int $limit = null, ?int $page = null): array
+    public function vieweds(array $params = [], ?int $page = null, ?int $limit = null): array
     {
         if ($page) {
             $params['page'] = $page;
@@ -584,11 +584,11 @@ class StatAdapter extends AbstractEntityAdapter
      *@param bool|null $hasResource Null for all pages, true or false to set
      * with or without resource.
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return StatRepresentation[]
      */
-    public function mostViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function mostViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $column = $this->statusColumns[$userStatus] ?? 'hits';
         $criteria = [
@@ -601,7 +601,7 @@ class StatAdapter extends AbstractEntityAdapter
                 'modified' => 'asc',
             ],
         ];
-        return $this->vieweds($criteria, $limit, $page);
+        return $this->vieweds($criteria, $page, $limit);
     }
 
     /**
@@ -613,11 +613,11 @@ class StatAdapter extends AbstractEntityAdapter
      *
      * @param string|array $entityName If array, may contain multiple
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return StatRepresentation[]
      */
-    public function mostViewedResources($entityName = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function mostViewedResources($entityName = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $column = $this->statusColumns[$userStatus] ?? 'hits';
         $criteria = [
@@ -630,7 +630,7 @@ class StatAdapter extends AbstractEntityAdapter
                 'modified' => 'asc',
             ],
         ];
-        return $this->vieweds($criteria, $limit, $page);
+        return $this->vieweds($criteria, $page, $limit);
     }
 
     /**
@@ -641,11 +641,11 @@ class StatAdapter extends AbstractEntityAdapter
      * @uses self::vieweds().
      *
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return StatRepresentation[]
      */
-    public function mostViewedDownloads(?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function mostViewedDownloads(?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $column = $this->statusColumns[$userStatus] ?? 'hits';
         $criteria = [
@@ -656,7 +656,7 @@ class StatAdapter extends AbstractEntityAdapter
                 'modified' => 'asc',
             ],
         ];
-        return $this->vieweds($criteria, $limit, $page);
+        return $this->vieweds($criteria, $page, $limit);
     }
 
     /**
@@ -669,11 +669,11 @@ class StatAdapter extends AbstractEntityAdapter
      *@param bool|null $hasResource Null for all pages, true or false to set
      * with or without resource.
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return StatRepresentation[]
      */
-    public function lastViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function lastViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $column = $this->statusColumns[$userStatus] ?? 'hits';
         $criteria = [
@@ -683,7 +683,7 @@ class StatAdapter extends AbstractEntityAdapter
             'sort_by' => 'modified',
             'sort_order' => 'asc',
         ];
-        return $this->vieweds($criteria, $limit, $page);
+        return $this->vieweds($criteria, $page, $limit);
     }
 
     /**
@@ -696,11 +696,11 @@ class StatAdapter extends AbstractEntityAdapter
      * @param string|array $entityName If array, may contain multiple
      * resource types.
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return StatRepresentation[]
      */
-    public function lastViewedResources($entityNames = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function lastViewedResources($entityNames = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $column = $this->statusColumns[$userStatus] ?? 'hits';
         $criteria = [
@@ -710,7 +710,7 @@ class StatAdapter extends AbstractEntityAdapter
             'sort_by' => 'modified',
             'sort_order' => 'asc',
         ];
-        return $this->vieweds($criteria, $limit, $page);
+        return $this->vieweds($criteria, $page, $limit);
     }
 
     /**
@@ -721,11 +721,11 @@ class StatAdapter extends AbstractEntityAdapter
      * @uses self::vieweds().
      *
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return StatRepresentation[]
      */
-    public function getLastViewedDownloads(?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function getLastViewedDownloads(?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $column = $this->statusColumns[$userStatus] ?? 'hits';
         $criteria = [
@@ -734,7 +734,7 @@ class StatAdapter extends AbstractEntityAdapter
             'sort_by' => 'modified',
             'sort_order' => 'asc',
         ];
-        return $this->vieweds($criteria, $limit, $page);
+        return $this->vieweds($criteria, $page, $limit);
     }
 
     /**

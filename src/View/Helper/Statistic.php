@@ -196,17 +196,17 @@ class Statistic extends AbstractHelper
      * without resource.
      * @param string $sort Sort by "most" (default) or "last" vieweds.
      * @param string $userStatus "anonymous" or "identified", else not filtered.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Offfset to set page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @param bool $asHtml Return html (true, default) or array of Stats.
      * @return string|array Return html of array of Stats.
      */
-    public function viewedPages(?bool $hasResource = null, ?string $sort = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null, bool $asHtml = true)
+    public function viewedPages(?bool $hasResource = null, ?string $sort = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null, bool $asHtml = true)
     {
         $userStatus = $this->normalizeUserStatus($userStatus);
         $stats = $sort === 'last'
-            ? $this->statAdapter->lastViewedPages($hasResource, $userStatus, $limit, $page)
-            : $this->statAdapter->mostViewedPages($hasResource, $userStatus, $limit, $page);
+            ? $this->statAdapter->lastViewedPages($hasResource, $userStatus, $page, $limit)
+            : $this->statAdapter->mostViewedPages($hasResource, $userStatus, $page, $limit);
 
         return $asHtml
             ? $this->viewedHtml($stats, Stat::TYPE_PAGE, $sort, $userStatus)
@@ -220,28 +220,28 @@ class Statistic extends AbstractHelper
      * Can be empty, "all", "none", "page" or "download" too.
      * @param string $sort Sort by "most" (default) or "last" vieweds.
      * @param string $userStatus "anonymous" or "identified", else not filtered.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Offfset to set page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @param bool $asHtml Return html (true, default) or array of Stats.
      * @return string|array Return html of array of Stats.
      */
-    public function viewedResources($resourceType, ?string $sort = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null, bool $asHtml = true)
+    public function viewedResources($resourceType, ?string $sort = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null, bool $asHtml = true)
     {
         // Manage exceptions.
         if (empty($resourceType) || $resourceType === 'all' || (is_array($resourceType) && in_array('all', $resourceType))) {
             $resourceType = null;
         } elseif ($resourceType === 'none' || (is_array($resourceType) && in_array('none', $resourceType))) {
-            return $this->viewedPages(false, $sort, $userStatus, $limit, $page, $asHtml);
+            return $this->viewedPages(false, $sort, $userStatus, $page, $limit, $asHtml);
         } elseif ($resourceType === Stat::TYPE_PAGE || (is_array($resourceType) && in_array(Stat::TYPE_PAGE, $resourceType))) {
-            return $this->viewedPages(null, $sort, $userStatus, $limit, $page, $asHtml);
+            return $this->viewedPages(null, $sort, $userStatus, $page, $limit, $asHtml);
         } elseif ($resourceType === Stat::TYPE_DOWNLOAD || (is_array($resourceType) && in_array(Stat::TYPE_DOWNLOAD, $resourceType))) {
-            return $this->viewedDownloads($sort, $userStatus, $limit, $page, $asHtml);
+            return $this->viewedDownloads($sort, $userStatus, $page, $limit, $asHtml);
         }
 
         $userStatus = $this->normalizeUserStatus($userStatus);
         $stats = $sort === 'last'
-            ? $this->statAdapter->lastViewedResources($resourceType, $userStatus, $limit, $page)
-            : $this->statAdapter->mostViewedResources($resourceType, $userStatus, $limit, $page);
+            ? $this->statAdapter->lastViewedResources($resourceType, $userStatus, $page, $limit)
+            : $this->statAdapter->mostViewedResources($resourceType, $userStatus, $page, $limit);
 
         return $asHtml
             ? $this->viewedHtml($stats, Stat::TYPE_RESOURCE, $sort, $userStatus)
@@ -253,17 +253,17 @@ class Statistic extends AbstractHelper
      *
      * @param string $sort Sort by "most" (default) or "last" vieweds.
      * @param string $userStatus "anonymous" or "identified", else not filtered.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Offfset to set page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @param bool $asHtml Return html (true, default) or array of Stats.
      * @return string|array Return html of array of Stats.
      */
-    public function viewedDownloads(?string $sort = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null, bool $asHtml = true)
+    public function viewedDownloads(?string $sort = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null, bool $asHtml = true)
     {
         $userStatus = $this->normalizeUserStatus($userStatus);
         $stats = $sort === 'last'
-            ? $this->statAdapter->lastViewedDownloads($userStatus, $limit, $page)
-            : $this->statAdapter->mostViewedDownloads($userStatus, $limit, $page);
+            ? $this->statAdapter->lastViewedDownloads($userStatus, $page, $limit)
+            : $this->statAdapter->mostViewedDownloads($userStatus, $page, $limit);
 
         return $asHtml
             ? $this->viewedHtml($stats, Stat::TYPE_DOWNLOAD, $sort, $userStatus)
@@ -309,13 +309,13 @@ class Statistic extends AbstractHelper
      *@param bool|null $hasResource Null for all pages, true or false to set
      * with or without resource.
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return \Statistics\Api\Representation\StatRepresentation[]
      */
-    public function mostViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function mostViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
-        return $this->statAdapter->mostViewedPages($hasResource, $userStatus, $limit, $page);
+        return $this->statAdapter->mostViewedPages($hasResource, $userStatus, $page, $limit);
     }
 
     /**
@@ -325,13 +325,13 @@ class Statistic extends AbstractHelper
      *
      * @param string|array $entityName If array, may contain multiple
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return \Statistics\Api\Representation\StatRepresentation[]
      */
-    public function mostViewedResources($entityName = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function mostViewedResources($entityName = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
-        return $this->statAdapter->mostViewedResources($entityName, $userStatus, $limit, $page);
+        return $this->statAdapter->mostViewedResources($entityName, $userStatus, $page, $limit);
     }
 
     /**
@@ -340,13 +340,13 @@ class Statistic extends AbstractHelper
      * Zero viewed downloads are never returned.
      *
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return \Statistics\Api\Representation\StatRepresentation[]
      */
-    public function mostViewedDownloads(?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function mostViewedDownloads(?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
-        return $this->statAdapter->mostViewedDownloads($userStatus, $limit, $page);
+        return $this->statAdapter->mostViewedDownloads($userStatus, $page, $limit);
     }
 
     /**
@@ -369,13 +369,13 @@ class Statistic extends AbstractHelper
      * @param array $params A set of parameters by which to filter the objects
      *   that get returned from the database. It should contains a 'field' for
      *   the name of the column to evaluate.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return array Data and total hits.
      */
-    public function frequents(array $query = [], ?int $limit = null, ?int $page = null): array
+    public function frequents(array $query = [], ?int $page = null, ?int $limit = null): array
     {
-        return $this->hitAdapter->frequents($query, $limit, $page);
+        return $this->hitAdapter->frequents($query, $page, $limit);
     }
 
     /**
@@ -384,13 +384,13 @@ class Statistic extends AbstractHelper
      * @param string $field Name of the column to evaluate.
      * @param string $userStatus Can be hits (default), hits_anonymous or
      * hits_identified.
-     * @param integer $limit Number of objects to return per "page".
-     * @param integer $page Page to retrieve.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return array Data and total of the according total hits.
      */
-    public function mostFrequents(string $field, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function mostFrequents(string $field, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
-        return $this->hitAdapter->mostFrequents($field, $userStatus, $limit, $page);
+        return $this->hitAdapter->mostFrequents($field, $userStatus, $page, $limit);
     }
 
     /**

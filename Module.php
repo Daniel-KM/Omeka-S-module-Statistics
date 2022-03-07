@@ -257,7 +257,7 @@ HTML;
             $statsBrowseText = $translate('Most viewed public pages'); // @translate
             $html .= '<h4><a href="' . $statsBrowseUrl . '">' . $statsBrowseText . '</a></h4>';
             /** @var \Statistics\Api\Representation\StatRepresentation[] $results */
-            $stats = $statistic->mostViewedPages(null, $userStatus, 5);
+            $stats = $statistic->mostViewedPages(null, $userStatus, 1, 5);
             if (empty($stats)) {
                 $html .= '<p>' . $translate('None') . '</p>';
             } else {
@@ -278,7 +278,7 @@ HTML;
             $statsBrowseUrl = $url('admin/statistics/default', ['action' => 'by-resource'], true);
             $statsBrowseText = $translate('Most viewed public item'); // @translate
             $html .= '<h4><a href="' . $statsBrowseUrl . '">' . $statsBrowseText . '</a></h4>';
-            $stats = $statistic->mostViewedResources('items', $userStatus, 5);
+            $stats = $statistic->mostViewedResources('items', $userStatus, 1, 5);
             if (empty($stats)) {
                 $html .= '<p>' . $translate('None') . '</p>';
             } else {
@@ -293,7 +293,7 @@ HTML;
             $statsBrowseUrl = $url('admin/statistics/default', ['action' => 'by-resource'], true);
             $statsBrowseText = $translate('Most viewed public item set'); // @translate
             $html .= '<h4><a href="' . $statsBrowseUrl . '">' . $statsBrowseText . '</a></h4>';
-            $stats = $statistic->mostViewedResources('item_sets', $userStatus, 5);
+            $stats = $statistic->mostViewedResources('item_sets', $userStatus, 1, 5);
             if (empty($stats)) {
                 $html .= '<p>' . $translate('None') . '</p>';
             } else {
@@ -308,7 +308,7 @@ HTML;
             $statsBrowseUrl = $url('admin/statistics/default', ['action' => 'by-download'], true);
             $statsBrowseText = $translate('Most downloaded file'); // @translate
             $html .= '<h4><a href="' . $statsBrowseUrl . '">' . $statsBrowseText . '</a></h4>';
-            $stats = $statistic->mostViewedDownloads($userStatus, 1);
+            $stats = $statistic->mostViewedDownloads($userStatus, 1, 1);
             if (empty($stats)) {
                 $html .= '<p>' . $translate('None') . '</p>';
             } else {
@@ -330,7 +330,7 @@ HTML;
                 'user_agent' => $translate('User Agent'), // @translate
                 'accept_language' => $translate('Accepted Language'), // @translate
             ] as $field => $label) {
-                $results = $statistic->mostFrequents($field, $userStatus, 1);
+                $results = $statistic->mostFrequents($field, $userStatus, 1, 1);
                 $html .= '<li>';
                 if (empty($results)) {
                     $html .= sprintf($translate('%s: None'), $label);

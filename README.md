@@ -151,8 +151,8 @@ All arguments are optional. Arguments are:
   one or multiple Omeka resource type, e.g. "items" or "item_sets", most or last
   resources of this resource type will be returned.
   - `sort`: can be "most" (default) or "last".
+  - `page`: page number to return (the first one by default).
   - `number`: number of resources to return (10 by default).
-  - `offset`: offset to set page to return.
 
 The event and the helper return the partial from the theme.
 

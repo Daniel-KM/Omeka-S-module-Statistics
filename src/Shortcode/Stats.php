@@ -108,16 +108,16 @@ class Stats extends AbstractShortcode
     {
         $type = $args['type'] ?? null;
         $sort = isset($args['sort']) && $args['sort'] === 'last' ? 'last' : 'most';
+        $page = isset($args['page']) ? (int) $args['page'] : null;
         $limit = isset($args['number']) ? (int) $args['number'] : 10;
-        $offset = isset($args['offset']) ? (int) $args['offset'] : null;
 
         /** @var \Statistics\View\Helper\Statistic $statistic */
         $statistic = $this->view->statistic();
 
         return $type
             // Search by resource type.
-            ? $statistic->viewedResources($type, $sort, null, $limit, $offset, true)
+            ? $statistic->viewedResources($type, $sort, null, $page, $limit, true)
             // Search in all pages.
-            : $statistic->viewedPages(null, $sort, null, $limit, $offset, true);
+            : $statistic->viewedPages(null, $sort, null, $page, $limit, true);
     }
 }

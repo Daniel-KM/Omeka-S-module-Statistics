@@ -868,11 +868,11 @@ class HitAdapter extends AbstractEntityAdapter
      * @param array $params A set of parameters by which to filter the objects
      *   that get returned from the database. It should contains a 'field' for
      *   the name of the column to evaluate.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return array Data and total hits.
      */
-    public function frequents(array $query = [], ?int $limit = null, ?int $page = null): array
+    public function frequents(array $query = [], ?int $page = null, ?int $limit = null): array
     {
         $field = $this->checkFieldForFrequency($query);
         if (!$field) {
@@ -938,11 +938,11 @@ class HitAdapter extends AbstractEntityAdapter
      *
      * @param string $field Name of the column to evaluate.
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return array Data and total of the according total hits
      */
-    public function mostFrequents(string $field, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function mostFrequents(string $field, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $query = [];
         $query['field'] = $field;
@@ -952,7 +952,7 @@ class HitAdapter extends AbstractEntityAdapter
             // This order is needed in order to manage ex-aequos.
             'created' => 'ASC',
         );
-        return $this->frequents($query, $limit, $page);
+        return $this->frequents($query, $page, $limit);
     }
 
     /**
@@ -965,11 +965,11 @@ class HitAdapter extends AbstractEntityAdapter
      *
      * @param array $params A set of parameters by which to filter the objects
      *   that get returned from the database.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return array of Hits + column total.
      */
-    public function vieweds(array $query = [], ?int $limit = null, ?int $page = null): array
+    public function vieweds(array $query = [], ?int $page = null, ?int $limit = null): array
     {
         $defaultQuery = [
             'page' => null,
@@ -1032,11 +1032,11 @@ class HitAdapter extends AbstractEntityAdapter
      *@param null|bool $hasResource Null for all pages, true or false to set
      *   with or without resource.
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return array of Hits + column total.
      */
-    public function mostViewedPages($hasResource = null, $userStatus = null, $limit = null, $page = null): array
+    public function mostViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $query = [];
         if (!is_null($hasResource)) {
@@ -1048,7 +1048,7 @@ class HitAdapter extends AbstractEntityAdapter
             // This order is needed in order to manage ex-aequos.
             'created' => 'ASC',
         ];
-        return $this->vieweds($query, $limit, $page);
+        return $this->vieweds($query, $page, $limit);
     }
 
     /**
@@ -1059,11 +1059,11 @@ class HitAdapter extends AbstractEntityAdapter
      * @param string|Resource|array $resourceType If array, may contain multiple
      *   resource types.
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return array of Hits + column total.
      */
-    public function mostViewedResources($entityName = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function mostViewedResources($entityName = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $query = [];
         $query['entity_name'] = $entityName;
@@ -1073,7 +1073,7 @@ class HitAdapter extends AbstractEntityAdapter
             // This order is needed in order to manage ex-aequos.
             'created' => 'ASC',
         ];
-        return $this->vieweds($query, $limit, $page);
+        return $this->vieweds($query, $page, $limit);
     }
 
     /**
@@ -1084,11 +1084,11 @@ class HitAdapter extends AbstractEntityAdapter
      *@param null|bool $hasResource Null for all pages, true or false to set
      *   with or without resource.
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return array of Hits + column total.
      */
-    public function lastViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function lastViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $query = [];
         if (!is_null($hasResource)) {
@@ -1097,7 +1097,7 @@ class HitAdapter extends AbstractEntityAdapter
         $query['user_status'] = $userStatus;
         $query['sort_by'] = 'created';
         $query['sort_order'] = 'DESC';
-        return $this->vieweds($query, $limit, $page);
+        return $this->vieweds($query, $page, $limit);
     }
 
     /**
@@ -1108,18 +1108,18 @@ class HitAdapter extends AbstractEntityAdapter
      * @param string|Resource|array $entityName If array, may contain multiple
      *   resource types.
      * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $limit Number of objects to return per "page".
      * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
      * @return array of Hits + column total.
      */
-    public function lastViewedResources($entityName = null, ?string $userStatus = null, ?int $limit = null, ?int $page = null): array
+    public function lastViewedResources($entityName = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $query = [];
         $query['entity_name'] = $entityName;
         $query['user_status'] = $userStatus;
         $query['sort_by'] = 'created';
         $query['sort_order'] = 'DESC';
-        return $this->vieweds($query, $limit, $page);
+        return $this->vieweds($query, $page, $limit);
     }
 
     /**

@@ -73,14 +73,14 @@ class SummaryController extends AbstractActionController
         if ($this->userIsAllowed('Statistics\Controller\Browse', 'by-page')) {
             /** @var \Statistics\View\Helper\Statistic $statistic */
             $statistic = $this->viewHelpers()->get('statistic');
-            $results['most_viewed_pages'] = $statistic->mostViewedPages(null, $this->userStatus, 10);
-            $results['most_viewed_resources'] = $statistic->mostViewedResources(null, $this->userStatus, 10);
-            $results['most_viewed_item_sets'] = $statistic->mostViewedResources('item_sets', $this->userStatus, 10);
-            $results['most_viewed_downloads'] = $statistic->mostViewedDownloads($this->userStatus, 10);
-            $results['most_frequent_fields']['referrer'] = $statistic->mostFrequents('referrer', $this->userStatus, 10);
-            $results['most_frequent_fields']['query'] = $statistic->mostFrequents('query', $this->userStatus, 10);
-            $results['most_frequent_fields']['user_agent'] = $statistic->mostFrequents('user_agent', $this->userStatus, 10);
-            $results['most_frequent_fields']['accept_language'] = $statistic->mostFrequents('accept_language', $this->userStatus, 10);
+            $results['most_viewed_pages'] = $statistic->mostViewedPages(null, $this->userStatus, 1, 10);
+            $results['most_viewed_resources'] = $statistic->mostViewedResources(null, $this->userStatus, 1, 10);
+            $results['most_viewed_item_sets'] = $statistic->mostViewedResources('item_sets', $this->userStatus, 1, 10);
+            $results['most_viewed_downloads'] = $statistic->mostViewedDownloads($this->userStatus, 1, 10);
+            $results['most_frequent_fields']['referrer'] = $statistic->mostFrequents('referrer', $this->userStatus, 1, 10);
+            $results['most_frequent_fields']['query'] = $statistic->mostFrequents('query', $this->userStatus, 1, 10);
+            $results['most_frequent_fields']['user_agent'] = $statistic->mostFrequents('user_agent', $this->userStatus, 1, 10);
+            $results['most_frequent_fields']['accept_language'] = $statistic->mostFrequents('accept_language', $this->userStatus, 1, 10);
         }
 
         $view = new ViewModel([
