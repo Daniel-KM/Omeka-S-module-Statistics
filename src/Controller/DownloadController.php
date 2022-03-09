@@ -52,12 +52,13 @@ class DownloadController extends AbstractActionController
         $filename = $params['filename'] ?? '';
         $filepath = sprintf('%s/%s/%s', $this->basePath, $storageType, $filename);
         $result = $this->sendFile($filepath);
+        // Log the url event if the file is missing.
+        $this->logCurrentUrl();
         if (empty($result)) {
             return $this->notFoundAction();
         }
         // Return response to avoid default view rendering and to manage events.
         // Since there is no more event in Omeka, the url is logged directly.
-        $this->logCurrentUrl();
         return $result;
     }
 
