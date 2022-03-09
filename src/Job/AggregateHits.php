@@ -50,7 +50,7 @@ SELECT DISTINCT
     SUM(CASE WHEN `user_id` < 1 THEN 1 ELSE 0 END),
     SUM(CASE WHEN `user_id` > 0 THEN 1 ELSE 0 END),
     MIN(`created`),
-    IF(COUNT(`id`) = 1, NULL, MAX(`created`))
+    MAX(`created`)
 FROM `hit`
 GROUP BY `url`
 ORDER BY `created`
@@ -77,7 +77,7 @@ SELECT DISTINCT
     SUM(CASE WHEN `user_id` < 1 THEN 1 ELSE 0 END),
     SUM(CASE WHEN `user_id` > 0 THEN 1 ELSE 0 END),
     MIN(`created`),
-    IF(COUNT(`id`) = 1, NULL, MAX(`created`))
+    MAX(`created`)
 FROM `hit`
 GROUP BY `entity_name`, `entity_id`
 ORDER BY `created`
