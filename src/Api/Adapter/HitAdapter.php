@@ -659,9 +659,17 @@ class HitAdapter extends AbstractEntityAdapter
             'Omeka\Controller\Site\Media' => 'media',
             'Omeka\Controller\Site\Page' => 'site_pages',
             'Annotate\Controller\Site\Annotation' => 'annotations',
+            'AdvancedSearch\Controller\IndexController' => 'search_configs',
         ];
 
-        $name = $controllerToNames[$name] ?? $name . 's';
+        if (isset($controllerToNames[$name])) {
+            $name = $controllerToNames[$name] ?? $name . 's';
+        } elseif (strpos($name, '\\')) {
+            // This is an unknown controller.
+            return null;
+        } else {
+            $name .= 's';
+        }
 
         // Manage exception for item sets (the item set id is get below).
         if ($name === 'items' && ($routeParams['action'] ?? 'browse') === 'browse') {
