@@ -191,7 +191,7 @@ class Statistic extends AbstractHelper
     /**
      * Get viewed pages.
      *
-     * @param null|bool $hasResource Null for all pages, boolean to set with or
+     * @param bool|null $hasResource Null for all pages, boolean to set with or
      * without resource.
      * @param string $sort Sort by "most" (default) or "last" vieweds.
      * @param string $userStatus "anonymous" or "identified", else not filtered.
@@ -216,7 +216,7 @@ class Statistic extends AbstractHelper
      * Get viewed resources.
      *
      * @param Resource|array $resourceType If array, contains resource type.
-     * Can be empty, "all", "none", "page" or "download" too.
+     * Can be empty, "all", "none", "page", "download", or "resource" too.
      * @param string $sort Sort by "most" (default) or "last" vieweds.
      * @param string $userStatus "anonymous" or "identified", else not filtered.
      * @param int $page Offfset to set page to retrieve.
@@ -381,8 +381,7 @@ class Statistic extends AbstractHelper
      * Get the most frequent data in a field.
      *
      * @param string $field Name of the column to evaluate.
-     * @param string $userStatus Can be hits (default), hits_anonymous or
-     * hits_identified.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
      * @param int $page Page to retrieve.
      * @param int $limit Number of objects to return per "page".
      * @return array Data and total of the according total hits.
@@ -584,20 +583,17 @@ class Statistic extends AbstractHelper
     }
 
     /**
-     * Get default user status. This functions is used to allow synonyms.
+     * Get default user status if not set.
      */
     protected function normalizeUserStatus(?string $userStatus = null): string
     {
         $userStatuses = [
-            'total' => 'hits',
-            'hits' => 'hits',
-            'anonymous' => 'anonymous',
-            'hits_anonymous' => 'anonymous',
-            'identified' => 'identified',
-            'hits_identified' => 'identified',
+            'hits',
+            'anonymous',
+            'identified',
         ];
-        if (isset($userStatuses[$userStatus])) {
-            return $userStatuses[$userStatus];
+        if (in_array($userStatus, $userStatuses)) {
+            return $userStatus;
         }
         return $this->view->status()->isAdminRequest()
             ? (string) $this->view->setting('statistics_default_user_status_admin', 'hits')

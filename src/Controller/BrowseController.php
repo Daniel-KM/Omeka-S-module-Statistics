@@ -48,7 +48,9 @@ class BrowseController extends AbstractActionController
     {
         $isSiteRequest = $this->status()->isSiteRequest();
         $defaultSorts = ['anonymous' => 'total_hits_anonymous', 'identified' => 'total_hits_identified'];
-        $userStatus = $this->settings()->get('statistics_default_user_status_admin');
+        $userStatus = $isSiteRequest
+            ? $this->settings()->get('statistics_default_user_status_public')
+            : $this->settings()->get('statistics_default_user_status_admin');
         $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
@@ -77,7 +79,9 @@ class BrowseController extends AbstractActionController
     {
         $isSiteRequest = $this->status()->isSiteRequest();
         $defaultSorts = ['anonymous' => 'total_hits_anonymous', 'identified' => 'total_hits_identified'];
-        $userStatus = $this->settings()->get('statistics_default_user_status_admin');
+        $userStatus = $isSiteRequest
+            ? $this->settings()->get('statistics_default_user_status_public')
+            : $this->settings()->get('statistics_default_user_status_admin');
         $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
@@ -106,7 +110,9 @@ class BrowseController extends AbstractActionController
     {
         $isSiteRequest = $this->status()->isSiteRequest();
         $defaultSorts = ['anonymous' => 'total_hits_anonymous', 'identified' => 'total_hits_identified'];
-        $userStatus = $this->settings()->get('statistics_default_user_status_admin');
+        $userStatus = $isSiteRequest
+            ? $this->settings()->get('statistics_default_user_status_public')
+            : $this->settings()->get('statistics_default_user_status_admin');
         $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
         $this->setBrowseDefaults($userStatusBrowse);
 

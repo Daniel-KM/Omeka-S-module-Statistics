@@ -1037,7 +1037,7 @@ class HitAdapter extends AbstractEntityAdapter
      *
      * Zero viewed rows are never returned.
      *
-     *@param null|bool $hasResource Null for all pages, true or false to set
+     *@param bool|null $hasResource Null for all pages, true or false to set
      *   with or without resource.
      * @param string $userStatus Can be hits (default), anonymous or identified.
      * @param int $page Page to retrieve.
@@ -1089,7 +1089,7 @@ class HitAdapter extends AbstractEntityAdapter
      *
      * Zero viewed rows are never returned.
      *
-     *@param null|bool $hasResource Null for all pages, true or false to set
+     *@param bool|null $hasResource Null for all pages, true or false to set
      *   with or without resource.
      * @param string $userStatus Can be hits (default), anonymous or identified.
      * @param int $page Page to retrieve.

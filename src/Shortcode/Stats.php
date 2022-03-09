@@ -45,7 +45,7 @@ class Stats extends AbstractShortcode
         if ($resourceId) {
             $result = $type === 'download'
                 ? $statistic->totalDownload($resourceId)
-                : $statistic->totalResource($resourceName, $resourceId);
+                : $statistic->totalResource(['type' => (string) $resourceName, 'id' => (int) $resourceId]);
         }
         // Search by resource type.
         elseif ($resourceName) {
@@ -71,7 +71,7 @@ class Stats extends AbstractShortcode
         $type = $args['type'] ?? null;
 
         // Unlike StatsTotal, position of multiple resource type is meaningless.
-        $resourceName = $args['resource'] ?? $args['resource_type'] ?? $args['record_type'] ?? null;
+        $resourceName = $args['resource'] ?? $args['resource_type'] ?? $args['record_type'] ?? $args['entity_name'] ?? null;
         if ($resourceName) {
             $resourceName = strtolower($resourceName);
         }
@@ -87,7 +87,7 @@ class Stats extends AbstractShortcode
         if ($resourceId) {
             $result = $type === 'download'
                 ? $statistic->positionDownload($resourceId)
-                : $statistic->positionResource($resourceName, $resourceId);
+                : $statistic->positionResource(['type' => (string) $resourceName, 'id' => (int) $resourceId]);
         }
         // Search by url.
         else {
@@ -114,10 +114,15 @@ class Stats extends AbstractShortcode
         /** @var \Statistics\View\Helper\Statistic $statistic */
         $statistic = $this->view->statistic();
 
-        return $type
-            // Search by resource type.
-            ? $statistic->viewedResources($type, $sort, null, $page, $limit, true)
+        if ($type === 'download') {
+            // Search in all downloads.
+            return $statistic->viewedDownloads($sort, null, $page, $limit, true);
+        } elseif (!$type || $type === 'page') {
             // Search in all pages.
-            : $statistic->viewedPages(null, $sort, null, $page, $limit, true);
+            return $statistic->viewedPages(null, $sort, null, $page, $limit, true);
+        } else {
+            // Search by resource type.
+            return $statistic->viewedResources($type, $sort, null, $page, $limit, true);
+        }
     }
 }

@@ -26,7 +26,7 @@ class StatAdapter extends AbstractEntityAdapter
         'url' => 'url',
         'entity_name' => 'entityName',
         'entity_id' => 'entityId',
-        // TODO Clarify query for sort.
+        // TODO Clarify query for sort (used in some other places).
         'hits' => 'totalHits',
         'anonymous' => 'totalHitsAnonymous',
         'identified' => 'totalHitsIdentified',
@@ -312,7 +312,7 @@ class StatAdapter extends AbstractEntityAdapter
     {
         return $this->totalHits([
             'type' => Stat::TYPE_PAGE,
-            'url' => (string) $url,
+            'url' => $url,
         ], $userStatus);
     }
 
@@ -326,8 +326,8 @@ class StatAdapter extends AbstractEntityAdapter
     {
         return $this->totalHits([
             'type' => Stat::TYPE_RESOURCE,
-            'entityName' => (string) $entityName,
-            'entityId' => (string) $entityId,
+            'entityName' => $entityName,
+            'entityId' => $entityId,
         ], $userStatus);
     }
 
@@ -337,12 +337,29 @@ class StatAdapter extends AbstractEntityAdapter
      * @uses self::totalHits()
      * @param string $userStatus Can be hits (default), anonymous or identified.
      */
-    public function totalResourceType(?string $entityName, $userStatus = null): int
+    public function totalResourceType(?string $entityName, ?string $userStatus = null): int
     {
-        return $this->totalHits([
-            'type' => Stat::TYPE_RESOURCE,
-            'entityName' => (string) $entityName,
-        ], $userStatus);
+        // The total for a resource hits is not saved in one stat: this is the
+        // total of all stats of this resource.
+        // So either count hits with that resource name, either sum all stats
+        // with that resource name.
+        if (is_null($entityName)) {
+            return 0;
+        }
+        if (!is_null($userStatus)) {
+            $column = 'totalHits';
+        } elseif (isset($this->sortFields[$userStatus])) {
+            $column = $this->sortFields[$userStatus];
+        } else {
+            return 0;
+        }
+        $request = new Request(Request::SEARCH, 'stats');
+        $request
+            ->setContent(['entity_name' => $entityName])
+            ->setOption('returnScalar', $column);
+        // Here, it's not possible to check identified user.
+        $result = $this->search($request)->getContent();
+        return array_sum($result);
     }
 
     /**
@@ -394,7 +411,7 @@ class StatAdapter extends AbstractEntityAdapter
     public function totalOfResources(?string $entityName = null, $userStatus = null): int
     {
         if (is_null($entityName)) {
-            $entityName = $this->resource->getEntityName();
+            return 0;
         }
         $request = new Request(Request::SEARCH, $entityName);
         // Here, it's not possible to check identified user.
@@ -416,26 +433,28 @@ class StatAdapter extends AbstractEntityAdapter
     {
         return $this->positionHits([
             'type' => Stat::TYPE_PAGE,
-            'url' => (string) $url,
+            'url' => $url,
         ], $userStatus);
     }
 
     /**
+     * Get the position of a resource (first one is the most viewed).
+     *
      * @param string $userStatus Can be hits (default), anonymous or identified.
      */
     public function positionResource(?string $entityName, ?int $entityId, ?string $userStatus = null): int
     {
         return $this->positionHits([
             'type' => Stat::TYPE_RESOURCE,
-            'entityName' => (string) $entityName,
-            'entityId' => (string) $entityId,
+            'entityName' => $entityName,
+            'entityId' => $entityId,
         ], $userStatus);
     }
 
     /**
-     * Total count of hits of the specified downloaded media file.
+     * Get the position of a downoad (first one is the most viewed).
      *
-     * @uses self::totalHits()
+     * @uses self::positionHits()
      *
      * @param \Omeka\Api\Representation\AbstractResourceRepresentation|string|int $value
      * - If numeric, id the downloaded Media.
@@ -455,58 +474,42 @@ class StatAdapter extends AbstractEntityAdapter
     }
 
     /**
+     * Get the position of a stat (first one is the most viewed).
+     *
      * @param string $userStatus Can be hits (default), anonymous or identified.
      */
     public function positionHits(array $criteria, ?string $userStatus = null): int
     {
-        // For security and quick check.
-        $criteria = array_filter(array_intersect_key($criteria, [
-            'id' => null,
-            'type' => null,
-            'url' => null,
-            'entity_id' => null,
-            'entity_name' => null,
-            'hits' => null,
-            'hits_anonymous' => null,
-            'hits_identified' => null,
-            'created' => null,
-            'modified' => null,
-        ]), 'is_null');
-        if (empty($criteria)) {
-            return 0;
+        // Simply count the number of stats of the same type greater than the
+        // requested one. So first get the total hits.
+
+        // Criteria should use the entity names to get the total, but the
+        // columns names for the direct query below.
+
+        $criteriaTotals = $criteria;
+        if (isset($criteria['entity_name'])) {
+            $criteriaTotals['entityName'] = $criteria['entity_name'];
+            unset($criteriaTotals['entity_name']);
+        }
+        if (isset($criteria['entity_id'])) {
+            $criteriaTotals['entityId'] = $criteria['entity_id'];
+            unset($criteriaTotals['entityId']);
+        }
+        $criteria = $criteriaTotals;
+        if (isset($criteria['entityName'])) {
+            $criteria['entity_name'] = $criteria['entityName'];
+            unset($criteria['entityName']);
+        }
+        if (isset($criteria['entityId'])) {
+            $criteria['entity_id'] = $criteria['entityId'];
+            unset($criteria['entityId']);
         }
 
-        // This data is not available in stats, so do a direct query.
-
-        /** @var \Doctrine\DBAL\Connection $connection */
-        // Don't use the entity manager connection, but the dbal directly
-        // (arguments are different).
-        $connection = $this->getServiceLocator()->get('Omeka\Connection');
-
-        $hitsColumn = $this->statusColumns[$userStatus] ?? 'hits';
-
-        // Use two queries to manage complex criteria.
-        $qb = $connection->createQueryBuilder();
-        $expr = $qb->expr();
-        $qb
-            ->select("omeka_root.$hitsColumn")
-            ->from(\Statistics\Entity\Stat::class, 'omeka_root')
-            // Limit by one, but there can't be more than one row when criteria
-            // is fine.
-            ->limit(1);
-
-        // The query is requested immediatly in order to manage zero viewed
-        // resources simply.
-        $totalHits = (int) $connection->executeQuery($qb)->fetchOne();
-        if (empty($totalHits)) {
-            return 0;
-        }
-
-        // Build the main query. Sometimes, type and resource type are not set.
+        // Sometimes, type and resource type are not set.
         // Default type is "page", since a single type is required to get a good
         // results.
         if (!isset($criteria['type'])) {
-            if (isset($criteria['entity_id']) || isset($criteria['entity_name'])) {
+            if (isset($criteria['entity_id']) || isset($criteriaTotals['entity_name'])) {
                 $criteria['type'] = stat::TYPE_RESOURCE;
             } elseif (isset($criteria['url']) && $this->isDownload($criteria['url'])) {
                 $criteria['type'] = Stat::TYPE_DOWNLOAD;
@@ -515,26 +518,37 @@ class StatAdapter extends AbstractEntityAdapter
             }
         }
 
-        // Simply count the number of position greater than the requested one.
-        $qb = $connection->createQueryBuilder()
-            ->select('COUNT(DISTINCT(id)) + 1 AS num')
-            ->from(\Statistics\Entity\Stat::class, 'omeka_root')
-            ->where($expr->gt('omeka_root.' . $hitsColumn, ':total_hits'));
-
-        // $criteria keys are already checked.
-        $bind = $criteria;
-        $types = [];
-        foreach ($criteria as $key => $value) {
-            if (is_array($value)) {
-                $qb->andWhere($expr->in("omeka_root.$key", ':key'));
-                $types[$key] = \Doctrine\DBAL\Connection::PARAM_STR_ARRAY;
-            } else {
-                $qb->andWhere($expr->eq("omeka_root.$key", ':key'));
-            }
+        $totalHits = $this->totalHits($criteriaTotals, $userStatus);
+        if (!$totalHits) {
+            return 0;
         }
 
-        $bind['total_hits'] = $totalHits;
-        return (int) $connection->executeQuery($qb, $bind, $types)->fetchOne();
+        // This data is not stored in stats so do a direct query.
+
+        $hitsColumn = $this->statusColumns[$userStatus] ?? 'hits';
+
+        // Don't use the entity manager connection, but the dbal directly
+        // (arguments are different).
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $this->getServiceLocator()->get('Omeka\Connection');
+        $qb = $connection->createQueryBuilder();
+        $expr = $qb->expr();
+        $qb
+            ->select('COUNT(DISTINCT(id)) + 1 AS num')
+            ->from('stat', 'stat')
+            ->where($expr->gt($hitsColumn, ':total_hits'))
+            ->andWhere($expr->eq('type', ':type'));
+        $bind = [
+            'total_hits' => $totalHits,
+            'type' => $criteria['type'],
+        ];
+        if (!empty($criteria['entity_name'])) {
+            $qb
+                ->andWhere($expr->eq('entity_name', ':entity_name'));
+            $bind['entity_name'] = $criteria['entity_name'];
+        }
+
+        return (int) $connection->executeQuery($qb, $bind)->fetchOne();
     }
 
     /**
@@ -622,7 +636,7 @@ class StatAdapter extends AbstractEntityAdapter
         $criteria = [
             // Needed if $entityName is empty.
             'type' => Stat::TYPE_RESOURCE,
-            'entity_name' => $entityName,
+            'entity_name' => $entityName === 'resource' ? null : $entityName,
             'not_zero' => $column,
             'sort_field' => [
                 $column => 'desc',
@@ -704,7 +718,7 @@ class StatAdapter extends AbstractEntityAdapter
         $column = $this->statusColumns[$userStatus] ?? 'hits';
         $criteria = [
             'type' => Stat::TYPE_RESOURCE,
-            'entity_name' => $entityNames,
+            'entity_name' => empty($entityNames) || $entityNames === 'resource' ? null : $entityNames,
             'not_zero' => $column,
             'sort_by' => 'modified',
             'sort_order' => 'asc',
@@ -773,7 +787,6 @@ class StatAdapter extends AbstractEntityAdapter
                 // Download are only for media files.
                 return null;
             }
-            $criteria['entity_id'] = $value->id();
         } else {
             return null;
         }

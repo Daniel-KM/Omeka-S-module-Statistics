@@ -18,7 +18,7 @@ use Omeka\Entity\AbstractEntity;
  *
  * @todo Replace the one to two Stats by one (only add columns hits_resource, hits_download (all or identified), so 4 columns (and remove hits_identified).
  *
- * @todo Remove column hits_identified (= hits - hits_anonymous).
+ * @todo Remove column hits_identified (= hits - hits_anonymous)?
  *
  * @Entity
  * @Table(
