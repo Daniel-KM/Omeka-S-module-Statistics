@@ -28,7 +28,7 @@ $escapeAttr = $plugins->get('escapeHtmlAttr');
                 '<span class="statistics-position">' . $stat->position($userStatus) . '</span>',
                 '<span class="statistics-hits">' . $stat->totalHits($userStatus) . '</span>',
                 '<a href="' . $escapeAttr($stat->hitUrl()) . '"><span class="statistics-url">' . $escape($stat->hitUrl()) . '</span></a>',
-                '<span class="statistics-resource-type">' . $escape($stat->getHumanResourceType($translate('No specific resource'))) . '</span>'
+                '<span class="statistics-resource-type">' . $escape($stat->humanResourceType($translate('No specific resource'))) . '</span>'
             );
         endif;
         ?>

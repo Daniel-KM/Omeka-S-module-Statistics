@@ -724,7 +724,7 @@ class StatAdapter extends AbstractEntityAdapter
      * @param int $limit Number of objects to return per "page".
      * @return StatRepresentation[]
      */
-    public function getLastViewedDownloads(?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    public function lastViewedDownloads(?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
         $column = $this->statusColumns[$userStatus] ?? 'hits';
         $criteria = [

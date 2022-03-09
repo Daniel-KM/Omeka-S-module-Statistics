@@ -2,10 +2,7 @@
 
 namespace Statistics\Api\Representation;
 
-use Omeka\Api\Adapter\AdapterInterface as ApiAdapterInterface;
-use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Representation\AbstractEntityRepresentation;
-use Omeka\Api\Representation\AbstractResourceRepresentation;
 use Statistics\Entity\Stat;
 
 /**
@@ -17,6 +14,9 @@ use Statistics\Entity\Stat;
  */
 class StatRepresentation extends AbstractEntityRepresentation
 {
+    // The trait is useful because Hit and Stat are all statistics.
+    use StatisticTrait;
+
     public function getControllerName()
     {
         // TODO There is no controller for now for stats (or it is Browse).
@@ -148,76 +148,6 @@ class StatRepresentation extends AbstractEntityRepresentation
     public function modified(): \DateTime
     {
         return $this->resource->getModified();
-    }
-
-    /**
-     * Determine whether or not the page has or had a resource.
-     *
-     * @return bool True if hit has a resource, even deleted.
-     */
-    public function hasResource()
-    {
-        return $this->resource->getEntityName()
-            && $this->resource->getEntityId();
-    }
-
-    /**
-     * Get the resource object if any and not deleted.
-     */
-    public function entityResource(): ?AbstractResourceRepresentation
-    {
-        $name = $this->resource->getEntityName();
-        $id = $this->resource->getEntityId();
-        if (empty($name) || empty($id)) {
-            return null;
-        }
-        $adapter = $this->getApiAdapter($name);
-        if (!$adapter) {
-            return null;
-        }
-        try {
-            $entity = $adapter->findEntity(['id' => $id]);
-            return $adapter->getRepresentation($entity);
-        } catch (NotFoundException $e) {
-            return null;
-        }
-    }
-
-    /**
-     * Get the resource object link or a string when deleted
-     */
-    public function linkEntity(?string $text = null): ?string
-    {
-        $name = $this->resource->getEntityName();
-        $id = $this->resource->getEntityId();
-        if (empty($name) || empty($id)) {
-            return null;
-        }
-        $adapter = $this->getApiAdapter($name);
-        if ($adapter) {
-            try {
-                $entity = $adapter->findEntity(['id' => $id]);
-                $representation = $adapter->getRepresentation($entity);
-                if (is_null($text)) {
-                    if (method_exists($representation, 'displayTitle')) {
-                        $text = $representation->displayTitle();
-                    } elseif (method_exists($representation, 'title')) {
-                        $text = $representation->title();
-                    } elseif (method_exists($representation, 'label')) {
-                        $text = $representation->label();
-                    } else {
-                        $text = $this->translator->translate('[untitled]'); // @translate
-                    }
-                }
-                return $representation->link($text);
-            } catch (NotFoundException $e) {
-                // Below.
-            }
-        }
-        return sprintf('<span class="unavailable">%s</span>', is_null($text)
-            ? sprintf('%s #%s', $this->getHumanResourceType(), $id)
-            : $this->getViewHelper('escapeHtml')($text)
-        );
     }
 
     /**
@@ -376,33 +306,5 @@ class StatRepresentation extends AbstractEntityRepresentation
             $this->resource->getUrl(),
             $userStatus
         );
-    }
-
-    /**
-     * Helper to get the singular human name of the resource type.
-     *
-     * @param string $default Return this string if empty, or default if set.
-     */
-    public function getHumanResourceType(?string $default = null): string
-    {
-        $types = [
-             'items' => 'item',
-             'item_sets' => 'item set',
-             'media' => 'media',
-             'site_pages' => 'site page',
-             'annotation' => 'annotation',
-             'pages' => 'page',
-         ];
-        $entityName = $this->resource->getEntityName();
-        return $types[$entityName] ?? $default ?? $entityName;
-    }
-
-    protected function getApiAdapter(?string $resourceName): ?ApiAdapterInterface
-    {
-        $adapterManager = $this->getServiceLocator()
-            ->get('Omeka\ApiAdapterManager');
-        return $adapterManager->has($resourceName)
-            ? $adapterManager->get($resourceName)
-            : null;
     }
 }
