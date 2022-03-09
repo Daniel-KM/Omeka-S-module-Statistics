@@ -4,15 +4,17 @@ namespace Statistics\Shortcode;
 
 use Shortcode\Shortcode\AbstractShortcode;
 
-class Stats extends AbstractShortcode
+class Stat extends AbstractShortcode
 {
     public function render(array $args = []): string
     {
-        if ($this->shortcodeName === 'stats' || $this->shortcodeName === 'stats_total') {
+        if ($this->shortcodeName === 'stat'
+            || $this->shortcodeName === 'stat_total'
+        ) {
             return $this->renderStatsTotal($args);
-        } elseif ($this->shortcodeName === 'stats_position') {
+        } elseif ($this->shortcodeName === 'stat_position') {
             return $this->renderStatsPosition($args);
-        } elseif ($this->shortcodeName === 'stats_vieweds') {
+        } elseif ($this->shortcodeName === 'stat_vieweds') {
             return $this->renderStatsVieweds($args);
         } else {
             return '';
