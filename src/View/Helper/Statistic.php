@@ -3,9 +3,12 @@
 namespace Statistics\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
+use Omeka\Api\Exception\NotFoundException;
+use Omeka\Api\Request;
 use Statistics\Api\Adapter\HitAdapter;
 use Statistics\Api\Adapter\StatAdapter;
 use Statistics\Entity\Stat;
+use Statistics\Api\Representation\StatRepresentation;
 
 /**
  * Helper to get some public stats.
@@ -25,6 +28,36 @@ class Statistic extends AbstractHelper
      * @var \Statistics\Api\Adapter\StatAdapter
      */
     protected $statAdapter;
+
+    protected $statFields = [
+        'id' => 'id',
+        'type' => 'type',
+        'url' => 'url',
+        'entity_name' => 'entityName',
+        'entity_id' => 'entityId',
+        // TODO Clarify query for sort (used in some other places).
+        'hits' => 'totalHits',
+        'anonymous' => 'totalHitsAnonymous',
+        'identified' => 'totalHitsIdentified',
+        'hits_anonymous' => 'totalHitsAnonymous',
+        'hits_identified' => 'totalHitsIdentified',
+        'total_hits' => 'totalHits',
+        'total_hits_anonymous' => 'totalHitsAnonymous',
+        'total_hits_identified' => 'totalHitsIdentified',
+        'hitsAnonymous' => 'totalHitsAnonymous',
+        'hitsIdentified' => 'totalHitsIdentified',
+        'totalHits' => 'totalHits',
+        'totalHitsAnonymous' => 'totalHitsAnonymous',
+        'totalHitsIdentified' => 'totalHitsIdentified',
+        'created' => 'created',
+        'modified' => 'modified',
+    ];
+
+    protected $statusColumns = [
+        'hits' => 'hits',
+        'anonymous' => 'hits_anonymous',
+        'identified' => 'hits_identified',
+    ];
 
     public function __construct(HitAdapter $hitAdapter, StatAdapter $statAdapter)
     {
@@ -86,106 +119,466 @@ class Statistic extends AbstractHelper
     }
 
     /**
-     * Get the count of hits of the page.
+     * Total count of hits of the specified page.
      *
-     * @param string $url Url Current url if null.
-     * @param string $userStatus "anonymous" or "identified", else not filtered.
-     * @return int
+     * @uses self::totalHits()
+     * @param string $userStatus Can be hits (default), anonymous or identified.
      */
     public function totalPage(?string $url = null, ?string $userStatus = null): int
     {
-        $userStatus = $this->normalizeUserStatus($userStatus);
         if (is_null($url)) {
             $url = $this->currentUrl();
         }
-        return $this->statAdapter->totalPage($url, $userStatus);
+        return $this->totalHits([
+            'type' => Stat::TYPE_PAGE,
+            'url' => $url,
+        ], $userStatus);
     }
 
     /**
-     * Get the count of hits of the resource.
+     * Total count of hits of the specified resource.
      *
-     * @param Resource|array $resource If array, contains resource type and resource id.
-     * @param string $userStatus "anonymous" or "identified", else not filtered.
+     * @uses self::totalHits()
+     * @param \Omeka\Api\Representation\AbstractEntityRepresentation|string $resourceOrEntityName
+     * @param int|null Useless if $resourceOrEntityName is a resource.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
      */
-    public function totalResource($resource, ?string $userStatus = null): int
+    public function totalResource($resourceOrEntityName, ?int $entityId, ?string $userStatus = null): int
     {
-        $entity = $this->checkAndPrepareResource($resource);
-        $userStatus = $this->normalizeUserStatus($userStatus);
-        return $this->statAdapter->totalResource($entity['type'], $entity['id'], $userStatus);
+        $entity = $this->checkAndPrepareResource($resourceOrEntityName, $entityId);
+        return $this->totalHits([
+            'type' => Stat::TYPE_RESOURCE,
+            'entityName' => $entity['type'],
+            'entityId' => $entity['id'],
+        ], $userStatus);
     }
 
     /**
-     * Get the count of hits of the resource type.
+     * Total count of hits of the specified resource type.
      *
-     * @param Resource|array $resource If array, contains resource type and resource id.
-     * @param string $userStatus "anonymous" or "identified", else not filtered.
+     * @uses self::totalHits()
+     * @param string $userStatus Can be hits (default), anonymous or identified.
      */
-    public function totalResourceType($resourceType, ?string $userStatus = null): int
+    public function totalResourceType(?string $entityName, ?string $userStatus = null): int
     {
+        // The total for a resource hits is not saved in one stat: this is the
+        // total of all stats of this resource.
+        // So either count hits with that resource name, either sum all stats
+        // with that resource name.
+        if (is_null($entityName)) {
+            return 0;
+        }
+
         $userStatus = $this->normalizeUserStatus($userStatus);
-        return $this->statAdapter->totalResourceType($resourceType, $userStatus);
+        if (!is_null($userStatus)) {
+            $column = 'totalHits';
+        } elseif (isset($this->statColumns[$userStatus])) {
+            $column = $this->statColumns[$userStatus];
+        } else {
+            return 0;
+        }
+
+        $request = new Request(Request::SEARCH, 'stats');
+        $request
+            ->setContent(['entity_name' => $entityName])
+            ->setOption('returnScalar', $column);
+        // Here, it's not possible to check identified user.
+        $result = $this->statAdapter->search($request)->getContent();
+        return array_sum($result);
     }
 
     /**
-     * Get the count of hits of a resource or sub-resource.
+     * Total count of hits of the specified downloaded media file.
      *
-     * @param Resource|string|int $value If string or numeric, url or id of the
-     * downloaded  file. If Item, returns total of dowloaded files of this Item.
-     * If Collection, returns total of downloaded files of all items. If File,
-     * returns total of downloads of this file.
-     * @param string $userStatus "anonymous" or "identified", else not filtered.
+     * @uses self::totalHits()
+     *
+     * @param \Omeka\Api\Representation\AbstractResourceRepresentation|string|int $value
+     * - If numeric, id the downloaded Media.
+     * - If string, url or id the downloaded Media.
+     * - If Media, total of downloads of this media.
+     * @todo Stats of total downloads for item and item set, etc.
+     * - If Item, total of dowloaded files of this Item.
+     * - If ItemSet, total of downloaded media of all items.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
      */
     public function totalDownload($value, ?string $userStatus = null): int
     {
-        $userStatus = $this->normalizeUserStatus($userStatus);
-        return $this->statAdapter->totalDownload($value, $userStatus);
+        $criteria = $this->normalizeValueForDownload($value);
+        return $criteria
+            ? $this->totalHits($criteria, $userStatus)
+            : 0;
     }
 
     /**
-     * Get the position of hits of the page.
+     * Total count of specified hits.
      *
-     * @param string $url Url Current url if null.
-     * @param string $userStatus "anonymous" or "identified", else not filtered.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
      */
-    public function positionPage(?string $url = null, ?string $userStatus = null): int
+    public function totalHits(array $criteria, ?string $userStatus = null): int
     {
         $userStatus = $this->normalizeUserStatus($userStatus);
+        try {
+            /** @var \Statistics\Entity\Stat $stat */
+            $stat = $this->statAdapter->findEntity($criteria);
+        } catch (NotFoundException $e) {
+            return 0;
+        }
+        if ($userStatus === 'anonymous') {
+            return $stat->getTotalHitsAnonymous();
+        }
+        return $userStatus === 'identified'
+            ? $stat->getTotalHitsIdentified()
+            : $stat->getTotalHits();
+    }
+
+    /**
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     */
+    public function totalOfResources(?string $entityName = null, $userStatus = null): int
+    {
+        if (is_null($entityName)) {
+            return 0;
+        }
+        $request = new Request(Request::SEARCH, $entityName);
+        // Here, it's not possible to check identified user.
+        if ($userStatus === 'anonymous') {
+            $request->setContent(['is_public' => 1]);
+        }
+        return $this->statAdapter->getAdapter($entityName)
+            ->search($request)
+            ->getTotalResults();
+    }
+
+    /**
+     * Get the position of a stat (first one is the most viewed).
+     *
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     */
+    public function positionHits(array $criteria, ?string $userStatus = null): int
+    {
+        // Simply count the number of stats of the same type greater than the
+        // requested one. So first get the total hits.
+
+        // Criteria should use the entity names to get the total, but the
+        // columns names for the direct query below.
+
+        $criteriaTotals = $criteria;
+        if (isset($criteria['entity_name'])) {
+            $criteriaTotals['entityName'] = $criteria['entity_name'];
+            unset($criteriaTotals['entity_name']);
+        }
+        if (isset($criteria['entity_id'])) {
+            $criteriaTotals['entityId'] = $criteria['entity_id'];
+            unset($criteriaTotals['entityId']);
+        }
+        $criteria = $criteriaTotals;
+        if (isset($criteria['entityName'])) {
+            $criteria['entity_name'] = $criteria['entityName'];
+            unset($criteria['entityName']);
+        }
+        if (isset($criteria['entityId'])) {
+            $criteria['entity_id'] = $criteria['entityId'];
+            unset($criteria['entityId']);
+        }
+
+        // Sometimes, type and resource type are not set.
+        // Default type is "page", since a single type is required to get a good
+        // results.
+        if (!isset($criteria['type'])) {
+            if (isset($criteria['entity_id']) || isset($criteriaTotals['entity_name'])) {
+                $criteria['type'] = stat::TYPE_RESOURCE;
+            } elseif (isset($criteria['url']) && $this->isDownload($criteria['url'])) {
+                $criteria['type'] = Stat::TYPE_DOWNLOAD;
+            } else {
+                $criteria['type'] = Stat::TYPE_PAGE;
+            }
+        }
+
+        $totalHits = $this->totalHits($criteriaTotals, $userStatus);
+        if (!$totalHits) {
+            return 0;
+        }
+
+        // This data is not stored in stats so do a direct query.
+
+        $hitsColumn = $this->statusColumns[$userStatus] ?? 'hits';
+
+        // Don't use the entity manager connection, but the dbal directly
+        // (arguments are different).
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $this->statAdapter->getServiceLocator()->get('Omeka\Connection');
+        $qb = $connection->createQueryBuilder();
+        $expr = $qb->expr();
+        $qb
+            ->select('COUNT(DISTINCT(id)) + 1 AS num')
+            ->from('stat', 'stat')
+            ->where($expr->gt($hitsColumn, ':total_hits'))
+            ->andWhere($expr->eq('type', ':type'));
+        $bind = [
+            'total_hits' => $totalHits,
+            'type' => $criteria['type'],
+        ];
+        if (!empty($criteria['entity_name'])) {
+            $qb
+                ->andWhere($expr->eq('entity_name', ':entity_name'));
+            $bind['entity_name'] = $criteria['entity_name'];
+        }
+
+        return (int) $connection->executeQuery($qb, $bind)->fetchOne();
+    }
+
+
+    /**
+     * Position of a page (first one is the most viewed).
+     *
+     * @uses self::positionHits()
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     */
+    public function positionPage(?string $url, ?string $userStatus = null): int
+    {
         if (is_null($url)) {
             $url = $this->currentUrl();
         }
-        // Call positionHits() and not positionPage() to simplify process of
-        // page or download. The check is made later.
-        return $this->statAdapter->positionHits(['url' => $url], $userStatus);
+        return $this->positionHits([
+            'type' => Stat::TYPE_PAGE,
+            'url' => $url,
+        ], $userStatus);
     }
 
     /**
-     * Get the position of hits of the resource (by resource type).
+     * Position of a resource by resource type (first one is the most viewed).
      *
-     * @param Resource|array $resource If array, contains resource type and resource id.
-     * @param string $userStatus "anonymous" or "identified", else not filtered.
+     * @param \Omeka\Api\Representation\AbstractEntityRepresentation|string $resourceOrEntityName
+     * @param int|null Useless if $resourceOrEntityName is a resource.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
      */
-    public function positionResource($resource, ?string $userStatus = null): int
+    public function positionResource(?string $resourceOrEntityName, ?int $entityId, ?string $userStatus = null): int
     {
-        $entity = $this->checkAndPrepareResource($resource);
-        $userStatus = $this->normalizeUserStatus($userStatus);
-        return $this->statAdapter->positionResource($entity['type'], $entity['id'], $userStatus);
+        $entity = $this->checkAndPrepareResource($resourceOrEntityName, $entityId);
+        return $this->positionHits([
+            'type' => Stat::TYPE_RESOURCE,
+            'entityName' => $entity['type'],
+            'entityId' => $entity['id'],
+        ], $userStatus);
     }
 
     /**
-     * Get the position of hits of the download.
+     * Position of a download (first one is the most viewed).
      *
-     * @todo Position of user is currently unavailable.
+     * @uses self::positionHits()
      *
-     * @param Resource|string|int $value If string or numeric, url or id of the
-     * downloaded  file. If Item, returns position of dowloaded files of this
-     * Item. If Collection, returns position of downloaded files of all items.
-     * If File, returns position of downloads of this file.
-     * @param string $userStatus "anonymous" or "identified", else not filtered.
+     * @param \Omeka\Api\Representation\AbstractResourceRepresentation|string|int $value
+     * - If numeric, id the downloaded Media.
+     * - If string, url or id the downloaded Media.
+     * - If Media, position of this media.
+     * @todo Stats of position of downloads for item and item set, etc.
+     * - If Item, position of dowloaded files of this Item.
+     * - If ItemSet, position of downloaded media of all items.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
      */
     public function positionDownload($value, ?string $userStatus = null): int
     {
-        $userStatus = $this->normalizeUserStatus($userStatus);
-        return $this->statAdapter->positionDownload($value, $userStatus);
+        $criteria = $this->normalizeValueForDownload($value);
+        return $criteria
+            ? $this->positionHits($criteria, $userStatus)
+            : 0;
+    }
+
+    /**
+     * Get the most viewed rows.
+     *
+     * Filters events are not triggered.
+     *
+     * @param array $params A set of parameters by which to filter the objects
+     * that get returned from the database.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return \Statistics\Api\Representation\StatRepresentation[]
+     */
+    public function vieweds(array $params = [], ?int $page = null, ?int $limit = null): array
+    {
+        if ($page) {
+            $params['page'] = $page;
+            if ($limit) {
+                $params['per_page'] = $limit;
+            }
+        } elseif ($limit) {
+            $params['limit'] = $limit;
+        }
+
+        $request = new Request(Request::SEARCH, 'stats');
+        $request
+            ->setContent($params)
+            ->setOption('initialize', false)
+            ->setOption('finalize', false);
+        $result = $this->statAdapter->search($request)->getContent();
+        foreach ($result as &$stat) {
+            $stat = new StatRepresentation($stat, $this->statAdapter);
+        }
+        return $result;
+    }
+
+    /**
+     * Get the most viewed pages.
+     *
+     * Zero viewed pages are never returned.
+     *
+     * @uses self::vieweds().
+     *
+     *@param bool|null $hasResource Null for all pages, true or false to set
+     * with or without resource.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return \Statistics\Api\Representation\StatRepresentation[]
+     */
+    public function mostViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    {
+        $column = $this->statusColumns[$userStatus] ?? 'hits';
+        $criteria = [
+            'type' => Stat::TYPE_PAGE,
+            'has_resource' => $hasResource,
+            'not_zero' => $column,
+            'sort_field' => [
+                $column => 'desc',
+                // This order is needed in order to manage ex-aequos.
+                'modified' => 'asc',
+            ],
+        ];
+        return $this->vieweds($criteria, $page, $limit);
+    }
+
+    /**
+     * Get the most viewed specified resources.
+     *
+     * Zero viewed resources are never returned.
+     *
+     * @uses self::vieweds().
+     *
+     * @param string|array $entityName If array, may contain multiple
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return \Statistics\Api\Representation\StatRepresentation[]
+     */
+    public function mostViewedResources($entityName = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    {
+        $column = $this->statusColumns[$userStatus] ?? 'hits';
+        $criteria = [
+            // Needed if $entityName is empty.
+            'type' => Stat::TYPE_RESOURCE,
+            'entity_name' => $entityName === 'resource' ? null : $entityName,
+            'not_zero' => $column,
+            'sort_field' => [
+                $column => 'desc',
+                'modified' => 'asc',
+            ],
+        ];
+        return $this->vieweds($criteria, $page, $limit);
+    }
+
+    /**
+     * Get the most downloaded files.
+     *
+     * Zero viewed downloads are never returned.
+     *
+     * @uses self::vieweds().
+     *
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return \Statistics\Api\Representation\StatRepresentation[]
+     */
+    public function mostViewedDownloads(?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    {
+        $column = $this->statusColumns[$userStatus] ?? 'hits';
+        $criteria = [
+            'type' => Stat::TYPE_DOWNLOAD,
+            'not_zero' => $column,
+            'sort_field' => [
+                $column => 'desc',
+                'modified' => 'asc',
+            ],
+        ];
+        return $this->vieweds($criteria, $page, $limit);
+    }
+
+    /**
+     * Get the last viewed pages.
+     *
+     * Zero viewed pages are never returned.
+     *
+     * @uses self::vieweds().
+     *
+     *@param bool|null $hasResource Null for all pages, true or false to set
+     * with or without resource.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return \Statistics\Api\Representation\StatRepresentation[]
+     */
+    public function lastViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    {
+        $column = $this->statusColumns[$userStatus] ?? 'hits';
+        $criteria = [
+            'type' => Stat::TYPE_PAGE,
+            'has_resource' => $hasResource,
+            'not_zero' => $column,
+            'sort_by' => 'modified',
+            'sort_order' => 'desc',
+        ];
+        return $this->vieweds($criteria, $page, $limit);
+    }
+
+    /**
+     * Get the last viewed specified resources.
+     *
+     * Zero viewed resources are never returned.
+     *
+     * @uses self::vieweds().
+     *
+     * @param string|array $entityName If array, may contain multiple
+     * resource types.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return \Statistics\Api\Representation\StatRepresentation[]
+     */
+    public function lastViewedResources($entityNames = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    {
+        $column = $this->statusColumns[$userStatus] ?? 'hits';
+        $criteria = [
+            'type' => Stat::TYPE_RESOURCE,
+            'entity_name' => empty($entityNames) || $entityNames === 'resource' ? null : $entityNames,
+            'not_zero' => $column,
+            'sort_by' => 'modified',
+            'sort_order' => 'desc',
+        ];
+        return $this->vieweds($criteria, $page, $limit);
+    }
+
+    /**
+     * Get the last viewed downloads.
+     *
+     * Zero viewed downloads are never returned.
+     *
+     * @uses self::vieweds().
+     *
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return \Statistics\Api\Representation\StatRepresentation[]
+     */
+    public function lastViewedDownloads(?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    {
+        $column = $this->statusColumns[$userStatus] ?? 'hits';
+        $criteria = [
+            'type' => Stat::TYPE_DOWNLOAD,
+            'not_zero' => $column,
+            'sort_by' => 'modified',
+            'sort_order' => 'desc',
+        ];
+        return $this->vieweds($criteria, $page, $limit);
     }
 
     /**
@@ -202,10 +595,9 @@ class Statistic extends AbstractHelper
      */
     public function viewedPages(?bool $hasResource = null, ?string $sort = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null, bool $asHtml = true)
     {
-        $userStatus = $this->normalizeUserStatus($userStatus);
         $stats = $sort === 'last'
-            ? $this->statAdapter->lastViewedPages($hasResource, $userStatus, $page, $limit)
-            : $this->statAdapter->mostViewedPages($hasResource, $userStatus, $page, $limit);
+            ? $this->lastViewedPages($hasResource, $userStatus, $page, $limit)
+            : $this->mostViewedPages($hasResource, $userStatus, $page, $limit);
 
         return $asHtml
             ? $this->viewedHtml($stats, Stat::TYPE_PAGE, $sort, $userStatus)
@@ -237,10 +629,9 @@ class Statistic extends AbstractHelper
             return $this->viewedDownloads($sort, $userStatus, $page, $limit, $asHtml);
         }
 
-        $userStatus = $this->normalizeUserStatus($userStatus);
         $stats = $sort === 'last'
-            ? $this->statAdapter->lastViewedResources($resourceType, $userStatus, $page, $limit)
-            : $this->statAdapter->mostViewedResources($resourceType, $userStatus, $page, $limit);
+            ? $this->lastViewedResources($resourceType, $userStatus, $page, $limit)
+            : $this->mostViewedResources($resourceType, $userStatus, $page, $limit);
 
         return $asHtml
             ? $this->viewedHtml($stats, Stat::TYPE_RESOURCE, $sort, $userStatus)
@@ -259,93 +650,13 @@ class Statistic extends AbstractHelper
      */
     public function viewedDownloads(?string $sort = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null, bool $asHtml = true)
     {
-        $userStatus = $this->normalizeUserStatus($userStatus);
         $stats = $sort === 'last'
-            ? $this->statAdapter->lastViewedDownloads($userStatus, $page, $limit)
-            : $this->statAdapter->mostViewedDownloads($userStatus, $page, $limit);
+            ? $this->lastViewedDownloads($userStatus, $page, $limit)
+            : $this->mostViewedDownloads($userStatus, $page, $limit);
 
         return $asHtml
             ? $this->viewedHtml($stats, Stat::TYPE_DOWNLOAD, $sort, $userStatus)
             : $stats;
-    }
-
-    /**
-     * Helper to get string from list of stats.
-     *
-     * @param array $stats Array of stats.
-     * @param string $type "page", "resource" or "download".
-     * @param string $sort Sort by "most" (default) or "last" vieweds.
-     * @param string $userStatus "anonymous" or "identified", else not filtered.
-     * @return string html
-     */
-    protected function viewedHtml($stats, $type, $sort, $userStatus): string
-    {
-        if (empty($stats)) {
-            return '<div class="stats">' . $this->view->translate('None.') . '</div>';
-        }
-
-        // TODO Use partial loop.
-        $partial = $this->view->plugin('partial');
-        $html = '';
-        foreach ($stats as $key => $stat) {
-            $params = [
-                'type' => $type,
-                'stat' => $stat,
-                'sort' => $sort,
-                'userStatus' => $userStatus,
-                'position' => $key + 1,
-            ];
-            $html .= $partial('common/statistics-single', $params);
-        }
-        return $html;
-    }
-
-    /**
-     * Get the most viewed pages.
-     *
-     * Zero viewed pages are never returned.
-     *
-     *@param bool|null $hasResource Null for all pages, true or false to set
-     * with or without resource.
-     * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $page Page to retrieve.
-     * @param int $limit Number of objects to return per "page".
-     * @return \Statistics\Api\Representation\StatRepresentation[]
-     */
-    public function mostViewedPages(?bool $hasResource = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
-    {
-        return $this->statAdapter->mostViewedPages($hasResource, $userStatus, $page, $limit);
-    }
-
-    /**
-     * Get the most viewed specified resources.
-     *
-     * Zero viewed resources are never returned.
-     *
-     * @param string|array $entityName If array, may contain multiple
-     * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $page Page to retrieve.
-     * @param int $limit Number of objects to return per "page".
-     * @return \Statistics\Api\Representation\StatRepresentation[]
-     */
-    public function mostViewedResources($entityName = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
-    {
-        return $this->statAdapter->mostViewedResources($entityName, $userStatus, $page, $limit);
-    }
-
-    /**
-     * Get the most downloaded files.
-     *
-     * Zero viewed downloads are never returned.
-     *
-     * @param string $userStatus Can be hits (default), anonymous or identified.
-     * @param int $page Page to retrieve.
-     * @param int $limit Number of objects to return per "page".
-     * @return \Statistics\Api\Representation\StatRepresentation[]
-     */
-    public function mostViewedDownloads(?string $userStatus = null, ?int $page = null, ?int $limit = null): array
-    {
-        return $this->statAdapter->mostViewedDownloads($userStatus, $page, $limit);
     }
 
     /**
@@ -356,14 +667,55 @@ class Statistic extends AbstractHelper
      */
     public function countFrequents(array $query = []): int
     {
-        return $this->hitAdapter->countFrequents($query);
+        $field = $this->checkFieldForFrequency($query);
+        if (!$field) {
+            return 0;
+        }
+
+        $defaultQuery = [
+            'page' => null,
+            'per_page' => null,
+            'limit' => null,
+            'offset' => null,
+            'sort_by' => null,
+            'sort_order' => null,
+        ];
+        $query += $defaultQuery;
+        $query['sort_order'] = strtoupper((string) $query['sort_order']) === 'DESC' ? 'DESC' : 'ASC';
+
+        // Here, it's not possible to check identified user.
+        if (!$this->view->identity()) {
+            $query['is_public'] = 1;
+        }
+
+        // Remove empty values.
+        $query['not_empty'] = $field;
+
+        $request = new Request(Request::SEARCH, 'hits');
+        $request
+            ->setContent($query)
+            ->setOption('initialize', false)
+            ->setOption('finalize', false);
+
+        // Build the search query. No event.
+        $entityManager = $this->hitAdapter->getEntityManager();
+        $qb = $entityManager
+            ->createQueryBuilder()
+            ->select("COUNT(DISTINCT(omeka_root.$field))")
+            ->from(\Statistics\Entity\Hit::class, 'omeka_root');
+        $this->hitAdapter->buildBaseQuery($qb, $query);
+        $this->hitAdapter->buildQuery($qb, $query);
+        // No group here.
+        // $qb->groupBy('omeka_root.id');
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
      * Get the most frequent data in a field. Empty values are never returned.
      *
-     * The main difference with search() is that values are not resources, but
-     * array of synthetic values.
+     * The main difference with hit search() is that values are not resources,
+     * but array of synthetic values.
      *
      * @param array $params A set of parameters by which to filter the objects
      *   that get returned from the database. It should contains a 'field' for
@@ -374,7 +726,57 @@ class Statistic extends AbstractHelper
      */
     public function frequents(array $query = [], ?int $page = null, ?int $limit = null): array
     {
-        return $this->hitAdapter->frequents($query, $page, $limit);
+        $field = $this->checkFieldForFrequency($query);
+        if (!$field) {
+            return [];
+        }
+
+        $fieldKey = $this->normalizeFieldForQueryKey($field);
+
+        $defaultQuery = [
+            'page' => null,
+            'per_page' => null,
+            'limit' => null,
+            'offset' => null,
+            'sort_by' => null,
+            'sort_order' => null,
+        ];
+        $query += $defaultQuery;
+        $query['sort_order'] = strtoupper((string) $query['sort_order']) === 'DESC' ? 'DESC' : 'ASC';
+
+        // Here, it's not possible to check identified user.
+        if (!$this->view->identity()) {
+            $query['is_public'] = 1;
+        }
+
+        // Remove empty values.
+        $query['not_empty'] = $field;
+
+        $request = new Request(Request::SEARCH, 'hits');
+        $request
+            ->setContent($query)
+            ->setOption('initialize', false)
+            ->setOption('finalize', false);
+
+        // Build the search query. No event.
+        $entityManager = $this->hitAdapter->getEntityManager();
+        $qb = $entityManager
+            ->createQueryBuilder()
+            ->select(
+                "omeka_root.$field AS $fieldKey",
+                "COUNT(omeka_root.$field) AS hits"
+            )
+            ->from(\Statistics\Entity\Hit::class, 'omeka_root');
+        $this->hitAdapter->buildBaseQuery($qb, $query);
+        $this->hitAdapter->buildQuery($qb, $query);
+        // Don't group by id, but by field.
+        $qb->groupBy("omeka_root.$field");
+        $this->hitAdapter->limitQuery($qb, $query);
+        $this->hitAdapter->sortQuery($qb, $query);
+        $qb->addOrderBy('omeka_root.id', $query['sort_order']);
+
+        // Return an array with two columns.
+        return $qb->getQuery()->getScalarResult();
     }
 
     /**
@@ -384,11 +786,184 @@ class Statistic extends AbstractHelper
      * @param string $userStatus Can be hits (default), anonymous or identified.
      * @param int $page Page to retrieve.
      * @param int $limit Number of objects to return per "page".
-     * @return array Data and total of the according total hits.
+     * @return array Data and total of the according total hits
      */
     public function mostFrequents(string $field, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
     {
-        return $this->hitAdapter->mostFrequents($field, $userStatus, $page, $limit);
+        $query = [];
+        $query['field'] = $field;
+        $query['user_status'] = $userStatus;
+        $query['sort_field'] = [
+            'hits' => 'DESC',
+            // This order is needed in order to manage ex-aequos.
+            'created' => 'ASC',
+        ];
+        return $this->frequents($query, $page, $limit);
+    }
+
+    /**
+     * Get the most viewed specified rows with url, resource and total.
+     *
+     * This method uses the table Hits directly, so query is different..
+     * Zero viewed rows are never returned.
+     *
+     * Main difference with search() is that values are not resources, but array
+     * of synthetic values.
+     *
+     * @param array $params A set of parameters by which to filter the objects
+     *   that get returned from the database.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return array of Hits + column total.
+     */
+    public function viewedHits(array $query = [], ?int $page = null, ?int $limit = null): array
+    {
+        $defaultQuery = [
+            'page' => null,
+            'per_page' => null,
+            'limit' => null,
+            'offset' => null,
+            'sort_by' => null,
+            'sort_order' => null,
+        ];
+        $query += $defaultQuery;
+        $query['sort_order'] = strtoupper((string) $query['sort_order']) === 'DESC' ? 'DESC' : 'ASC';
+
+        // Here, it's not possible to check identified user.
+        if (!$this->view->identity()) {
+            $query['user_status'] = 'anonymous';
+        }
+
+        $request = new Request(Request::SEARCH, 'hits');
+        $request
+            ->setContent($query)
+            ->setOption('initialize', false)
+            ->setOption('finalize', false);
+
+        // Build the search query. No event.
+        $entityManager = $this->hitAdapter->getEntityManager();
+        $qb = $entityManager
+            ->createQueryBuilder()
+            ->select(
+                'omeka_root.url AS url',
+                'omeka_root.entity_name AS entity_name',
+                'omeka_root.entity_id AS entity_id',
+                'COUNT(url) AS hits'
+                // "@position:=@position+1 AS position"
+            )
+            ->from(\Statistics\Entity\Hit::class, 'omeka_root');
+        $this->hitAdapter->buildBaseQuery($qb, $query);
+        $this->hitAdapter->buildQuery($qb, $query);
+        // Don't group by id.
+        $qb->groupBy('omeka_root.url');
+        $this->hitAdapter->limitQuery($qb, $query);
+        $this->hitAdapter->sortQuery($qb, $query);
+        $qb->addOrderBy('omeka_root.id', $query['sort_order']);
+
+        // Return an array with four columns.
+        return $qb->getQuery()->getScalarResult();
+    }
+
+    /**
+     * Get the most viewed specified pages with url, resource and total.
+     *
+     * This method uses the table Hits directly, so query is different..
+     * Zero viewed rows are never returned.
+     *
+     *@param bool|null $hasResource Null for all pages, true or false to set
+     *   with or without resource.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return array of Hits + column total.
+     */
+    public function mostViewedHitsPages(?bool $hasResource = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    {
+        $query = [];
+        if (!is_null($hasResource)) {
+            $query['has_resource'] = (bool) $hasResource;
+        }
+        $query['user_status'] = $userStatus;
+        $query['sort_field'] = [
+            'hits' => 'DESC',
+            // This order is needed in order to manage ex-aequos.
+            'created' => 'ASC',
+        ];
+        return $this->viewedHits($query, $page, $limit);
+    }
+
+    /**
+     * Get the most viewed specified resources with url, resource and total.
+     *
+     * This method uses the table Hits directly, so query is different..
+     * Zero viewed resources are never returned.
+     *
+     * @param string|array|\Omeka\Api\Representation\AbstractResourceEntityRepresentation $resourceType If array, may contain multiple
+     *   resource types.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return array of Hits + column total.
+     */
+    public function mostViewedHitsResources($entityName = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    {
+        $query = [];
+        $query['entity_name'] = $entityName;
+        $query['user_status'] = $userStatus;
+        $query['sort_field'] = [
+            'hits' => 'DESC',
+            // This order is needed in order to manage ex-aequos.
+            'created' => 'ASC',
+        ];
+        return $this->viewedHits($query, $page, $limit);
+    }
+
+    /**
+     * Get the last viewed specified pages with url, resource and total.
+     *
+     * This method uses the table Hits directly, so query is different..
+     * Zero viewed rows are never returned.
+     *
+     *@param bool|null $hasResource Null for all pages, true or false to set
+     *   with or without resource.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return array of Hits + column total.
+     */
+    public function lastViewedHitsPages(?bool $hasResource = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    {
+        $query = [];
+        if (!is_null($hasResource)) {
+            $query['has_entity'] = (bool) $hasResource;
+        }
+        $query['user_status'] = $userStatus;
+        $query['sort_by'] = 'created';
+        $query['sort_order'] = 'DESC';
+        return $this->viewedHits($query, $page, $limit);
+    }
+
+    /**
+     * Get the last viewed specified resources with url, resource and total.
+     *
+     * This method uses the table Hits directly, so query is different..
+     * Zero viewed resources are never returned.
+     *
+     * @param string|array|\Omeka\Api\Representation\AbstractResourceEntityRepresentation $entityName If array, may contain multiple
+     *   resource types.
+     * @param string $userStatus Can be hits (default), anonymous or identified.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return array of Hits + column total.
+     */
+    public function lastViewedHitsResources($entityName = null, ?string $userStatus = null, ?int $page = null, ?int $limit = null): array
+    {
+        $query = [];
+        $query['entity_name'] = $entityName;
+        $query['user_status'] = $userStatus;
+        $query['sort_by'] = 'created';
+        $query['sort_order'] = 'DESC';
+        return $this->viewedHits($query, $page, $limit);
     }
 
     /**
@@ -511,29 +1086,25 @@ class Statistic extends AbstractHelper
     }
 
     /**
-     * Clean the url to get better results (remove the domain and base path).
+     * Determine whether or not the hit is from a bot/webcrawler
+     *
+     * @return bool True if hit is from a bot, otherwise false
      */
-    protected function checkAndCleanUrl(string $url): string
+    public function isBot(?string $userAgent): bool
     {
-        $plugins = $this->view->getHelperPluginManager();
-        $serverUrl = $plugins->get('serverUrl')->__invoke();
-        $basePath = $plugins->get('basePath')->__invoke();
-
-        $url = trim($url);
-
-        // Strip out the protocol, host, base URL, and rightmost slash before
-        // comparing the URL to the current one
-        $stripOut = [$serverUrl . $basePath, @$_SERVER['HTTP_HOST'], $basePath];
-        $cleanedUrl = rtrim(str_replace($stripOut, '', $url), '/');
-
-        if (substr($cleanedUrl, 0, 4) === 'http' || substr($cleanedUrl, 0, 1) !== '/') {
-            return '';
-        }
-        return $cleanedUrl;
+        // For dev purpose.
+        // print "<!-- UA : " . $this->resource->getUserAgent() . " -->";
+        $crawlers = 'bot|crawler|slurp|spider|check_http';
+        return (bool) preg_match("~$crawlers~", strtolower((string) $userAgent));
     }
 
     /**
-     * Check if url is a page one or a download one.
+     * Determine whether or not the hit is a direct download.
+     *
+     * Of course, only files stored locally can be hit.
+     * @todo Manage a specific path.
+     *
+     * @return bool True if hit has a resource, even deleted.
      */
     public function isDownload(?string $url): bool
     {
@@ -552,34 +1123,41 @@ class Statistic extends AbstractHelper
      *
      * @return array Associative array with resource type and id.
      */
-    public function checkAndPrepareResource($resource): array
+    public function checkAndPrepareResource($resourceOrEntityName, ?int $entityId = null): array
     {
-        if (is_object($resource)) {
+        if (is_object($resourceOrEntityName)) {
             /** @var \Omeka\Api\Representation\AbstractRepresentation $resource */
-            $type = $resource->getControllerName();
-            $id = $resource->id();
-        } elseif (is_array($resource)) {
-            if (count($resource) === 1) {
-                $id = reset($resource);
-                $type = key($resource);
-            } elseif (count($resource) === 2) {
-                if (is_numeric(key($resource))) {
-                    $type = array_shift($resource);
-                    $id = array_shift($resource);
+            $type = $resourceOrEntityName->getControllerName();
+            $id = $resourceOrEntityName->id();
+        } elseif (is_array($resourceOrEntityName)) {
+            if (count($resourceOrEntityName) === 1) {
+                $id = reset($resourceOrEntityName);
+                $type = key($resourceOrEntityName);
+            } elseif (count($resourceOrEntityName) === 2) {
+                if (is_numeric(key($resourceOrEntityName))) {
+                    $type = array_shift($resourceOrEntityName);
+                    $id = array_shift($resourceOrEntityName);
                 } else {
-                    $type = $resource['type'] ?? $resource['resource_type'] ?? $resource['name'] ?? $resource['entity_name'];
-                    $id = $resource['id'] ?? $resource['resource_id'] ?? $resource['entity_id'];
+                    $type = $resourceOrEntityName['type']
+                        ?? $resourceOrEntityName['resource_type']
+                        ?? $resourceOrEntityName['name']
+                        ?? $resourceOrEntityName['entity_name'];
+                    $id = $resourceOrEntityName['id']
+                        ?? $resourceOrEntityName['resource_id']
+                        ?? $resourceOrEntityName['entity_id'];
                 }
             } else {
                 return ['type' => '', 'id' => 0];
             }
+        } elseif ($resourceOrEntityName && $entityId) {
+            return ['type' => (string) $resourceOrEntityName, 'id' => (int) $entityId];
         } else {
             return ['type' => '', 'id' => 0];
         }
         $type = $this->normalizeResourceType($type);
         return empty($type) || empty($id)
             ? ['type' => '', 'id' => 0]
-            : ['type' => $type, 'id' => $id];
+            : ['type' => (string) $type, 'id' => (int) $id];
     }
 
     /**
@@ -648,6 +1226,49 @@ class Statistic extends AbstractHelper
     }
 
     /**
+     * Normalize a value argument to check downloads.
+     *
+     * @param \Omeka\Api\Representation\AbstractResourceRepresentation|string|int $value
+     */
+    protected function normalizeValueForDownload($value): ?array
+    {
+        $criteria = ['type' => Stat::TYPE_DOWNLOAD];
+        if (is_numeric($value)) {
+            $criteria['entity_name'] = 'media';
+            $criteria['entity_id'] = (int) $value;
+        } elseif (is_string($value)) {
+            $criteria['entity_name'] = 'media';
+            $criteria['url'] = $value;
+        } elseif (is_object($value)) {
+            if ($value instanceof \Omeka\Api\Representation\MediaRepresentation) {
+                $criteria['entity_name'] = 'media';
+                $criteria['entity_id'] = $value->id();
+            } elseif ($value instanceof \Omeka\Api\Representation\ItemRepresentation) {
+                $criteria['entity_name'] = 'items';
+                $criteria['entity_id'] = $value->id();
+            } elseif ($value instanceof \Omeka\Api\Representation\ItemSetRepresentation) {
+                $criteria['entity_name'] = 'item_sets';
+                $criteria['entity_id'] = $value->id();
+            } elseif ($value instanceof \Omeka\Entity\Media) {
+                $criteria['entity_name'] = 'media';
+                $criteria['entity_id'] = $value->getId();
+            } elseif ($value instanceof \Omeka\Entity\Item) {
+                $criteria['entity_name'] = 'items';
+                $criteria['entity_id'] = $value->getId();
+            } elseif ($value instanceof \Omeka\Entity\ItemSet) {
+                $criteria['entity_name'] = 'item_sets';
+                $criteria['entity_id'] = $value->getId();
+            } else {
+                // Download are only for media files.
+                return null;
+            }
+        } else {
+            return null;
+        }
+        return $criteria;
+    }
+
+    /**
      * Get the current site from the view or the root view (main layout).
      */
     protected function currentSite(): ?\Omeka\Api\Representation\SiteRepresentation
@@ -662,7 +1283,7 @@ class Statistic extends AbstractHelper
     /**
      * Get the current url.
      */
-    public function currentUrl(): string
+    protected function currentUrl(): string
     {
         static $currentUrl;
 
@@ -679,5 +1300,102 @@ class Statistic extends AbstractHelper
         }
 
         return $currentUrl;
+    }
+
+    /**
+     * Clean the url to get better results (remove the domain and base path).
+     */
+    protected function checkAndCleanUrl(string $url): string
+    {
+        $plugins = $this->view->getHelperPluginManager();
+        $serverUrl = $plugins->get('serverUrl')->__invoke();
+        $basePath = $plugins->get('basePath')->__invoke();
+
+        $url = trim($url);
+
+        // Strip out the protocol, host, base URL, and rightmost slash before
+        // comparing the URL to the current one
+        $stripOut = [$serverUrl . $basePath, @$_SERVER['HTTP_HOST'], $basePath];
+        $cleanedUrl = rtrim(str_replace($stripOut, '', $url), '/');
+
+        if (substr($cleanedUrl, 0, 4) === 'http' || substr($cleanedUrl, 0, 1) !== '/') {
+            return '';
+        }
+        return $cleanedUrl;
+    }
+
+    /**
+     * Check if there is a key 'field' with a column name for frequency queries.
+     */
+    protected function checkFieldForFrequency($params): ?string
+    {
+        $fields = [
+            'id' => 'id',
+            'url' => 'url',
+            'entity_name' => 'entityName',
+            'entity_id' => 'entityId',
+            'user_id' => 'userId',
+            'ip' => 'ip',
+            'query' => 'query',
+            'referrer' => 'referrer',
+            'user_agent' => 'userAgent',
+            'accept_language' => 'acceptLanguage',
+            'created' => 'created',
+            // For simplicity, but not recommended.
+            'entityName' => 'entityName',
+            'entityId' => 'entityId',
+            'userId' => 'userId',
+            'userAgent' => 'userAgent',
+            'acceptLanguage' => 'acceptLanguage',
+        ];
+        return $fields[$params['field'] ?? null] ?? null;
+    }
+
+    /**
+     * Check if there is a key 'field' with a column name for frequency queries.
+     */
+    protected function normalizeFieldForQueryKey(string $field): ?string
+    {
+        $fields = [
+            'entityName' => 'entity_name',
+            'entityId' => 'entity_id',
+            'userId' => 'user_id',
+            'userAgent' => 'user_agent',
+            'acceptLanguage' => 'accept_language',
+        ];
+        return $fields[$field] ?? $field;
+    }
+
+    /**
+     * Helper to get string from list of stats.
+     *
+     * @param array $stats Array of stats.
+     * @param string $type "page", "resource" or "download".
+     * @param string $sort Sort by "most" (default) or "last" vieweds.
+     * @param string $userStatus "anonymous" or "identified", else not filtered.
+     * @return string html
+     */
+    protected function viewedHtml($stats, $type, $sort, $userStatus): string
+    {
+        if (empty($stats)) {
+            return '<div class="stats">'
+                . $this->view->translate('None.') // @translate
+                . '</div>';
+        }
+
+        // TODO Use partial loop.
+        $partial = $this->view->plugin('partial');
+        $html = '';
+        foreach ($stats as $key => $stat) {
+            $params = [
+                'type' => $type,
+                'stat' => $stat,
+                'sort' => $sort,
+                'userStatus' => $userStatus,
+                'position' => $key + 1,
+            ];
+            $html .= $partial('common/statistics-single', $params);
+        }
+        return $html;
     }
 }

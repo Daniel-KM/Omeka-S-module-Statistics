@@ -47,7 +47,7 @@ class Stat extends AbstractShortcode
         if ($resourceId) {
             $result = $type === 'download'
                 ? $statistic->totalDownload($resourceId)
-                : $statistic->totalResource(['type' => (string) $resourceName, 'id' => (int) $resourceId]);
+                : $statistic->totalResource((string) $resourceName, (int) $resourceId);
         }
         // Search by resource type.
         elseif ($resourceName) {
@@ -89,7 +89,7 @@ class Stat extends AbstractShortcode
         if ($resourceId) {
             $result = $type === 'download'
                 ? $statistic->positionDownload($resourceId)
-                : $statistic->positionResource(['type' => (string) $resourceName, 'id' => (int) $resourceId]);
+                : $statistic->positionResource((string) $resourceName, (int) $resourceId);
         }
         // Search by url.
         else {
