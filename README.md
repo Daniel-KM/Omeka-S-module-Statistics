@@ -187,7 +187,8 @@ TODO
 - [ ] Merge the stats page/download and resource.
 - [ ] Improve rights to read/create or filter visitors data on api.
 - [x] Move all statistics methods from Stat and Hit models to Statistic Helper?
-- [ ] Improve stats by item sets.
+- [ ] Improve stats by item sets and move to helper Statistic.
+- [ ] Enlarge item sets to any resource (item for media, periods, item set tree).
 - [ ] Add tests.
 
 
