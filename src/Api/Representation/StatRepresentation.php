@@ -2,6 +2,7 @@
 
 namespace Statistics\Api\Representation;
 
+use Omeka\Api\Adapter\AdapterInterface as ApiAdapterInterface;
 use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Representation\AbstractEntityRepresentation;
 use Omeka\Api\Representation\AbstractResourceRepresentation;
@@ -170,8 +171,11 @@ class StatRepresentation extends AbstractEntityRepresentation
         if (empty($name) || empty($id)) {
             return null;
         }
+        $adapter = $this->getApiAdapter($name);
+        if (!$adapter) {
+            return null;
+        }
         try {
-            $adapter = $this->getAdapter($name);
             $entity = $adapter->findEntity(['id' => $id]);
             return $adapter->getRepresentation($entity);
         } catch (NotFoundException $e) {
@@ -189,28 +193,31 @@ class StatRepresentation extends AbstractEntityRepresentation
         if (empty($name) || empty($id)) {
             return null;
         }
-        try {
-            $adapter = $this->getAdapter($name);
-            $entity = $adapter->findEntity(['id' => $id]);
-            $representation = $adapter->getRepresentation($entity);
-            if (is_null($text)) {
-                if (method_exists($representation, 'displayTitle')) {
-                    $text = $representation->displayTitle();
-                } elseif (method_exists($representation, 'title')) {
-                    $text = $representation->title();
-                } elseif (method_exists($representation, 'label')) {
-                    $text = $representation->label();
-                } else {
-                    $text = $this->translator->translate('[untitled]'); // @translate
+        $adapter = $this->getApiAdapter($name);
+        if ($adapter) {
+            try {
+                $entity = $adapter->findEntity(['id' => $id]);
+                $representation = $adapter->getRepresentation($entity);
+                if (is_null($text)) {
+                    if (method_exists($representation, 'displayTitle')) {
+                        $text = $representation->displayTitle();
+                    } elseif (method_exists($representation, 'title')) {
+                        $text = $representation->title();
+                    } elseif (method_exists($representation, 'label')) {
+                        $text = $representation->label();
+                    } else {
+                        $text = $this->translator->translate('[untitled]'); // @translate
+                    }
                 }
+                return $representation->link($text);
+            } catch (NotFoundException $e) {
+                // Below.
             }
-            return $representation->link($text);
-        } catch (NotFoundException $e) {
-            return sprintf('<span class="unavailable">%s</span>', is_null($text)
-                ? sprintf('%s #%s', $this->getHumanResourceType(), $id)
-                : $this->getViewHelper('escapeHtml')($text)
-            );
         }
+        return sprintf('<span class="unavailable">%s</span>', is_null($text)
+            ? sprintf('%s #%s', $this->getHumanResourceType(), $id)
+            : $this->getViewHelper('escapeHtml')($text)
+        );
     }
 
     /**
@@ -388,5 +395,14 @@ class StatRepresentation extends AbstractEntityRepresentation
          ];
         $entityName = $this->resource->getEntityName();
         return $types[$entityName] ?? $default ?? $entityName;
+    }
+
+    protected function getApiAdapter(?string $resourceName): ?ApiAdapterInterface
+    {
+        $adapterManager = $this->getServiceLocator()
+            ->get('Omeka\ApiAdapterManager');
+        return $adapterManager->has($resourceName)
+            ? $adapterManager->get($resourceName)
+            : null;
     }
 }
