@@ -84,6 +84,8 @@ be ordered and filtered by anonymous / identified users, resource types, etc.
 
 These pages can be made available to authorized users only or to all public.
 
+**Warning:** On the public side, this page will be replaced by a block.
+
 ### Displaying some statistics in the theme
 
 Statistics of a page or resource can be displayed on any page via three mechanisms.
@@ -109,23 +111,23 @@ Shortcode are available through the module [Shortcode].
 Some illustrative examples:
 
 ```
-[stats]
-[stats_total url="/login"]
-[stats_total resource="items"]
-[stats_total resource="items" id=1]
-[stats_position]
-[stats_position url="/item/search"]
-[stats_position resource="item_sets" id=1]
-[stats_vieweds]
-[stats_vieweds type="none"]
-[stats_vieweds order="last" type="resource"]
-[stats_vieweds order="most" type="download" number=1]
+[stat]
+[stat_total url="/login"]
+[stat_total resource="items"]
+[stat_total resource="items" id=1]
+[stat_position]
+[stat_position url="/item/search"]
+[stat_position resource="item_sets" id=1]
+[stat_vieweds]
+[stat_vieweds type="none"]
+[stat_vieweds sort="last" type="items"]
+[stat_vieweds sort="most" type="download" number=1]
 ```
 
 Arguments for Omeka Classic were adapted for Omeka S.
 
 All arguments are optional. Arguments are:
-* For `stats_total` and `stats_position`
+* For `stat_total` (alias of `stat`) and `stat_position`
   - `type`: If "download", group all downloaded files linked to the specified
   resource (all files of an item, or all files of all items of a).
   Else, the type is automatically detected ("resource" if a resource is set,
@@ -138,13 +140,13 @@ All arguments are optional. Arguments are:
   used.
   - `id` (Omeka classic: `record_id`): the identifier of the resource (not the
   slug if any). It implies one specific `resource` and only one. With
-  `stats_position`, `id` is required when searching by resource.
+  `stat_position`, `id` is required when searching by resource.
   - `url`: the url of a specific page. A full url is not needed; a partial Omeka
   url without web root is enough (in any case, web root is removed
   automatically). This argument is used too to know the total or the position of
   a file. This argument is not used if `resource` argument is set.
 
-* For `stats_vieweds`
+* For `stat_vieweds`
   - `type`: If "page" or "download", most or last viewed pages or downloaded
   files will be returned. If empty or "all", it returns only pages with a
   dedicated resource. If "none", it returns pages without dedicated resource. If
@@ -156,9 +158,9 @@ All arguments are optional. Arguments are:
 
 The event and the helper return the partial from the theme.
 
-`stats_total` and `stats_position` return a simple number, surrounded by a
+`stat_total` and `stat_position` return a simple number, surrounded by a
 `span` tag when shortcode is used.
-`stats_vieweds` returns an html string that can be themed.
+`stat_vieweds` returns an html string that can be themed.
 
 
 Notes
@@ -174,16 +176,17 @@ Notes
 TODO
 ----
 
-- [ ] Fix and finalize statistics for public side and shortcodes.
+- [x] Fix and finalize statistics for public side and shortcodes.
+- [ ] Replace public statistics pages by a block and remove public routes.
 - [ ] Statistics for api.
-- [ ] Add summary in public side.
+- [x] Add summary in public side.
 - [ ] Move some options to site settings.
 - [ ] Store the site id.
 - [ ] Add stats by site.
 - [ ] Check CleanUrl.
 - [ ] Merge the stats page/download and resource.
 - [ ] Improve rights to read/create or filter visitors data on api.
-- [ ] Move all statistics methods from Stat and Hit models to Statistic Helper?
+- [x] Move all statistics methods from Stat and Hit models to Statistic Helper?
 - [ ] Improve stats by item sets.
 - [ ] Add tests.
 
