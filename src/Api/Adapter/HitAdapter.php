@@ -4,7 +4,6 @@ namespace Statistics\Api\Adapter;
 
 use DateTime;
 use Doctrine\ORM\QueryBuilder;
-use Laminas\EventManager\Event;
 use Omeka\Api\Adapter\AbstractEntityAdapter;
 use Omeka\Api\Request;
 use Omeka\Entity\EntityInterface;

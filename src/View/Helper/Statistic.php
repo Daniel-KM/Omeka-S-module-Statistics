@@ -7,8 +7,8 @@ use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Request;
 use Statistics\Api\Adapter\HitAdapter;
 use Statistics\Api\Adapter\StatAdapter;
-use Statistics\Entity\Stat;
 use Statistics\Api\Representation\StatRepresentation;
+use Statistics\Entity\Stat;
 
 /**
  * Helper to get some public stats.
@@ -326,7 +326,6 @@ class Statistic extends AbstractHelper
 
         return (int) $connection->executeQuery($qb, $bind)->fetchOne();
     }
-
 
     /**
      * Position of a page (first one is the most viewed).

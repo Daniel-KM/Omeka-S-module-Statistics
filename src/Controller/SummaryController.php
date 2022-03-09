@@ -96,6 +96,8 @@ class SummaryController extends AbstractActionController
     /**
      * Helper to get all stats of a period.
      *
+     * @todo Move the view helper Statisitic.
+     *
      * @param int $startPeriod Number of days before today (default is all).
      * @param int $endPeriod Number of days before today (default is now).
      * @return array

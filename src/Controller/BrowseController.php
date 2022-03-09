@@ -218,9 +218,15 @@ class BrowseController extends AbstractActionController
     public function byItemSetAction()
     {
         // FIXME Stats by item set has not been fully checked.
+        // TODO Move the process into view helper Statistic.
+        // TODO Enlarge byItemSet to byResource (since anything is resource).
 
         $isAdminRequest = $this->status()->isAdminRequest();
         $settings = $this->settings();
+
+        $userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
 
         $query = $this->params()->fromQuery();
         $year = $query['year'] ?? null;

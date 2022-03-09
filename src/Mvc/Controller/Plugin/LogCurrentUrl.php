@@ -48,10 +48,13 @@ class LogCurrentUrl extends AbstractPlugin
         // If the request is a download, don't log it for admin.
         // It's not simple to determine from server if the request comes from a
         // visitor on the site or something else. So use referrer and identity.
+        // TODO But log for guests users.
         $referrer = $_SERVER['HTTP_REFERER'] ?? null;
         if ($referrer
             && strpos($referrer, '/admin/')
             && $status->getRouteMatch()->getMatchedRouteName() === 'download'
+            // Only check if there is a user: no useless check for users who
+            // can't go admin (guest).
             && $this->services->get('Omeka\AuthenticationService')->getIdentity()
         ) {
             $urlAdminTop = $this->services->get('ControllerPluginManager')->get('url')->fromRoute('admin', [], ['force_canonical' => true]) . '/';

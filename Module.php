@@ -226,6 +226,9 @@ HTML;
             return;
         }
 
+        /**
+         * @var \Statistics\View\Helper\Statistic $statistic
+         */
         $services = $this->getServiceLocator();
         $url = $plugins->get('url');
         $api = $services->get('Omeka\ApiManager');
@@ -273,7 +276,7 @@ HTML;
             $statsBrowseUrl = $url('admin/statistics/default', ['action' => 'by-page'], true);
             $statsBrowseText = $translate('Most viewed public pages'); // @translate
             $html .= '<h4><a href="' . $statsBrowseUrl . '">' . $statsBrowseText . '</a></h4>';
-            /** @var \Statistics\Api\Representation\StatRepresentation[] $results */
+            /** @var \Statistics\Api\Representation\StatRepresentation[] $stats */
             $stats = $statistic->mostViewedPages(null, $userStatus, 1, 5);
             if (empty($stats)) {
                 $html .= '<p>' . $translate('None') . '</p>';
