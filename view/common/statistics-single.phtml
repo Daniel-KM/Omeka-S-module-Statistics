@@ -15,29 +15,22 @@ $escapeAttr = $plugins->get('escapeHtmlAttr');
 ?>
 
 <div class="statistics-stat">
-    <p><?php
-    if ($type === 'download'):
+    <p>
+        <?php
         if (empty($stat)):
-            echo $translate('No download');
+            echo $type === 'download'
+                ? $translate('No download') // @translate
+                : $translate('No view'); // @translate
         else:
-            echo sprintf($translate('%s (%s downloads): %s [%s]'),
+            echo sprintf($type === 'download'
+                ? $translate('%s (%s downloads): %s [%s]') // @translate
+                : $translate('%s (%s views): %s [%s]'), // @translate
                 '<span class="statistics-position">' . $stat->position($userStatus) . '</span>',
                 '<span class="statistics-hits">' . $stat->totalHits($userStatus) . '</span>',
                 '<a href="' . $escapeAttr($stat->hitUrl()) . '"><span class="statistics-url">' . $escape($stat->hitUrl()) . '</span></a>',
                 '<span class="statistics-resource-type">' . $escape($stat->getHumanResourceType($translate('No specific resource'))) . '</span>'
             );
         endif;
-    else:
-        if (empty($stat)):
-            echo $translate('No view');
-        else:
-            echo sprintf($translate('%s (%s views): %s [%s]'),
-                '<span class="statistics-position">' . $stat->position($userStatus) . '</span>',
-                '<span class="statistics-hits">' . $stat->totalHits($userStatus) . '</span>',
-                '<a href="' . $escapeAttr($stat->hitUrl()) . '"><span class="statistics-url">' . $escape($stat->hitUrl()) . '</span></a>',
-                '<span class="statistics-resource-type">' . $escape($stat->getHumanResourceType($translate('No specific resource'))) . '</span>'
-            );
-        endif;
-    endif;
-    ?></p>
+        ?>
+    </p>
 </div>

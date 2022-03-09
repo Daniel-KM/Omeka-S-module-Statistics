@@ -23,4 +23,12 @@
     .statistics-hover:hover+div {
         margin-top: 20px;
     }
+    .statistics .statistics-dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr;
+      gap: 0px 12px;
+      grid-template-areas:
+        ". . .";
+    }
 }

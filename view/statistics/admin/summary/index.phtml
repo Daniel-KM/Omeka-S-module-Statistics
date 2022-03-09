@@ -16,11 +16,7 @@ $this->headLink()->prependStylesheet($assetUrl('css/statistics.css', 'Statistics
 
 $this->htmlElement('body')->appendAttribute('class', 'statistics index');
 
-$currentPage = $this->params()->fromQuery('page');
-$limit = $this->setting('pagination_per_page', 100);
-$currentUrl = $urlHelper(null, [], true);
 $basePath = $this->basePath();
-$resource = null;
 ?>
 
 <?= $this->pageTitle(sprintf($translate('Statistics (%s total)'), $results['all']['total']), 1, $translate('Statistics')) ?>
@@ -38,8 +34,9 @@ $resource = null;
     $results['today']['identified'])
 ?></h3>
 
-<section class="three columns alpha">
-    <div class="panel">
+<div class="statistics-dashboard">
+
+    <div>
         <h2><?= $translate('History') ?></h2>
         <ul>
         <?php foreach ($results['history'] as $label => $value): ?>
@@ -49,9 +46,8 @@ $resource = null;
         <?php endforeach; ?>
         </ul>
     </div>
-</section>
-<section class="four columns">
-    <div class="panel">
+
+    <div>
         <h2><?= $translate('Current') ?></h2>
         <ul>
         <?php foreach ($results['current'] as $label => $value): ?>
@@ -61,9 +57,8 @@ $resource = null;
         <?php endforeach; ?>
         </ul>
     </div>
-</section>
-<section class="three columns omega">
-    <div class="panel">
+
+    <div>
         <h2><?= $translate('Rolling Period') ?></h2>
         <ul>
         <?php foreach ($results['rolling'] as $label => $value): ?>
@@ -73,10 +68,11 @@ $resource = null;
         <?php endforeach; ?>
         </ul>
     </div>
-</section>
+
+</div>
+
 <?php if (isset($results['most_viewed_pages'])): ?>
-<section class="ten columns alpha omega">
-    <div class="panel">
+    <div>
         <h2><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-page']) ?>"><?= $translate('Most viewed public pages') ?></a></h2>
         <?php if (empty($results['most_viewed_pages'])): ?>
         <p><?= $translate('None') ?></p>
@@ -93,11 +89,10 @@ $resource = null;
         </ol>
         <?php endif; ?>
     </div>
-</section>
 <?php endif; ?>
+
 <?php if (isset($results['most_viewed_resources'])): ?>
-<section class="ten columns alpha omega">
-    <div class="panel">
+    <div>
         <h2><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-resource']) ?>"><?= $translate('Most viewed public records') ?></a></h2>
         <?php if (empty($results['most_viewed_resources'])): ?>
         <p><?= $translate('None') ?></p>
@@ -105,7 +100,7 @@ $resource = null;
         <ol>
         <?php foreach ($results['most_viewed_resources'] as $position => $stat): ?>
             <li><?= sprintf($translate('%s (%d views [%d / %d])'),
-                ($resource = $stat->entityResource()) ? $resource->linkPretty() : sprintf('%s #%s (unavailable)', $translate($stat->entityName()), $stat->entityName()),
+                $stat->linkEntity(),
                 $stat->totalHits(),
                 $stat->totalHits('anonymous'),
                 $stat->totalHits('identified'))
@@ -114,11 +109,10 @@ $resource = null;
         </ol>
         <?php endif; ?>
     </div>
-</section>
 <?php endif; ?>
+
 <?php if (isset($results['most_viewed_item_sets'])): ?>
-<section class="ten columns alpha omega">
-    <div class="panel">
+    <div>
         <h2><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-item-set']) ?>"><?= $translate('Most viewed public collections') ?></a></h2>
         <?php if (empty($results['most_viewed_item_sets'])): ?>
         <p><?= $translate('None') ?></p>
@@ -126,7 +120,7 @@ $resource = null;
         <ol>
         <?php foreach ($results['most_viewed_item_sets'] as $position => $stat): ?>
             <li><?= sprintf($translate('%s (%d views [%d / %d])'),
-                ($resource = $stat->entityResource()) ? $resource->linkPretty() : sprintf('%s #%s (unavailable)', $translate($stat->entityName()), $stat->entityName()),
+                $stat->linkEntity(),
                 $stat->totalHits(),
                 $stat->totalHits('anonymous'),
                 $stat->totalHits('identified'))
@@ -135,11 +129,10 @@ $resource = null;
         </ol>
         <?php endif; ?>
     </div>
-</section>
 <?php endif; ?>
+
 <?php if (isset($results['most_viewed_downloads'])): ?>
-<section class="ten columns alpha omega">
-    <div class="panel">
+    <div>
         <h2><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-download']) ?>"><?= $translate('Most downloaded files') ?></a></h2>
         <?php if (empty($results['most_viewed_downloads'])): ?>
         <p><?= $translate('None') ?></p>
@@ -156,8 +149,8 @@ $resource = null;
         </ol>
         <?php endif; ?>
     </div>
-</section>
 <?php endif; ?>
+
 <?php if (isset($results['most_frequent_fields'])):
     $labels = [
         'referrer' => $translate('Most frequent external referrers'),
@@ -166,14 +159,12 @@ $resource = null;
         'user_agent' => $translate('Most frequent browsers'),
     ];
     foreach ($results['most_frequent_fields'] as $field => $result): ?>
-<section class="ten columns alpha omega">
-    <div class="panel">
+    <div>
         <h2><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-field'], ['query' => ['field' => $field]]) ?>"><?= $labels[$field]; ?></a></h2>
         <?= $this->partial('common/statistics-most-frequents', [
             'results' => $result,
             'field' => $field,
         ]) ?>
     </div>
-</section>
     <?php endforeach;
 endif; ?>
