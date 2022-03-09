@@ -14,7 +14,6 @@ use Laminas\EventManager\SharedEventManagerInterface;
 use Laminas\Mvc\MvcEvent;
 use Laminas\View\Renderer\PhpRenderer;
 use Omeka\Api\Representation\AbstractResourceRepresentation;
-use Omeka\Api\Request;
 
 /**
  * Stats
@@ -34,7 +33,8 @@ class Module extends AbstractModule
         parent::onBootstrap($event);
 
         /** @var \Omeka\Permissions\Acl $acl */
-        $acl = $this->getServiceLocator()->get('Omeka\Acl');
+        $services = $this->getServiceLocator();
+        $acl = $services->get('Omeka\Acl');
 
         $acl
             // These rights may be too much large: it's viewable by api and
@@ -63,6 +63,24 @@ class Module extends AbstractModule
         ;
         // Only admins are allowed to browse stats.
         // The individual stats are always displayed in admin.
+
+        // The public rights are checked in controller Summary and Browse
+        // according to the config.
+        $settings = $services->get('Omeka\Settings');
+        if ($settings->get('statistics_public_allow_summary')) {
+            $acl
+                ->allow(
+                    null,
+                    ['Statistics\Controller\Summary']
+                );
+        }
+        if ($settings->get('statistics_public_allow_browse')) {
+            $acl
+                ->allow(
+                    null,
+                    ['Statistics\Controller\Browse']
+                );
+        }
     }
 
     public function attachListeners(SharedEventManagerInterface $sharedEventManager): void

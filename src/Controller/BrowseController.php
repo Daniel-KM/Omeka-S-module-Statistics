@@ -46,11 +46,14 @@ class BrowseController extends AbstractActionController
      */
     public function byPageAction()
     {
-        $isSiteRequest = $this->status()->isSiteRequest();
+        $isAdminRequest = $this->status()->isAdminRequest();
+        $settings = $this->settings();
+
+        $userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
+
         $defaultSorts = ['anonymous' => 'total_hits_anonymous', 'identified' => 'total_hits_identified'];
-        $userStatus = $isSiteRequest
-            ? $this->settings()->get('statistics_default_user_status_public')
-            : $this->settings()->get('statistics_default_user_status_admin');
         $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
@@ -69,7 +72,7 @@ class BrowseController extends AbstractActionController
             'type' => Stat::TYPE_PAGE,
         ]);
         return $view
-            ->setTemplate($isSiteRequest ? 'statistics/site/browse/by-stat' : 'statistics/admin/browse/by-stat');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-stat' : 'statistics/site/browse/by-stat');
     }
 
     /**
@@ -77,11 +80,14 @@ class BrowseController extends AbstractActionController
      */
     public function byResourceAction()
     {
-        $isSiteRequest = $this->status()->isSiteRequest();
+        $isAdminRequest = $this->status()->isAdminRequest();
+        $settings = $this->settings();
+
+        $userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
+
         $defaultSorts = ['anonymous' => 'total_hits_anonymous', 'identified' => 'total_hits_identified'];
-        $userStatus = $isSiteRequest
-            ? $this->settings()->get('statistics_default_user_status_public')
-            : $this->settings()->get('statistics_default_user_status_admin');
         $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
@@ -100,7 +106,7 @@ class BrowseController extends AbstractActionController
             'type' => Stat::TYPE_RESOURCE,
         ]);
         return $view
-            ->setTemplate($isSiteRequest ? 'statistics/site/browse/by-stat' : 'statistics/admin/browse/by-stat');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-stat' : 'statistics/site/browse/by-stat');
     }
 
     /**
@@ -108,11 +114,14 @@ class BrowseController extends AbstractActionController
      */
     public function byDownloadAction()
     {
-        $isSiteRequest = $this->status()->isSiteRequest();
+        $isAdminRequest = $this->status()->isAdminRequest();
+        $settings = $this->settings();
+
+        $userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
+
         $defaultSorts = ['anonymous' => 'total_hits_anonymous', 'identified' => 'total_hits_identified'];
-        $userStatus = $isSiteRequest
-            ? $this->settings()->get('statistics_default_user_status_public')
-            : $this->settings()->get('statistics_default_user_status_admin');
         $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
@@ -131,7 +140,7 @@ class BrowseController extends AbstractActionController
             'type' => Stat::TYPE_DOWNLOAD,
         ]);
         return $view
-            ->setTemplate($isSiteRequest ? 'statistics/site/browse/by-stat' : 'statistics/admin/browse/by-stat');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-stat' : 'statistics/site/browse/by-stat');
     }
 
     /**
@@ -139,11 +148,12 @@ class BrowseController extends AbstractActionController
      */
     public function byFieldAction()
     {
+        $isAdminRequest = $this->status()->isAdminRequest();
         $settings = $this->settings();
-        $isSiteRequest = $this->status()->isSiteRequest();
-        $userStatus = $isSiteRequest
-            ? $settings->get('statistics_default_user_status_public')
-            : $settings->get('statistics_default_user_status_admin');
+
+        $userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
 
         $query = $this->params()->fromQuery();
 
@@ -163,7 +173,9 @@ class BrowseController extends AbstractActionController
         }
 
         $currentPage = isset($query['page']) ? (int) $query['page'] : null;
-        $resourcesPerPage = $isSiteRequest ? (int) $this->siteSettings()->get('pagination_per_page', 25) : (int) $this->settings()->get('pagination_per_page', 25);
+        $resourcesPerPage = $isAdminRequest
+            ? (int) $settings->get('pagination_per_page', 25)
+            : (int) $this->siteSettings()->get('pagination_per_page', 25);
 
         // Don't use api, because this is a synthesis, not a list of resources.
         /** @var \Statistics\View\Helper\Statistic $statistic */
@@ -200,14 +212,16 @@ class BrowseController extends AbstractActionController
             'userStatus' => $userStatus,
         ]);
         return $view
-            ->setTemplate($isSiteRequest ? 'statistics/site/browse/by-field' : 'statistics/admin/browse/by-field');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-field' : 'statistics/site/browse/by-field');
     }
 
     public function byItemSetAction()
     {
-        // FIXME Stats by item set has not been checked a lot.
+        // FIXME Stats by item set has not been fully checked.
 
-        $isSiteRequest = $this->status()->isSiteRequest();
+        $isAdminRequest = $this->status()->isAdminRequest();
+        $settings = $this->settings();
+
         $query = $this->params()->fromQuery();
         $year = $query['year'] ?? null;
         $month = $query['month'] ?? null;
@@ -298,7 +312,7 @@ SQL;
             'monthFilter' => $month,
         ]);
         return $view
-            ->setTemplate($isSiteRequest ? 'statistics/site/browse/by-item-set' : 'statistics/admin/browse/by-item-set');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-item-set' : 'statistics/site/browse/by-item-set');
     }
 
     /**

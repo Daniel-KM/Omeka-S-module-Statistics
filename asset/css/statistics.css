@@ -31,4 +31,13 @@
       grid-template-areas:
         ". . .";
     }
+    .statistics .section-nav .navigation li {
+        display: inline-block;
+    }
+    .statistics .section-nav .navigation li.active {
+        font-weight: bold;
+    }
+    .statistics .section-nav .navigation li.active {
+        font-weight: bold;
+    }
 }

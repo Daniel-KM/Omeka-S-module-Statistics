@@ -19,11 +19,13 @@ $this->headLink()->prependStylesheet($assetUrl('css/statistics.css', 'Statistics
 
 $this->htmlElement('body')->appendAttribute('class', 'statistics browse');
 
+$isAdminRequest = $this->status()->isAdminRequest();
+
 $totalResults = $this->pagination()->getPaginator()->getTotalCount();
 $currentUrl = $urlHelper(null, [], true);
 ?>
 
-<?= $this->pageTitle(sprintf($translate('Statistics (%s total)'), $totalResults), 1, $translate('Statistics')) ?>
+<?= $this->pageTitle(sprintf($translate('Statistics (%s total)'), $totalResults), 1, $isAdminRequest ? $translate('Statistics') : null) ?>
 
 <?= $this->partial('common/statistics-nav') ?>
 
@@ -33,6 +35,7 @@ $currentUrl = $urlHelper(null, [], true);
 </p>
 
 <?php if ($totalResults): ?>
+
 <div class="browse-controls">
     <?= $pagination = $this->pagination() ?>
     <?= $this->partial('common/statistics-quick-filters') ?>
@@ -62,15 +65,21 @@ $currentUrl = $urlHelper(null, [], true);
 <?php endforeach; ?>
     </tbody>
 </table>
-    <?= $pagination ?>
+<?= $pagination ?>
+
 <?php else: ?>
-    <br class="clear" />
-    <div class="no-resources">
-    <?php if (!$totalHits): ?>
-        <p><?= $translate('There is no hit yet.') ?></p>
-    <?php else: ?>
-        <p><?= sprintf($translate('The query searched %s hits and returned no results.'), $totalHits) ?></p>
-        <p><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-' . $type], true) ?>"><?= $translate('See all statistics.') ?></a></p>
-    <?php endif; ?>
-    </div>
+
+<div class="browse-controls">
+    <?= $this->partial('common/statistics-quick-filters') ?>
+</div>
+<br class="clear" />
+<div class="no-resources">
+<?php if (!$totalHits): ?>
+    <p><?= $translate('There is no hit yet.') ?></p>
+<?php else: ?>
+    <p><?= sprintf($translate('The query searched %s hits and returned no results.'), $totalHits) ?></p>
+    <p><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-' . $type], true) ?>"><?= $translate('See all statistics.') ?></a></p>
+<?php endif; ?>
+</div>
+
 <?php endif; ?>

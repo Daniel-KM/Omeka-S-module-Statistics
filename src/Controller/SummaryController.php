@@ -23,9 +23,10 @@ class SummaryController extends AbstractActionController
     public function indexAction()
     {
         $isAdminRequest = $this->status()->isAdminRequest();
+        $settings = $this->settings();
         $this->userStatus = $isAdminRequest
-           ? $this->settings()->get('statistics_default_user_status_admin')
-            : $this->settings()->get('statistics_default_user_status_public');
+           ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
 
         $results = [];
         $time = time();

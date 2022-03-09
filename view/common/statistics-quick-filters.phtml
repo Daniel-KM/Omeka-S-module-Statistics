@@ -7,37 +7,41 @@
 $plugins = $this->getHelperPluginManager();
 $url = $plugins->get('url');
 $translate = $plugins->get('translate');
+
+$routeStatistics = $this->status()->isAdminRequest() ? 'admin/statistics/default' : 'site/statistics/default';
 ?>
 
 <ul class="quick-filter-wrapper state-filter">
-    <li><a href="#" tabindex="0"><?= $translate('Quick filter') ?></a>
+    <li><span tabindex="0"><?= $translate('Quick filter') ?></span>
     <ul class="dropdown">
+        <?php /*
         <li><span class="quick-filter-heading"><?= $translate('Quick filter') ?></span></li>
+        */ ?>
 <?php
 switch ($type):
     case 'page': ?>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-page'], true) ?>"><?= $translate('View all') ?></a></li>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-page'], ['query' => ['has_resource' => true]], true) ?>"><?= $translate('With resource') ?></a></li>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-page'], ['query' => ['has_resource' => false]], true) ?>"><?= $translate('Without resource') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-page'], true) ?>"><?= $translate('View all') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-page'], ['query' => ['has_resource' => true]], true) ?>"><?= $translate('With resource') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-page'], ['query' => ['has_resource' => false]], true) ?>"><?= $translate('Without resource') ?></a></li>
         <?php break;
 
     case 'resource': ?>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-resource'], true) ?>"><?= $translate('View all') ?></a></li>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-resource'], ['query' => ['resource_type' => 'items']], true) ?>"><?= $translate('By item') ?></a></li>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-resource'], ['query' => ['resource_type' => 'item_sets']], true) ?>"><?= $translate('By item set') ?></a></li>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-resource'], ['query' => ['resource_type' => 'media']], true) ?>"><?= $translate('By media') ?></a></li>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-resource'], ['query' => ['resource_type' => 'site_pages']], true) ?>"><?= $translate('By page') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-resource'], true) ?>"><?= $translate('View all') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-resource'], ['query' => ['resource_type' => 'items']], true) ?>"><?= $translate('By item') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-resource'], ['query' => ['resource_type' => 'item_sets']], true) ?>"><?= $translate('By item set') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-resource'], ['query' => ['resource_type' => 'media']], true) ?>"><?= $translate('By media') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-resource'], ['query' => ['resource_type' => 'site_pages']], true) ?>"><?= $translate('By page') ?></a></li>
         <?php break;
 
     case 'download': ?>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-download'], true) ?>"><?= $translate('View all') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-download'], true) ?>"><?= $translate('View all') ?></a></li>
         <?php break;
 
     case 'field': ?>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-field'], ['query' => ['field' => 'referrer']], true) ?>"><?= $translate('Referrers') ?></a></li>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-field'], ['query' => ['field' => 'query']], true)  ?>"><?= $translate('Queries') ?></a></li>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-field'], ['query' => ['field' => 'accept_language']], true)  ?>"><?= $translate('Languages') ?></a></li>
-        <li><a href="<?= $url('admin/statistics/default', ['action' => 'by-field'], ['query' => ['field' => 'user_agent']], true) ?>"><?= $translate('Browsers') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-field'], ['query' => ['field' => 'referrer']], true) ?>"><?= $translate('Referrers') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-field'], ['query' => ['field' => 'query']], true)  ?>"><?= $translate('Queries') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-field'], ['query' => ['field' => 'accept_language']], true)  ?>"><?= $translate('Languages') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-field'], ['query' => ['field' => 'user_agent']], true) ?>"><?= $translate('Browsers') ?></a></li>
         <?php break;
 endswitch; ?>
     </ul>

@@ -103,50 +103,20 @@ class SettingsFieldset extends Fieldset
                 'name' => 'statistics_public_allow_summary',
                 'type' => Element\Checkbox::class,
                 'options' => [
-                    'label' => 'Allow public to access stats summary', // @translate
+                    'label' => 'Allow public to access statistics summary', // @translate
                 ],
                 'attributes' => [
                     'id' => 'statistics_public_allow_summary',
                 ],
             ])
             ->add([
-                'name' => 'statistics_public_allow_browse_pages',
+                'name' => 'statistics_public_allow_browse',
                 'type' => Element\Checkbox::class,
                 'options' => [
-                    'label' => 'Allow public to access stats of pages', // @translate
+                    'label' => 'Allow public to access detailled statistics', // @translate
                 ],
                 'attributes' => [
-                    'id' => 'statistics_public_allow_browse_pages',
-                ],
-            ])
-            ->add([
-                'name' => 'statistics_public_allow_browse_resources',
-                'type' => Element\Checkbox::class,
-                'options' => [
-                    'label' => 'Allow public to access stats of resources', // @translate
-                ],
-                'attributes' => [
-                    'id' => 'statistics_public_allow_browse_resources',
-                ],
-            ])
-            ->add([
-                'name' => 'statistics_public_allow_browse_downloads',
-                'type' => Element\Checkbox::class,
-                'options' => [
-                    'label' => 'Allow public to access stats of downloads', // @translate
-                ],
-                'attributes' => [
-                    'id' => 'statistics_public_allow_browse_downloads',
-                ],
-            ])
-            ->add([
-                'name' => 'statistics_public_allow_browse_fields',
-                'type' => Element\Checkbox::class,
-                'options' => [
-                    'label' => 'Allow public to access stats of fields', // @translate
-                ],
-                'attributes' => [
-                    'id' => 'statistics_public_allow_browse_fields',
+                    'id' => 'statistics_public_allow_browse',
                 ],
             ])
         ;

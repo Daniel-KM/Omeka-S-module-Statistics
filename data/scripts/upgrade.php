@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace EasyAdmin;
+namespace Statistics;
 
 /**
  * @var Module $this
@@ -12,14 +12,18 @@ namespace EasyAdmin;
  * @var \Doctrine\ORM\EntityManager $entityManager
  * @var \Omeka\Api\Manager $api
  */
-// $services = $serviceLocator;
-// $settings = $services->get('Omeka\Settings');
+$services = $serviceLocator;
+$settings = $services->get('Omeka\Settings');
 // $config = require dirname(dirname(__DIR__)) . '/config/module.config.php';
 // $connection = $services->get('Omeka\Connection');
 // $entityManager = $services->get('Omeka\EntityManager');
 // $plugins = $services->get('ControllerPluginManager');
 // $api = $plugins->get('api');
 
-if (version_compare($oldVersion, '3.3.2', '<')) {
-    $this->installDir();
+if (version_compare($oldVersion, '3.3.4.2', '<')) {
+    $settings->set('statistics_public_allow_browse', $settings->get('statistics_public_allow_browse_pages', false));
+    $settings->delete('statistics_public_allow_browse_pages');
+    $settings->delete('statistics_public_allow_browse_resources');
+    $settings->delete('statistics_public_allow_browse_downloads');
+    $settings->delete('statistics_public_allow_browse_fields');
 }

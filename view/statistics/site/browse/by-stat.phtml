@@ -19,17 +19,19 @@ $this->headLink()->prependStylesheet($assetUrl('css/statistics.css', 'Statistics
 
 $this->htmlElement('body')->appendAttribute('class', 'statistics browse');
 
+$isAdminRequest = $this->status()->isAdminRequest();
+
 $totalResults = $this->pagination()->getPaginator()->getTotalCount();
 $currentUrl = $urlHelper(null, [], true);
 $basePath = $this->basePath();
-$resource = null;
 ?>
 
-<?= $this->pageTitle(sprintf($translate('Stats (%s total)'), $totalResults), 1, $translate('Statistics')) ?>
+<?= $this->pageTitle(sprintf($translate('Stats (%s total)'), $totalResults), 1, $isAdminRequest ? $translate('Statistics') : null) ?>
 
 <?= $this->partial('common/statistics-nav') ?>
 
 <?php if ($stats): ?>
+
 <div class="browse-controls">
     <?= $pagination = $this->pagination() ?>
     <?php //= $this->hyperlink($translate('Advanced search'), $urlHelper(null, ['action' => 'search'], ['query' => $this->params()->fromQuery()], true), ['class' => 'advanced-search']) ?>
@@ -99,14 +101,20 @@ $resource = null;
     </tbody>
     </table>
     <?= $pagination ?>
+
 <?php else: ?>
-    <?php $totalStats = $this->api()->search('stats')->getTotalResults(); ?>
-    <div class="no-resources">
-    <?php if (!$totalStats): ?>
-        <p><?= $translate('Omeka could not find any statistics.') ?></p>
-    <?php else: ?>
-        <p><?= sprintf($translate('The query searched %s rows and returned no results.'), $totalStats) ?></p>
-        <p><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-' . $type], true) ?>"><?= $translate('See all statistics.') ?></a></p>
-    <?php endif; ?>
-    </div>
+
+<div class="browse-controls">
+    <?= $this->partial('common/statistics-quick-filters') ?>
+</div>
+<?php $totalStats = $this->api()->search('stats')->getTotalResults(); ?>
+<div class="no-resources">
+<?php if (!$totalStats): ?>
+    <p><?= $translate('Omeka could not find any statistics.') ?></p>
+<?php else: ?>
+    <p><?= sprintf($translate('The query searched %s rows and returned no results.'), $totalStats) ?></p>
+    <p><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-' . $type], true) ?>"><?= $translate('See all statistics.') ?></a></p>
+<?php endif; ?>
+</div>
+
 <?php endif; ?>

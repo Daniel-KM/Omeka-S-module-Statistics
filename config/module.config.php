@@ -76,6 +76,37 @@ return [
     ],
     'router' => [
         'routes' => [
+            'site' => [
+                'child_routes' => [
+                    'statistics' => [
+                        'type' => \Laminas\Router\Http\Literal::class,
+                        'options' => [
+                            'route' => '/statistics',
+                            'defaults' => [
+                                '__NAMESPACE__' => 'Statistics\Controller',
+                                '__SITE__' => true,
+                                'controller' => 'Summary',
+                                'action' => 'index',
+                            ],
+                        ],
+                        'may_terminate' => true,
+                        'child_routes' => [
+                            'default' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/:action',
+                                    'constraints' => [
+                                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                    ],
+                                    'defaults' => [
+                                        'controller' => 'Browse',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
             'admin' => [
                 'child_routes' => [
                     'statistics' => [
@@ -103,7 +134,7 @@ return [
                                     ],
                                 ],
                             ],
-                            'd' => [
+                            'id' => [
                                 'type' => \Laminas\Router\Http\Segment::class,
                                 'options' => [
                                     'route' => '/:id[/:action]',
@@ -169,10 +200,7 @@ return [
             'statistics_per_page_public' => 10,
             // Without roles.
             'statistics_public_allow_summary' => false,
-            'statistics_public_allow_browse_pages' => false,
-            'statistics_public_allow_browse_resources' => false,
-            'statistics_public_allow_browse_downloads' => false,
-            'statistics_public_allow_browse_fields' => false,
+            'statistics_public_allow_browse' => false,
             // With roles, in particular if Guest is installed.
             /*
             'statistics_roles_summary' => [
