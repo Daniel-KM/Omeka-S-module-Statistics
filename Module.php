@@ -189,6 +189,7 @@ HTML;
 
     protected function resultResource(PhpRenderer $view, AbstractResourceRepresentation $resource)
     {
+        /** @var \Statistics\View\Helper\Statistic $statistic */
         $plugins = $view->getHelperPluginManager();
         $statistic = $plugins->get('statistic');
         $translate = $plugins->get('translate');
@@ -196,18 +197,18 @@ HTML;
         $html = '<ul>';
         $html .= '<li>';
         $html .= sprintf(
-            $translate('Views: %d (%d anonymous / %d identified users)'), // @translate
+            $translate('Views: %d (anonymous: %d / users: %d)'), // @translate
             $statistic->totalResource($resource),
-            $statistic->totalResource($resource, 'anonymous'),
-            $statistic->totalResource($resource, 'identified')
+            $statistic->totalResource($resource, null, 'anonymous'),
+            $statistic->totalResource($resource, null, 'identified')
         );
         $html .= '</li>';
         $html .= '<li>';
         $html .= sprintf(
-            $translate('Position: %d (%d anonymous / %d identified users)'), // @translate
+            $translate('Position: %d (anonymous: %d / users: %d)'), // @translate
             $statistic->positionResource($resource),
-            $statistic->positionResource($resource, 'anonymous'),
-            $statistic->positionResource($resource, 'identified')
+            $statistic->positionResource($resource, null, 'anonymous'),
+            $statistic->positionResource($resource, null, 'identified')
         );
         $html .= '</li>';
         $html .= '</ul>';

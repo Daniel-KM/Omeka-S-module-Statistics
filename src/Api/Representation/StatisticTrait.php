@@ -5,6 +5,7 @@ namespace Statistics\Api\Representation;
 use Omeka\Api\Adapter\AdapterInterface as ApiAdapterInterface;
 use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Representation\AbstractResourceRepresentation;
+use Statistics\View\Helper\Statistic;
 
 trait StatisticTrait
 {
@@ -128,5 +129,12 @@ trait StatisticTrait
         return $adapterManager->has($resourceName)
             ? $adapterManager->get($resourceName)
             : null;
+    }
+
+    protected function getStatistic(): Statistic
+    {
+        static $statistic;
+        return $statistic
+            ?? $statistic = $this->getServiceLocator()->get('ViewHelperManager')->get('statistic');
     }
 }

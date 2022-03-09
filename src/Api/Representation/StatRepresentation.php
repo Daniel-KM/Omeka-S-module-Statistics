@@ -202,7 +202,7 @@ class StatRepresentation extends AbstractEntityRepresentation
      */
     public function totalResourceType(?string $userStatus = null): int
     {
-        return $this->adapter->totalResourceType(
+        return $this->getStatistic()->totalResourceType(
             $this->resource->getEntityName(),
             $userStatus
         );
@@ -229,19 +229,19 @@ class StatRepresentation extends AbstractEntityRepresentation
         }
         switch ($type) {
             case STAT::TYPE_RESOURCE:
-                return $this->adapter->totalResource(
+                return $this->getStatistic()->totalResource(
                     $this->resource->getEntityName(),
                     $this->resource->getEntityId(),
                     $userStatus
                 );
             case STAT::TYPE_DOWNLOAD:
-                return $this->adapter->totalDownload(
+                return $this->getStatistic()->totalDownload(
                     $this->resource->getUrl(),
                     $userStatus
                 );
             case STAT::TYPE_PAGE:
             default:
-                return $this->adapter->totalPage(
+                return $this->getStatistic()->totalPage(
                     $this->resource->getUrl(),
                     $userStatus
                 );
@@ -275,7 +275,7 @@ class StatRepresentation extends AbstractEntityRepresentation
      */
     public function positionPage(?string $userStatus = null): int
     {
-        return $this->adapter->positionPage(
+        return $this->getStatistic()->positionPage(
             $this->resource->getUrl(),
             $userStatus
         );
@@ -288,7 +288,7 @@ class StatRepresentation extends AbstractEntityRepresentation
      */
     public function positionResource(?string $userStatus = null): int
     {
-        return $this->adapter->positionResource(
+        return $this->getStatistic()->positionResource(
             $this->resource->getEntityName(),
             $this->resource->getEntityId(),
             $userStatus
@@ -302,7 +302,7 @@ class StatRepresentation extends AbstractEntityRepresentation
      */
     public function positionDownload(?string $userStatus = null): int
     {
-        return $this->adapter->positionDownload(
+        return $this->getStatistic()->positionDownload(
             $this->resource->getUrl(),
             $userStatus
         );

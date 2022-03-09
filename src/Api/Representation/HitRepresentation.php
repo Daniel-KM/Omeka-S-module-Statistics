@@ -281,7 +281,7 @@ class HitRepresentation extends AbstractEntityRepresentation
      */
     public function totalResourceType(?string $userStatus = null): int
     {
-        return $this->getAdapter('stats')->totalResourceType(
+        return $this->getStatistic()->totalResourceType(
             $this->resource->getEntityName(),
             $userStatus
         );

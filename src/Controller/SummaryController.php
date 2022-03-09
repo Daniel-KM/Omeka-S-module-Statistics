@@ -126,7 +126,7 @@ class SummaryController extends AbstractActionController
             ];
         }
 
-        $params['user_status'] = $this->userStatus ?: 'total';
+        $params['user_status'] = $this->userStatus ?: 'hits';
         return [
             'total' => $api->search('hits', $params)->getTotalResults(),
         ];

@@ -143,7 +143,7 @@ class Statistic extends AbstractHelper
      * @param int|null Useless if $resourceOrEntityName is a resource.
      * @param string $userStatus Can be hits (default), anonymous or identified.
      */
-    public function totalResource($resourceOrEntityName, ?int $entityId, ?string $userStatus = null): int
+    public function totalResource($resourceOrEntityName, ?int $entityId = null, ?string $userStatus = null): int
     {
         $entity = $this->checkAndPrepareResource($resourceOrEntityName, $entityId);
         return $this->totalHits([
@@ -351,7 +351,7 @@ class Statistic extends AbstractHelper
      * @param int|null Useless if $resourceOrEntityName is a resource.
      * @param string $userStatus Can be hits (default), anonymous or identified.
      */
-    public function positionResource(?string $resourceOrEntityName, ?int $entityId, ?string $userStatus = null): int
+    public function positionResource($resourceOrEntityName, ?int $entityId = null, ?string $userStatus = null): int
     {
         $entity = $this->checkAndPrepareResource($resourceOrEntityName, $entityId);
         return $this->positionHits([
@@ -1047,6 +1047,8 @@ class Statistic extends AbstractHelper
         $translate = $this->view->plugin('translate');
         switch ($cleanResourceType) {
             // Api names
+            case 'annotations':
+                return $translate('Annotation');
             case 'items':
                 return $translate('Item');
             case 'item_sets':
