@@ -564,8 +564,11 @@ class HitAdapter extends AbstractEntityAdapter
                     case 'o:accept_language':
                         $value = $currentRequest['accept_language'];
                         break;
-                    case 'created':
+                    case 'o:created':
                         $value = new DateTime('now');
+                        break;
+                    default:
+                        $value = null;
                         break;
                 }
             }
