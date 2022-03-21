@@ -25,14 +25,14 @@ class DownloadController extends AbstractActionController
     }
 
     /**
-     * Forward to the 'files' action
+     * Forward to action "file".
      *
      * @see self::filesAction()
      */
     public function indexAction()
     {
         $params = $this->params()->fromRoute();
-        $params['action'] = 'files';
+        $params['action'] = 'file';
         return $this->forward()->dispatch('Statistics\Controller\Download', $params);
     }
 
@@ -45,14 +45,14 @@ class DownloadController extends AbstractActionController
      *
      * @todo Manage other storage than local one.
      */
-    public function filesAction()
+    public function fileAction()
     {
         $params = $this->params()->fromRoute();
         $storageType = $params['type'] ?? '';
         $filename = $params['filename'] ?? '';
         $filepath = sprintf('%s/%s/%s', $this->basePath, $storageType, $filename);
         $result = $this->sendFile($filepath);
-        // Log the url event if the file is missing.
+        // Log the url even if the file is missing.
         $this->logCurrentUrl();
         if (empty($result)) {
             return $this->notFoundAction();

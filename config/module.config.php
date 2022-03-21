@@ -155,16 +155,18 @@ return [
             'download' => [
                 'type' => \Laminas\Router\Http\Segment::class,
                 'options' => [
-                    'route' => '/download/files/:type/:filename',
+                    // See module AccessResource too.
+                    // Manage module Archive repertory, that can use real names and subdirectories.
+                    // For any filename, either use `:filename{?}`, or add a constraint `'filename' => '.+'`.
+                    'route' => '/download/files/:type/:filename{?}',
                     'constraints' => [
                         'type' => '[^/]+',
-                        // Manage module Archive repertory, that can use real names and subdirectories.
                         'filename' => '.+',
                     ],
                     'defaults' => [
                         '__NAMESPACE__' => 'Statistics\Controller',
                         'controller' => 'Download',
-                        'action' => 'files',
+                        'action' => 'file',
                     ],
                 ],
             ],
