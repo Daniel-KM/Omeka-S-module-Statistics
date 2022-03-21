@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Stats\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-09 00:00+0000\n"
-"PO-Revision-Date: 2022-03-09 00:00+0000\n"
+"POT-Creation-Date: 2022-03-21 00:00+0000\n"
+"PO-Revision-Date: 2022-03-21 00:00+0000\n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: French <https://www.transifex.com/projects/p/omeka/>\n"
 "Language: fr\n"
@@ -17,46 +17,46 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: Module.php:178 Module.php:241 view/statistics/admin/summary/index.phtml:22
+#: Module.php:178 Module.php:245 view/statistics/admin/summary/index.phtml:22
 #: view/statistics/site/browse/by-field.phtml:28
 #: view/statistics/site/browse/by-item-set.phtml:26
 #: view/statistics/site/browse/by-stat.phtml:29
 msgid "Statistics"
 msgstr "Statistiques"
 
-#: Module.php:199
+#: Module.php:200
 #, php-format
-msgid "Views: %d (%d anonymous / %d identified users)"
+msgid "Views: %d (anonymous: %d / users: %d)"
 msgstr "Vues : %d (%d anonymes / %d utilisateurs identifiés)"
 
-#: Module.php:207
+#: Module.php:208
 #, php-format
-msgid "Position: %d (%d anonymous / %d identified users)"
-msgstr "Position : %d (%d anonymes / %d utilisateurs identifiés)"
+msgid "Position: %d (anonymous: %d / users: %d)"
+msgstr "Position : %d (%d anonymes / %d utilisateurs)"
 
-#: Module.php:250 view/statistics/site/summary/index.phtml:28
+#: Module.php:254 view/statistics/site/summary/index.phtml:28
 #, php-format
 msgid "Total Hits: %d"
 msgstr "Vues totales : %d"
 
-#: Module.php:252
+#: Module.php:256
 msgid "Last 30 days"
 msgstr "30 derniers jours"
 
-#: Module.php:253
+#: Module.php:257
 msgid "Last 7 days"
 msgstr "7 derniers jours"
 
-#: Module.php:254 src/Controller/SummaryController.php:69
+#: Module.php:258 src/Controller/SummaryController.php:69
 msgid "Last 24 hours"
 msgstr "Dernières 24 heures"
 
-#: Module.php:274 view/statistics/admin/summary/index.phtml:76
+#: Module.php:278 view/statistics/admin/summary/index.phtml:76
 #: view/statistics/site/summary/index.phtml:64
 msgid "Most viewed public pages"
 msgstr "Pages publiques les plus vues"
 
-#: Module.php:285 Module.php:304 Module.php:320
+#: Module.php:289 Module.php:308 Module.php:324
 #: view/common/statistics-most-frequents.phtml:21
 #: view/statistics/site/summary/index.phtml:70
 #: view/statistics/site/summary/index.phtml:88
@@ -65,45 +65,45 @@ msgstr "Pages publiques les plus vues"
 msgid "%s (%d views)"
 msgstr "%s (%d vues)"
 
-#: Module.php:296
+#: Module.php:300
 msgid "Most viewed public item"
 msgstr "Document public le plus vu"
 
-#: Module.php:312
+#: Module.php:316
 msgid "Most viewed public item set"
 msgstr "Collection publique la plus vue"
 
-#: Module.php:328
+#: Module.php:332
 msgid "Most downloaded file"
 msgstr "Fichier le plus téléchargé"
 
-#: Module.php:336 view/statistics/site/summary/index.phtml:124
+#: Module.php:340 view/statistics/site/summary/index.phtml:124
 #, php-format
 msgid "%s (%d downloads)"
 msgstr "%s (%d téléchagements)"
 
-#: Module.php:344
+#: Module.php:348
 msgid "Most frequent fields"
 msgstr "Champs les plus fréquents"
 
-#: Module.php:348
+#: Module.php:352
 msgid "Referrer"
 msgstr "Référent"
 
-#: Module.php:350
+#: Module.php:354
 msgid "User Agent"
 msgstr "Agent utilisateur"
 
-#: Module.php:351
+#: Module.php:355
 msgid "Accepted Language"
 msgstr "Langue acceptée"
 
-#: Module.php:356
+#: Module.php:360
 #, php-format
 msgid "%s: None"
 msgstr "%s : Aucun"
 
-#: src/Api/Representation/StatisticTrait.php:91
+#: src/Api/Representation/StatisticTrait.php:92
 msgid "[untitled]"
 msgstr "[sans titre]"
 
@@ -204,19 +204,23 @@ msgstr ""
 "Le module %s\" a été automatiquement désactivé car ses dépendances ne sont "
 "plus disponibles."
 
-#: src/View/Helper/Statistic.php:1079
+#: src/View/Helper/Statistic.php:1051
+msgid "Annotation"
+msgstr "Annotation"
+
+#: src/View/Helper/Statistic.php:1080
 msgid "anonymous users"
 msgstr "utilisateurs anonymes"
 
-#: src/View/Helper/Statistic.php:1081
+#: src/View/Helper/Statistic.php:1082
 msgid "identified users"
 msgstr "utilisateurs identifiés"
 
-#: src/View/Helper/Statistic.php:1084
+#: src/View/Helper/Statistic.php:1085
 msgid "all users"
 msgstr "tous les utilisateurs"
 
-#: src/View/Helper/Statistic.php:1382
+#: src/View/Helper/Statistic.php:1383
 msgid "None."
 msgstr "Aucune."
 
@@ -406,30 +410,30 @@ msgstr "Par %s (%s)"
 msgid "[%d filled values / %d total hits]"
 msgstr "[%d valeurs enregistrées / %d vues totales]"
 
-#: view/statistics/site/browse/by-field.phtml:50
+#: view/statistics/site/browse/by-field.phtml:51
 #: view/statistics/site/browse/by-item-set.phtml:69
-#: view/statistics/site/browse/by-stat.phtml:47
+#: view/statistics/site/browse/by-stat.phtml:48
 msgid "Hits"
 msgstr "Vues"
 
-#: view/statistics/site/browse/by-field.phtml:53
+#: view/statistics/site/browse/by-field.phtml:54
 msgid "Percent"
 msgstr "Pour cent"
 
-#: view/statistics/site/browse/by-field.phtml:72
+#: view/statistics/site/browse/by-field.phtml:78
 #: view/statistics/site/browse/by-item-set.phtml:86
 msgid "There is no hit yet."
 msgstr "Il n’y a pas encore de vue."
 
-#: view/statistics/site/browse/by-field.phtml:74
+#: view/statistics/site/browse/by-field.phtml:80
 #: view/statistics/site/browse/by-item-set.phtml:88
 #, php-format
 msgid "The query searched %s hits and returned no results."
 msgstr "La requête a recherché dans %s vues et n’a trouvé aucun résultat."
 
-#: view/statistics/site/browse/by-field.phtml:75
+#: view/statistics/site/browse/by-field.phtml:81
 #: view/statistics/site/browse/by-item-set.phtml:89
-#: view/statistics/site/browse/by-stat.phtml:110
+#: view/statistics/site/browse/by-stat.phtml:116
 msgid "See all statistics."
 msgstr "Voir toutes les statistiques."
 
@@ -494,23 +498,23 @@ msgstr "Tous les mois"
 msgid "Stats (%s total)"
 msgstr "Stats (%s total)"
 
-#: view/statistics/site/browse/by-stat.phtml:50
+#: view/statistics/site/browse/by-stat.phtml:51
 msgid "Anonymous"
 msgstr "Anonymes"
 
-#: view/statistics/site/browse/by-stat.phtml:53
+#: view/statistics/site/browse/by-stat.phtml:54
 msgid "Identified"
 msgstr "Identifié"
 
-#: view/statistics/site/browse/by-stat.phtml:56
+#: view/statistics/site/browse/by-stat.phtml:57
 msgid "Dedicated resource"
 msgstr "Ressource dédiée"
 
-#: view/statistics/site/browse/by-stat.phtml:107
+#: view/statistics/site/browse/by-stat.phtml:113
 msgid "Omeka could not find any statistics."
 msgstr "Omeka ne trouve aucune statistiques."
 
-#: view/statistics/site/browse/by-stat.phtml:109
+#: view/statistics/site/browse/by-stat.phtml:115
 #, php-format
 msgid "The query searched %s rows and returned no results."
 msgstr "La requête a recherché dans %s lignes et n’a trouvé aucun résultat."
@@ -520,11 +524,11 @@ msgstr "La requête a recherché dans %s lignes et n’a trouvé aucun résultat
 msgid "Today: %d"
 msgstr "Aujourd’hui : %d"
 
-#: Module.php:385
+#: Module.php:389
 msgid "Update of aggregated statistics: Start"
 msgstr "Mise à jour des statistiques agrégées : lancement"
 
-#: Module.php:389
+#: Module.php:393
 msgid "Update of aggregated statistics: Ended."
 msgstr "Mise à jour des statistiques agrégées : fin."
 
@@ -596,29 +600,29 @@ msgstr "Autoriser le public à accéder au sommaire des statistiques"
 msgid "Allow public to access detailled statistics"
 msgstr "Autoriser le public à accéder aux statistiques détaillées"
 
-#: src/Api/Adapter/StatAdapter.php:220
+#: src/Api/Adapter/StatAdapter.php:219
 msgid "The stat requires a url."
 msgstr "La statistique requiert une url."
 
-#: src/Api/Adapter/StatAdapter.php:223
+#: src/Api/Adapter/StatAdapter.php:222
 msgid "The stat requires a type."
 msgstr "La statistique requiert un type."
 
-#: src/Api/Adapter/StatAdapter.php:227
+#: src/Api/Adapter/StatAdapter.php:226
 msgid "The stat requires a type: \"page\", \"resource\", or \"download\"."
 msgstr ""
 "La statistique requiert un type : \"page\", \"resource\" ou \"download\"."
 
-#: src/Api/Adapter/StatAdapter.php:285
+#: src/Api/Adapter/StatAdapter.php:284
 msgid "A stat must have a type (\"page\", \"resource\" or \"download\")."
 msgstr ""
 "Une statistique doit avoir un type (\"page\", \"resource\" ou \"download\")."
 
-#: src/Api/Adapter/StatAdapter.php:288
+#: src/Api/Adapter/StatAdapter.php:287
 msgid "A stat must have a url."
 msgstr "Une statistique doit avoir une url."
 
-#: src/Api/Adapter/StatAdapter.php:290
+#: src/Api/Adapter/StatAdapter.php:289
 msgid "The type should be unique for the url."
 msgstr "Le type doit être unique pour l’url."
 
