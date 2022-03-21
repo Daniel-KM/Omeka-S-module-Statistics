@@ -395,7 +395,7 @@ class HitAdapter extends AbstractEntityAdapter
 
         /** @var \Statistics\Api\Adapter\StatAdapter $statAdapter */
         $statAdapter = $this->getAdapter('stats');
-        $entityManger = $this->getEntityManager();
+        $entityManager = $this->getEntityManager();
 
         // Stat is created if not exists.
         // "page" and "download" are mutually exclusive.
@@ -420,7 +420,7 @@ class HitAdapter extends AbstractEntityAdapter
             ;
         }
         $statAdapter->increaseHits($stat);
-        $entityManger->persist($stat);
+        $entityManager->persist($stat);
 
         // A second stat is needed to manage resource count.
         if (!$entityName || !$entityId) {
@@ -443,7 +443,7 @@ class HitAdapter extends AbstractEntityAdapter
             ;
         }
         $statAdapter->increaseHits($statResource);
-        $entityManger->persist($statResource);
+        $entityManager->persist($statResource);
     }
 
     /**
@@ -593,9 +593,14 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
+        // The restricted files are redirected from .htaccess, so it is useless
+        // to store the path "/access/" (module AccessResource).
+        if (substr($currentUrl, 0, 8) === '/access/') {
+            $currentUrl = substr($currentUrl, 7);
+        }
         // The downloaded files are redirected from .htaccess, so it is useless
         // to store the path "/download/".
-        if (substr($currentUrl, 0, 10) === '/download/') {
+        elseif (substr($currentUrl, 0, 10) === '/download/') {
             $currentUrl = substr($currentUrl, 9);
         }
 
@@ -637,7 +642,9 @@ class HitAdapter extends AbstractEntityAdapter
             return null;
         }
 
-        if ($name === 'Download') {
+        if ($name === 'AccessResource'
+            || $name === 'Download'
+        ) {
             return $this->currentMediaId($routeParams);
         }
 

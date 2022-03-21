@@ -45,17 +45,22 @@ class LogCurrentUrl extends AbstractPlugin
             return null;
         }
 
-        // If the request is a download, don't log it for admin.
+        // Don't log download request for admin users but non-admins and guests.
         // It's not simple to determine from server if the request comes from a
         // visitor on the site or something else. So use referrer and identity.
-        // TODO But log for guests users.
         $referrer = $_SERVER['HTTP_REFERER'] ?? null;
         if ($referrer
+            // Guest user should not be logged.
             && strpos($referrer, '/admin/')
-            && $status->getRouteMatch()->getMatchedRouteName() === 'download'
+            && in_array($status->getRouteMatch()->getMatchedRouteName(), ['access-resource-file', 'download'])
             // Only check if there is a user: no useless check for users who
-            // can't go admin (guest).
+            // can't go admin (guest), and checked below anyway.
             && $this->services->get('Omeka\AuthenticationService')->getIdentity()
+            // Slower but manage extra roles and modules permissions.
+            // && in_array($user->getRole(), ['global_admin', 'site_admin', 'editor', 'reviewer']);
+            // Guests don't have the right to view all resources, neither author
+            // and researcher.
+            && $this->services->get('Omeka\Acl')->userIsAllowed(\Omeka\Entity\Resource::class, 'view-all')
         ) {
             $urlAdminTop = $this->services->get('ControllerPluginManager')->get('url')->fromRoute('admin', [], ['force_canonical' => true]) . '/';
             if (strpos($referrer, $urlAdminTop) === 0) {
