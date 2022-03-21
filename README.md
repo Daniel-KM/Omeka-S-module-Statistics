@@ -22,9 +22,11 @@ It has some advantages over them:
 - respect of privacy by default.
 
 On the other hand, some advanced features are not implemented, especially
-a detailled board with advanced filters. Nevertheless, logs and data can be
-exported via mysql to a spreadsheet like [LibreOffice] or another specialized
-statistic tool, where any statistics can be calculated.
+a detailled board with advanced filters. Furthermore, many analytics on the
+users are not available. So the two tools may be needed according to your needs.
+
+Logs and data can be exported via mysql to a spreadsheet like [LibreOffice] or
+another specialized statistic tool, where many statistics can be calculated.
 
 Of course, you must respect privacy of users and visitors.
 
@@ -60,16 +62,45 @@ the root of the server.
 
 Just add a line in the beginning off `.htaccess`, after `RewriteEngine on`:
 
-```htaccess
+```apache
 RewriteRule ^files/original/(.*)$ https://example.org/download/files/original/$1 [NC,L]
 ```
 
+In case of some issues in Apache or with an internal proxy, you can use (the use
+of http is not unsecure, because the redirect is internal):
+
+```apache
+RewriteRule ^files/original/(.*)$ http://%{HTTP_HOST}/download/files/original/$1 [NC,L]
+```
+
+If you use the module [Access Resource] to allow access to some private files to
+some users, **you must use its redirection**, so **use `/access/`** instead of `/download/`
+in the redirect url of the rewrite rule. The module Access Resource records the
+url for Statistics too. If you keep the redirection with `download`, the check
+for restricted access won't be done, so **a private file will become public**,
+even if a user as a no restricted access to it.
+
+```apache
+# Redirect direct access to files to the module Access Resource.
+RewriteRule ^files/original/(.*)$ http://%{HTTP_HOST}/access/files/original/$1 [P]
+RewriteRule ^files/large/(.*)$ http://%{HTTP_HOST}/access/files/large/$1 [P]
+
+# Redirect direct download of files to the module Access Resource.
+RewriteRule ^download/files/original/(.*)$ http://%{HTTP_HOST}/access/files/original/$1 [P]
+RewriteRule ^download/files/large/(.*)$ http://%{HTTP_HOST}/access/files/large/$1 [P]
+```
+
+In fact, if not redirected, it acts the same way than a direct access to a
+private file in Omeka: they are not protected and everybody who knows the url,
+in particular Google via Gmail, Chrome, etc., will have access to it.
+
 If you use the anti-hotlinking feature of [Archive Repertory] to avoid bandwidth
-theft, you should keep its rule. Statistics for direct downloads of files will be
-automatically added.
+theft, you should keep its rule. Statistics for direct downloads of files will
+be automatically added.
 
 You can count large files too, but this is not recommended, because in the
 majority of themes, hits may increase even when a simple page is opened.
+Nevertheless, it may be required when you control access with module [Access Resource].
 
 
 Usage
@@ -253,6 +284,7 @@ Copyright
 [Generic]: https://gitlab.com/Daniel-KM/Omeka-S-module-Generic
 [Shortcode]: https://gitlab.com/Daniel-KM/Omeka-S-module-Shortocode
 [Archive Repertory]: https://gitlab.com/Daniel-KM/Omeka-S-module-ArchiveRepertory
+[Access Resource]: https://gitlab.com/Daniel-KM/Omeka-S-module-AccessResource
 [Installing a module]: https://omeka.org/s/docs/user-manual/modules/
 [module issues]: https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics/issues
 [CeCILL v2.1]: https://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html
