@@ -228,6 +228,14 @@ class BrowseController extends AbstractActionController
             ? $settings->get('statistics_default_user_status_admin')
             : $settings->get('statistics_default_user_status_public');
 
+        if ($userStatus === 'anonymous') {
+            $whereStatus = "\nAND hit.user_id = 0";
+        } elseif ($userStatus === 'identified') {
+            $whereStatus = "\nAND hit.user_id <> 0";
+        } else {
+            $whereStatus = '';
+        }
+
         $query = $this->params()->fromQuery();
         $year = $query['year'] ?? null;
         $month = $query['month'] ?? null;
@@ -254,7 +262,7 @@ class BrowseController extends AbstractActionController
 SELECT item_item_set.item_set_id, COUNT(hit.id) AS total_hits
 FROM hit hit $force
 JOIN item_item_set ON hit.entity_id = item_item_set.item_id
-WHERE hit.entity_name = "items"$whereYear$whereMonth
+WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth
 GROUP BY item_item_set.item_set_id
 ORDER BY total_hits
 ;
