@@ -40,23 +40,32 @@ if (version_compare($oldVersion, '3.3.4.2', '<')) {
 }
 
 if (version_compare($oldVersion, '3.3.4.3', '<')) {
-    // Update table.
+    // Update tables.
     $sql = <<<'SQL'
-DROP INDEX `IDX_5AD22641ED646567` ON `hit`;
+DROP INDEX `IDX_20B8FF218CDE5729` ON `stat`;
+DROP INDEX `UNIQ_20B8FF218CDE5729F47645AE` ON `stat`;
+ALTER TABLE `stat`
+    CHANGE `type` `type` VARCHAR(8) NOT NULL,
+    CHANGE `url` `url` VARCHAR(1024) NOT NULL COLLATE `latin1_general_cs`,
+    CHANGE `modified` `modified` DATETIME NOT NULL;
+CREATE INDEX `IDX_20B8FF218CDE5729` ON `stat` (`type`);
+CREATE UNIQUE INDEX `UNIQ_20B8FF218CDE5729F47645AE` ON `stat` (`type`, `url`);
+
 DROP INDEX `IDX_5AD22641C44967C5` ON `hit`;
+DROP INDEX `IDX_5AD22641ED646567` ON `hit`;
 ALTER TABLE `hit`
     ADD `site_id` INT DEFAULT 0 NOT NULL AFTER `entity_name`,
+    CHANGE `url` `url` VARCHAR(1024) NOT NULL COLLATE `latin1_general_cs`,
     CHANGE `entity_id` `entity_id` INT DEFAULT 0 NOT NULL,
     CHANGE `entity_name` `entity_name` VARCHAR(190) DEFAULT '' NOT NULL,
     CHANGE `user_id` `user_id` INT DEFAULT 0 NOT NULL,
     CHANGE `ip` `ip` VARCHAR(45) DEFAULT '' NOT NULL,
-    CHANGE `referrer` `referrer` VARCHAR(1024) DEFAULT '' NOT NULL,
-    CHANGE `user_agent` `user_agent` VARCHAR(1024) DEFAULT '' NOT NULL,
-    CHANGE `accept_language` `accept_language` VARCHAR(190) DEFAULT '' NOT NULL,
-    CHANGE `created` `created` DATETIME NOT NULL;
+    CHANGE `referrer` `referrer` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_cs`,
+    CHANGE `user_agent` `user_agent` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`,
+    CHANGE `accept_language` `accept_language` VARCHAR(190) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`;
 CREATE INDEX `IDX_5AD22641F6BD1646` ON `hit` (`site_id`);
-CREATE INDEX `IDX_5AD22641ED646567` ON `hit` (`referrer`);
 CREATE INDEX `IDX_5AD22641C44967C5` ON `hit` (`user_agent`);
+CREATE INDEX `IDX_5AD22641ED646567` ON `hit` (`referrer`);
 SQL;
     $connection->executeStatement($sql);
 

@@ -47,15 +47,16 @@ class Hit extends AbstractEntity
      * @var string
      *
      * In Omeka S, a url may be very long: site name, page name, file name, etc.
-     * Furthermore, some identifiers are case sensitive. And they need to be
-     * indexed. So the choice of the length and the collation.
+     * Furthermore, some identifiers are case sensitive (ark). And they need to be
+     * indexed. So the choice of the length and the collation. The same for referrer.
+     * The query is stored separately.
      *
      * @Column(
      *     type="string",
      *     length=1024,
      *     nullable=false,
      *     options={
-     *         "collation": "latin1_bin"
+     *         "collation": "latin1_general_cs"
      *     }
      * )
      */
@@ -157,13 +158,16 @@ class Hit extends AbstractEntity
      *     length=1024,
      *     nullable=false,
      *     options={
-     *         "default":""
+     *         "default":"",
+     *         "collation": "latin1_general_cs"
      *     }
      * )
      */
     protected $referrer = '';
 
     /**
+     * Any header is always an us-ascii string according to rfc 7230.
+     *
      * @var string
      *
      * @Column(
@@ -171,7 +175,8 @@ class Hit extends AbstractEntity
      *     length=1024,
      *     nullable=false,
      *     options={
-     *         "default":""
+     *         "default":"",
+     *         "collation": "latin1_general_ci"
      *     }
      * )
      */
@@ -185,7 +190,8 @@ class Hit extends AbstractEntity
      *     length=190,
      *     nullable=false,
      *     options={
-     *         "default":""
+     *         "default":"",
+     *         "collation": "latin1_general_ci"
      *     }
      * )
      */

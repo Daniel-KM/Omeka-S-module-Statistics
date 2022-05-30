@@ -1,8 +1,9 @@
 # Important: the index for column "created" of the table "hit" is used in the Browse Controller.
+
 CREATE TABLE `stat` (
     `id` INT AUTO_INCREMENT NOT NULL,
     `type` VARCHAR(8) NOT NULL,
-    `url` VARCHAR(1024) NOT NULL COLLATE `latin1_bin`,
+    `url` VARCHAR(1024) NOT NULL COLLATE `latin1_general_cs`,
     `entity_id` INT NOT NULL,
     `entity_name` VARCHAR(190) NOT NULL,
     `hits` INT NOT NULL,
@@ -23,16 +24,16 @@ CREATE TABLE `stat` (
 
 CREATE TABLE `hit` (
     `id` INT AUTO_INCREMENT NOT NULL,
-    `url` VARCHAR(1024) NOT NULL COLLATE `latin1_bin`,
+    `url` VARCHAR(1024) NOT NULL COLLATE `latin1_general_cs`,
     `entity_id` INT DEFAULT 0 NOT NULL,
     `entity_name` VARCHAR(190) DEFAULT '' NOT NULL,
     `site_id` INT DEFAULT 0 NOT NULL,
     `user_id` INT DEFAULT 0 NOT NULL,
     `ip` VARCHAR(45) DEFAULT '' NOT NULL,
     `query` LONGTEXT NOT NULL,
-    `referrer` VARCHAR(1024) DEFAULT '' NOT NULL,
-    `user_agent` VARCHAR(1024) DEFAULT '' NOT NULL,
-    `accept_language` VARCHAR(190) DEFAULT '' NOT NULL,
+    `referrer` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_cs`,
+    `user_agent` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`,
+    `accept_language` VARCHAR(190) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`,
     `created` DATETIME NOT NULL,
     INDEX `IDX_5AD22641F47645AE` (`url`),
     INDEX `IDX_5AD2264181257D5D` (`entity_id`),

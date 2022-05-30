@@ -81,7 +81,7 @@ class Stat extends AbstractEntity
      *     length=1024,
      *     nullable=false,
      *     options={
-     *         "collation": "latin1_bin"
+     *         "collation": "latin1_general_cs"
      *     }
      * )
      */
