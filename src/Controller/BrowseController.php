@@ -463,6 +463,7 @@ SQL;
         $year = $query['year'] ?? null;
         $month = $query['month'] ?? null;
         $property = $query['property'] ?? null;
+        $typeFilter = $query['value_type'] ?? null;
 
         $bind = [];
         $types = [];
@@ -495,12 +496,41 @@ SQL;
             $joinProperty = ' AND property_id = 0';
         }
 
+        // TODO Add a type filter for all, or no type filter.
+        switch ($typeFilter) {
+            case 'resource':
+                $joinResource = "\nLEFT JOIN resource ON resource.id = value.value_resource_id";
+                $selectValue = 'value.value_resource_id AS "value", resource.title AS "label"';
+                $typeFilterValue = 'value.value_resource_id';
+                $whereFilterValue = "\nAND value.value_resource_id IS NOT NULL\nAND value.value_resource_id <> 0";
+                break;
+            case 'uri':
+                $joinResource = '';
+                $selectValue = 'value.uri AS "value", value.value AS "label"';
+                $typeFilterValue = 'value.uri';
+                $whereFilterValue = "\nAND value.uri IS NOT NULL\nAND value.uri <> ''";
+                break;
+            case 'value':
+            default:
+                $joinResource = '';
+                $selectValue = 'value.value AS "value", "" AS "label"';
+                $typeFilterValue = 'value.value';
+                $whereFilterValue = "\nAND value.value IS NOT NULL\nAND value.value <> ''";
+                break;
+        }
+
+        if ($typeFilter === 'resource') {
+            $joinResource = "\nLEFT JOIN resource ON resource.id = value.value_resource_id";
+        } else {
+            $joinResource = '';
+        }
+
         $sql = <<<SQL
-SELECT value.value, COUNT(hit.id) AS hits, "" AS hitsInclusive
+SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hitsInclusive
 FROM hit hit $force
-JOIN value ON hit.entity_id = value.resource_id$joinProperty
-WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth
-GROUP BY value.value
+JOIN value ON hit.entity_id = value.resource_id$joinProperty$joinResource
+WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth$whereFilterValue
+GROUP BY $typeFilterValue
 ORDER BY hits
 ;
 SQL;
@@ -532,6 +562,7 @@ SQL;
             'yearFilter' => $year,
             'monthFilter' => $month,
             'propertyFilter' => $property,
+            'valueTypeFilter' => $typeFilter,
         ]);
         return $view
             ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-value' : 'statistics/site/browse/by-value');

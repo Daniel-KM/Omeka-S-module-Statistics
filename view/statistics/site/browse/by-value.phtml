@@ -8,6 +8,7 @@
  * @var int $yearFilter
  * @var int $monthFilter
  * @var string $propertyFilter
+ * @var string $valueTypeFilter
  */
 
 $plugins = $this->getHelperPluginManager();
@@ -22,6 +23,8 @@ $this->htmlElement('body')->appendAttribute('class', 'statistics browse');
 $isAdminRequest = $this->status()->isAdminRequest();
 
 $currentUrl = $urlHelper(null, [], true);
+
+$isFilterValue = !in_array($valueTypeFilter, ['resource', 'uri']);
 ?>
 
 <?= $this->pageTitle($translate('By value'), 1, $isAdminRequest ? $translate('Statistics') : null) ?>
@@ -43,6 +46,12 @@ $currentUrl = $urlHelper(null, [], true);
             'value' => $propertyFilter,
         ],
     ]) ?>
+
+    <div>
+        <label><input type="radio" name="value_type" value="value"<?= $isFilterValue ? ' checked="checked"' : '' ?>><?= $translate('Value') ?></label>
+        <label><input type="radio" name="value_type" value="resource"<?= $valueTypeFilter === 'resource' ? ' checked="checked"' : '' ?>><?= $translate('Resource') ?></label>
+        <label><input type="radio" name="value_type" value="uri"<?= $valueTypeFilter === 'uri' ? ' checked="checked"' : '' ?>><?= $translate('Uri') ?></label>
+    </div>
 
     <select name="year">
         <option value=""><?= $translate('All years') ?></option>
@@ -82,6 +91,11 @@ $currentUrl = $urlHelper(null, [], true);
             <th>
                 <a href="<?= $currentUrl . '?sort_by=value' ?>"><?= $translate('Value') ?></a>
             </th>
+            <?php if (!$isFilterValue): ?>
+            <th>
+                <span><?= $translate('Label') ?></span>
+            </th>
+            <?php endif; ?>
             <th>
                 <a href="<?= $currentUrl . '?sort_by=hits' ?>"><?= $translate('Hits') ?></a>
             </th>
@@ -91,6 +105,9 @@ $currentUrl = $urlHelper(null, [], true);
 <?php foreach ($results as $position => $result): ?>
         <tr class="statistics-stat">
             <td class="statistics-field"><?= $result['value'] ?></td>
+            <?php if (!$isFilterValue): ?>
+            <td class="statistics-label"><?= $result['label'] ?></td>
+            <?php endif; ?>
             <td class="statistics-hits"><?= $result['hits'] ?></td>
         </tr>
 <?php endforeach; ?>
