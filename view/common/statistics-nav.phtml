@@ -27,6 +27,7 @@ if ($isAdminRequest || $this->setting('statistics_public_allow_browse')) {
     $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-download'], true)] = $translate('By download');
     $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-field'], true)] = $translate('By field');
     $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-item-set'], true)] = $translate('By item set');
+    $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-value'], true)] = $translate('By value');
 }
 if (count($sectionNavs) <= 1) return;
 

@@ -438,6 +438,105 @@ SQL;
             ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-item-set' : 'statistics/site/browse/by-item-set');
     }
 
+    public function byValueAction()
+    {
+        // FIXME Stats by value has not been fully checked.
+        // TODO Move the process into view helper Statistic.
+        // TODO Enlarge byItemSet to byResource (since anything is resource).
+
+        $isAdminRequest = $this->status()->isAdminRequest();
+        $settings = $this->settings();
+
+        $userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
+
+        if ($userStatus === 'anonymous') {
+            $whereStatus = "\nAND hit.user_id = 0";
+        } elseif ($userStatus === 'identified') {
+            $whereStatus = "\nAND hit.user_id <> 0";
+        } else {
+            $whereStatus = '';
+        }
+
+        $query = $this->params()->fromQuery();
+        $year = $query['year'] ?? null;
+        $month = $query['month'] ?? null;
+        $property = $query['property'] ?? null;
+
+        $bind = [];
+        $types = [];
+        $force = $whereYear = $whereMonth = '';
+        if ($year || $month) {
+            // This is the doctrine hashed name index for the column "created".
+            $force = 'FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
+            if ($year) {
+                $whereYear = "\nAND YEAR(hit.created) = :year";
+                $bind['year'] = $year;
+                $types['year'] = \Doctrine\DBAL\ParameterType::INTEGER;
+            }
+            if ($month) {
+                $whereMonth = "\nAND MONTH(hit.created) = :month";
+                $bind['month'] = $month;
+                $types['month'] = \Doctrine\DBAL\ParameterType::INTEGER;
+            }
+        }
+
+        // A property is required to get stats.
+        if ($property && $propertyId = $this->getPropertyId($property)) {
+            if (is_numeric($property)) {
+                $property = $this->getPropertyId([$propertyId]);
+                $property = key($property);
+            }
+            $joinProperty = ' AND property_id = :property_id';
+            $bind['property_id'] = $propertyId;
+            $types['property_id'] = \Doctrine\DBAL\ParameterType::INTEGER;
+        } else {
+            $joinProperty = ' AND property_id = 0';
+        }
+
+        $sql = <<<SQL
+SELECT value.value, COUNT(hit.id) AS hits, "" AS hitsInclusive
+FROM hit hit $force
+JOIN value ON hit.entity_id = value.resource_id$joinProperty
+WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth
+GROUP BY value.value
+ORDER BY hits
+;
+SQL;
+        $results = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();
+
+        $this->paginator(count($results));
+
+        // TODO Manage special sort fields.
+        $sortBy = $query['sort_by'] ?? null;
+        if (empty($sortBy) || !in_array($sortBy, ['value', 'hits', 'hitsInclusive'])) {
+            $sortBy = 'hitsInclusive';
+        }
+        $sortOrder = $query['sort_order'] ?? null;
+        if (empty($sortOrder) || $sortOrder !== 'asc') {
+            $sortOrder = 'desc';
+        }
+
+        usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
+            $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
+            return $sortOrder === 'desc' ? -$cmp : $cmp;
+        });
+
+        $years = $this->listAvailableYears();
+
+        $view = new ViewModel([
+            'type' => 'value',
+            'results' => $results,
+            'years' => $years,
+            'yearFilter' => $year,
+            'monthFilter' => $month,
+            'propertyFilter' => $property,
+        ]);
+        return $view
+            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-value' : 'statistics/site/browse/by-value');
+    }
+
     /**
      * @fixme Finalize integration of item set tree.
      */
@@ -460,5 +559,48 @@ SQL;
             ->from('hit', 'hit')
             ->orderBy('year', 'desc');
         return $this->connection->executeQuery($qb)->fetchFirstColumn();
+    }
+
+    /**
+     * Get one or more property ids by JSON-LD terms or by numeric ids.
+     *
+     * @param array|int|string|null $termsOrIds One or multiple ids or terms.
+     * @return int[]|int|null The property ids matching terms or ids, or all
+     * properties by terms.
+     */
+    protected function getPropertyId($termsOrIds = null)
+    {
+        static $propertiesByTerms;
+        static $propertiesByTermsAndIds;
+
+        if (is_null($propertiesByTermsAndIds)) {
+            $qb = $this->connection->createQueryBuilder();
+            $qb
+                ->select(
+                    'DISTINCT CONCAT(vocabulary.prefix, ":", property.local_name) AS term',
+                    'property.id AS id',
+                    // Required with only_full_group_by.
+                    'vocabulary.id'
+                )
+                ->from('property', 'property')
+                ->innerJoin('property', 'vocabulary', 'vocabulary', 'property.vocabulary_id = vocabulary.id')
+                ->orderBy('vocabulary.id', 'asc')
+                ->addOrderBy('property.id', 'asc')
+            ;
+            $propertiesByTerms = array_map('intval', $this->connection->executeQuery($qb)->fetchAllKeyValue());
+            $propertiesByTermsAndIds = array_replace($propertiesByTerms, array_combine($propertiesByTerms, $propertiesByTerms));
+        }
+
+        if (is_null($termsOrIds)) {
+            return $propertiesByTerms;
+        }
+
+        if (is_scalar($termsOrIds)) {
+            return isset($propertiesByTermsAndIds[$termsOrIds])
+                ? $propertiesByTermsAndIds[$termsOrIds]
+                : [];
+        }
+
+        return array_intersect_key($propertiesByTermsAndIds, array_flip($termsOrIds));
     }
 }
