@@ -265,14 +265,7 @@ SQL;
             $query['field'] = $field;
         }
 
-        $sortBy = $query['sort_by'] ?? null;
-        if (empty($sortBy) || !in_array($sortBy, [$field, 'hits'])) {
-            $query['sort_by'] = 'hits';
-        }
-        $sortOrder = $query['sort_order'] ?? null;
-        if (empty($sortOrder) || !in_array(strtolower($sortOrder), ['asc', 'desc'])) {
-            $query['sort_order'] = 'desc';
-        }
+        $query = $this->defaultSort($query, [$field, 'hits'], 'hits');
 
         $currentPage = isset($query['page']) ? (int) $query['page'] : null;
         $resourcesPerPage = $isAdminRequest
@@ -531,7 +524,7 @@ FROM hit hit $force
 JOIN value ON hit.entity_id = value.resource_id$joinProperty$joinResource
 WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth$whereFilterValue
 GROUP BY $typeFilterValue
-ORDER BY hits
+ORDER BY hits DESC
 ;
 SQL;
         $results = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();
@@ -579,6 +572,19 @@ SQL;
             $childrenHits += $this->getHitsPerItemSet($hitsPerItemSet, $childItemSetId);
         }
         return ($hitsPerItemSet[$itemSetId] ?? 0) + $childrenHits;
+    }
+
+    protected function defaultSort(array $query, array $allowedSorts = [], string $defaultSort = 'hits'): array
+    {
+        $sortBy = $query['sort_by'] ?? null;
+        if (empty($sortBy) || !in_array($sortBy, $allowedSorts)) {
+            $query['sort_by'] = $defaultSort;
+        }
+        $sortOrder = $query['sort_order'] ?? null;
+        if (empty($sortOrder) || !in_array(strtolower($sortOrder), ['asc', 'desc'])) {
+            $query['sort_order'] = 'desc';
+        }
+        return $query;
     }
 
     protected function listAvailableYears(): array

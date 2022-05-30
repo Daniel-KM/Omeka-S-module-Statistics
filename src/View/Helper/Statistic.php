@@ -719,6 +719,8 @@ class Statistic extends AbstractHelper
      * The main difference with hit search() is that values are not resources,
      * but array of synthetic values.
      *
+     * Default sort is descendant (most frequents first).
+     *
      * @param array $params A set of parameters by which to filter the objects
      *   that get returned from the database. It should contains a 'field' for
      *   the name of the column to evaluate.
@@ -780,9 +782,18 @@ class Statistic extends AbstractHelper
         // $this->hitAdapter->sortQuery($qb, $query);
         if (isset($query['sort_field']) && is_array($query['sort_field'])) {
             $query['sort_field'] = array_intersect_key($query['sort_field'], ['hits' => null, $field]);
+            foreach ($query['sort_field'] as &$sortOrder) {
+                $sortOrder = strtolower((string) $sortOrder) === 'asc' ? 'asc' : 'desc';
+            }
+            unset($sortOrder);
+            $query['sort_field'] = array_intersect_key($query['sort_field'], ['hits' => null, $field]);
         }
-        if (isset($query['sort_by']) && !in_array($query['sort_by'], ['hits', $field])) {
-            $query['sort_by'] = null;
+        if (isset($query['sort_by'])) {
+            if (in_array($query['sort_by'], ['hits', $field])) {
+                $query['sort_order'] = isset($query['sort_order']) && strtolower((string) $sortOrder) === 'asc' ? 'asc' : 'desc';
+            } else {
+                $query['sort_by'] = null;
+            }
         }
         $this->hitAdapter->sortQuery($qb, $query);
 
@@ -807,6 +818,7 @@ class Statistic extends AbstractHelper
         $query['sort_field'] = [
             'hits' => 'DESC',
             // This order is needed in order to manage ex-aequos.
+            // TODO Fix in mysql (only_full_group_by).
             'created' => 'ASC',
         ];
         return $this->frequents($query, $page, $limit);
