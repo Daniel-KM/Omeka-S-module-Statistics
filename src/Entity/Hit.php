@@ -138,17 +138,16 @@ class Hit extends AbstractEntity
     protected $ip = '';
 
     /**
-     * @var string
+     * A text cannot have a default value, so use null.
+     *
+     * @var array
      *
      * @Column(
-     *     type="text",
-     *     nullable=false,
-     *     options={
-     *         "default":""
-     *     }
+     *     type="json",
+     *     nullable=true
      * )
      */
-    protected $query = '';
+    protected $query;
 
     /**
      * @var string
@@ -278,13 +277,13 @@ class Hit extends AbstractEntity
         return $this->ip;
     }
 
-    public function setQuery(?string $query): self
+    public function setQuery(?array $query): self
     {
-        $this->query = (string) $query;
+        $this->query = $query;
         return $this;
     }
 
-    public function getQuery(): string
+    public function getQuery(): ?array
     {
         return $this->query;
     }

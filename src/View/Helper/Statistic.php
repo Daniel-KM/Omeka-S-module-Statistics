@@ -93,9 +93,12 @@ class Statistic extends AbstractHelper
         $pos = strpos($url, '?');
         if ($pos && $pos !== strlen($url)) {
             $query = substr($url, $pos + 1);
+            $requestGet = [];
+            parse_url($query, $requestGet);
+            $query = $requestGet ?: null;
             $cleanedUrl = $this->checkAndCleanUrl(substr($url, 0, $pos));
         } else {
-            $query = '';
+            $query = null;
             $cleanedUrl = $this->checkAndCleanUrl($url);
         }
 

@@ -30,7 +30,7 @@ CREATE TABLE `hit` (
     `site_id` INT DEFAULT 0 NOT NULL,
     `user_id` INT DEFAULT 0 NOT NULL,
     `ip` VARCHAR(45) DEFAULT '' NOT NULL,
-    `query` LONGTEXT NOT NULL,
+    `query` LONGTEXT DEFAULT NULL COMMENT '(DC2Type:json)',
     `referrer` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_cs`,
     `user_agent` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`,
     `accept_language` VARCHAR(190) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`,

@@ -326,7 +326,7 @@ class Hit extends \Statistics\Entity\Hit implements \Doctrine\ORM\Proxy\Proxy
     /**
      * {@inheritDoc}
      */
-    public function setQuery(?string $query): \Statistics\Entity\Hit
+    public function setQuery(?array $query): \Statistics\Entity\Hit
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setQuery', [$query]);
@@ -337,7 +337,7 @@ class Hit extends \Statistics\Entity\Hit implements \Doctrine\ORM\Proxy\Proxy
     /**
      * {@inheritDoc}
      */
-    public function getQuery(): string
+    public function getQuery(): ?array
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getQuery', []);

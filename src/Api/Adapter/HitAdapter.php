@@ -27,6 +27,8 @@ class HitAdapter extends AbstractEntityAdapter
         'entity_id' => 'entityId',
         'site_id' => 'siteId',
         'ip' => 'ip',
+        // To sort query has no meaning.
+        // 'query' => 'query',
         'referrer' => 'referrer',
         'user_agent' => 'userAgent',
         'accept_language' => 'acceptLanguage',
@@ -256,6 +258,7 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
+        // TODO @experimental or @deprecated Use "has_value".
         if (isset($query['field'])
             && in_array($query['field'], ['query', 'referrer', 'user_agent', 'accept_language', 'userAgent', 'acceptLanguage'])
         ) {
@@ -268,10 +271,16 @@ class HitAdapter extends AbstractEntityAdapter
                 'acceptLanguage' => 'acceptLanguage',
             ];
             $field = $columns[$query['field']];
-            $qb->andWhere($expr->neq(
-                'omeka_root.' . $field,
-                $this->createNamedParameter($qb, '')
-            ));
+            if ($field === 'query') {
+                $qb->andWhere($expr->isNotNull(
+                    'omeka_root.' . $field
+                ));
+            } else {
+                $qb->andWhere($expr->neq(
+                    'omeka_root.' . $field,
+                    $this->createNamedParameter($qb, '' )
+                ));
+            }
             if ($field === 'referrer') {
                 // This special filter allows to get external referrers only.
                 $serverUrlHelper = $this->serviceLocator->get('ViewHelperManager')->get('ServerUrl');
@@ -285,6 +294,7 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
+        // TODO @experimental or @deprecated
         if (isset($query['not_empty'])
             && in_array($query['not_empty'], ['query', 'referrer', 'user_agent', 'accept_language', 'userAgent', 'acceptLanguage'])
         ) {
@@ -296,10 +306,17 @@ class HitAdapter extends AbstractEntityAdapter
                 'userAgent' => 'userAgent',
                 'acceptLanguage' => 'acceptLanguage',
             ];
-            $qb->andWhere($expr->neq(
-                'omeka_root.' . $columns[$query['not_empty']],
-                $this->createNamedParameter($qb, '')
-            ));
+            $field = $columns[$query['not_empty']];
+            if ($field === 'query') {
+                $qb->andWhere($expr->isNotNull(
+                    'omeka_root.' . $field
+                ));
+            } else {
+                $qb->andWhere($expr->neq(
+                    'omeka_root.' . $field,
+                    $this->createNamedParameter($qb, '')
+                ));
+            }
         }
 
         if (isset($query['since']) && strlen((string) $query['since'])) {
@@ -388,8 +405,8 @@ class HitAdapter extends AbstractEntityAdapter
             'o:site_id' => 'setSiteId',
             'o:user_id' => 'setUserId',
             'o:ip' => 'setIp',
-            'o:referrer' => 'setReferrer',
             'o:query' => 'setQuery',
+            'o:referrer' => 'setReferrer',
             'o:user_agent' => 'setUserAgent',
             'o:accept_language' => 'setAcceptLanguage',
             // 'o:created' => 'setCreated',
@@ -402,6 +419,11 @@ class HitAdapter extends AbstractEntityAdapter
             $method = $keyMethods[$keyName];
             if (in_array($key, ['o:entity_id', 'o:site_id', 'o:user_id'])) {
                 $value = (int) $value;
+            } elseif ($key === 'o:query') {
+                // The value "query" should be an array or null (doctrine json).
+                if (empty($value) || !is_array($value)) {
+                    $value = null;
+                }
             }
             $entity->$method($value);
         }
@@ -635,13 +657,17 @@ class HitAdapter extends AbstractEntityAdapter
 
         // Same query via laminas.
         // $query = $request->getUri()->getQuery();
-        $query = $_SERVER['QUERY_STRING'] ?? null;
+        // $query = $_SERVER['QUERY_STRING'] ?? '';
+        // $query = strlen($query) ? urldecode($query) : null;
+        // Use "_get" instead of "_request" to avoid to store the password (the
+        // login form is a post).
+        $query = $_SERVER['_GET'] ?? null;
         $referrer = $_SERVER['HTTP_REFERER'] ?? null;
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
         $acceptLanguage = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? null;
         return [
             'url' => $currentUrl,
-            'query' => empty($query) ? null : (string) $query,
+            'query' => empty($query) ? null : $query,
             'referrer' => empty($referrer) ? null : (string) $referrer,
             'user_agent' => empty($userAgent) ? null : (string) $userAgent,
             'accept_language' => empty($acceptLanguage) ? null : (string) $acceptLanguage,

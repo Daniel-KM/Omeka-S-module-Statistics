@@ -60,6 +60,7 @@ ALTER TABLE `hit`
     CHANGE `entity_name` `entity_name` VARCHAR(190) DEFAULT '' NOT NULL,
     CHANGE `user_id` `user_id` INT DEFAULT 0 NOT NULL,
     CHANGE `ip` `ip` VARCHAR(45) DEFAULT '' NOT NULL,
+    CHANGE `query` `query` LONGTEXT DEFAULT NULL COMMENT '(DC2Type:json)',
     CHANGE `referrer` `referrer` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_cs`,
     CHANGE `user_agent` `user_agent` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`,
     CHANGE `accept_language` `accept_language` VARCHAR(190) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`;
@@ -68,6 +69,31 @@ CREATE INDEX `IDX_5AD22641C44967C5` ON `hit` (`user_agent`);
 CREATE INDEX `IDX_5AD22641ED646567` ON `hit` (`referrer`);
 SQL;
     $connection->executeStatement($sql);
+
+    // Url decode queries and parse them. Paginate them, because query may be big.
+    $requestGet = [];
+    // Api cannot be used during upgrade.
+    // $hitIds = $api->search('hits', ['not_empty' => 'query'], ['returnScalar' => 'id'])->getContent();
+    $hitIds = $connection->executeQuery('SELECT `hit`.`id` FROM `hit` WHERE `hit`.`query` IS NOT NULL AND `hit`.`query` != "";')->fetchFirstColumn();
+    $sql = <<<'SQL'
+UPDATE `hit`
+SET `hit`.`query` = :query
+WHERE `hit`.`id` = :id;
+SQL;
+    foreach (array_chunk($hitIds, 100) as $chunk) {
+        // $queries = $api->search('hits', ['id' => $chunk], ['returnScalar' => 'query'])->getContent();
+        $queries = $connection->executeQuery('SELECT `hit`.`id`, `hit`.`query` FROM `hit` WHERE `hit`.`id` IN (:ids)', ['ids' => $chunk], ['ids' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY])->fetchAllKeyValue();
+        foreach ($queries as $id => $query) {
+            if (is_null($query) || $query === '') {
+                $query = null;
+            } else {
+                // url_decode() is automatically run.
+                parse_str($query, $requestGet);
+                $query = $requestGet ? json_encode($requestGet) : null;
+            }
+            $connection->executeStatement($sql, ['id' => $id, 'query' => $query], ['id' => \Doctrine\DBAL\ParameterType::INTEGER, 'query' => \Doctrine\DBAL\ParameterType::STRING]);
+        }
+    }
 
     // Get list of site ids/slugs.
     $siteSlugs = $api->search('sites', [], ['returnScalar' => 'slug'])->getContent();

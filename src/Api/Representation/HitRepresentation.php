@@ -135,9 +135,9 @@ class HitRepresentation extends AbstractEntityRepresentation
         return $this->resource->getReferrer() ?: null;
     }
 
-    public function query(): ?string
+    public function query(): ?array
     {
-        return $this->resource->getQuery() ?: null;
+        return $this->resource->getQuery();
     }
 
     public function userAgent(): ?string
