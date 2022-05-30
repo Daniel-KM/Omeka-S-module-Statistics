@@ -774,8 +774,17 @@ class Statistic extends AbstractHelper
         // Don't group by id, but by field.
         $qb->groupBy("omeka_root.$field");
         $this->hitAdapter->limitQuery($qb, $query);
+
+        // Frequent cannot sort query to avoid issue with "only_full_group_by".
+        // TODO Merge with HitAdapter::sortQuery().
+        // $this->hitAdapter->sortQuery($qb, $query);
+        if (isset($query['sort_field']) && is_array($query['sort_field'])) {
+            $query['sort_field'] = array_intersect_key($query['sort_field'], ['hits' => null, $field]);
+        }
+        if (isset($query['sort_by']) && !in_array($query['sort_by'], ['hits', $field])) {
+            $query['sort_by'] = null;
+        }
         $this->hitAdapter->sortQuery($qb, $query);
-        $qb->addOrderBy('omeka_root.id', $query['sort_order']);
 
         // Return an array with two columns.
         return $qb->getQuery()->getScalarResult();
