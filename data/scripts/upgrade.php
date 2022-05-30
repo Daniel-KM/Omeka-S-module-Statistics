@@ -20,8 +20,8 @@ $settings = $services->get('Omeka\Settings');
 // $config = require dirname(dirname(__DIR__)) . '/config/module.config.php';
 $connection = $services->get('Omeka\Connection');
 // $entityManager = $services->get('Omeka\EntityManager');
-// $plugins = $services->get('ControllerPluginManager');
-// $api = $plugins->get('api');
+$plugins = $services->get('ControllerPluginManager');
+$api = $plugins->get('api');
 
 if (version_compare($oldVersion, '3.3.4.2', '<')) {
     $settings->set('statistics_public_allow_browse', $settings->get('statistics_public_allow_browse_pages', false));
@@ -59,4 +59,60 @@ CREATE INDEX `IDX_5AD22641ED646567` ON `hit` (`referrer`);
 CREATE INDEX `IDX_5AD22641C44967C5` ON `hit` (`user_agent`);
 SQL;
     $connection->executeStatement($sql);
+
+    // Get list of site ids/slugs.
+    $siteSlugs = $api->search('sites', [], ['returnScalar' => 'slug'])->getContent();
+
+    // Fill sites.
+    foreach ($siteSlugs as $siteId => $siteSlug) {
+        $bind = ['site_id' => $siteId, 'slug_eq' => "/s/$siteSlug", 'slug_like' => "/s/$siteSlug/%"];
+        $types = ['site_id' => \Doctrine\DBAL\ParameterType::INTEGER, 'slug_eq' => \Doctrine\DBAL\ParameterType::STRING, 'slug_like' => \Doctrine\DBAL\ParameterType::STRING];
+        $sql = <<<'SQL'
+UPDATE `hit`
+SET
+    `hit`.`site_id` = :site_id
+WHERE
+    (`hit`.`url` = :slug_eq OR `hit`.`url` LIKE :slug_like)
+    AND `hit`.`site_id` = 0
+;
+SQL;
+        $connection->executeStatement($sql, $bind, $types);
+    }
+
+    // Fill site pages.
+    foreach ($siteSlugs as $siteId => $siteSlug) {
+        // Get list of site page ids/slugs.
+        $pageSlugs = $api->search('site_pages', ['site_id' => $siteId], ['returnScalar' => 'slug'])->getContent();
+        foreach ($pageSlugs as $pageId => $pageSlug) {
+            $bind = ['site_id' => $siteId, 'page_id' => $pageId, 'page_url' => "/s/$siteSlug/page/$pageSlug"];
+            $types = ['site_id' => \Doctrine\DBAL\ParameterType::INTEGER, 'page_id' => \Doctrine\DBAL\ParameterType::INTEGER, 'page_url' => \Doctrine\DBAL\ParameterType::STRING];
+            $sql = <<<'SQL'
+    UPDATE `hit`
+    SET
+        `hit`.`entity_name` = "site_pages",
+        `hit`.`entity_id` = :page_id
+    WHERE
+        `hit`.`url` = :page_url
+        AND `hit`.`site_id` = :site_id
+        AND `hit`.`entity_name` = ""
+        AND `hit`.`entity_id` = 0
+    ;
+    SQL;
+            $connection->executeStatement($sql, $bind, $types);
+
+            unset($bind['site_id'], $types['site_id']);
+            $sql = <<<'SQL'
+    UPDATE `stat`
+    SET
+        `stat`.`entity_name` = "site_pages",
+        `stat`.`entity_id` = :page_id
+    WHERE
+        `stat`.`url` = :page_url
+        AND `stat`.`entity_name` = ""
+        AND `stat`.`entity_id` = 0
+    ;
+    SQL;
+            $connection->executeStatement($sql, $bind, $types);
+        }
+    }
 }
