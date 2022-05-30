@@ -236,7 +236,7 @@ class BrowseController extends AbstractActionController
         $types = [];
         $force = $whereYear = $whereMonth = '';
         if ($year || $month) {
-            // This is the doctrince hashed name index for the column "created".
+            // This is the doctrine hashed name index for the column "created".
             $force = 'FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
             if ($year) {
                 $whereYear = "\nAND YEAR(hit.created) = :year";
@@ -281,6 +281,7 @@ SQL;
                 $results[] = [
                     'item-set' => $api->read('item_sets', ['id' => $itemSetId])->getContent()->displayTitle(),
                     'hits' => $hits,
+                    'hitsInclusive' => '',
                 ];
             }
         }
