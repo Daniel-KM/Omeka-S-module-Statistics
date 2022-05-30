@@ -67,7 +67,10 @@ class Hit extends AbstractEntity
      *
      * @Column(
      *     type="integer",
-     *     nullable=false
+     *     nullable=false,
+     *     options={
+     *         "default":0
+     *     }
      * )
      */
     protected $entityId = 0;
@@ -80,7 +83,10 @@ class Hit extends AbstractEntity
      * @Column(
      *     type="string",
      *     length=190,
-     *     nullable=false
+     *     nullable=false,
+     *     options={
+     *         "default":""
+     *     }
      * )
      */
     protected $entityName = '';
@@ -90,7 +96,10 @@ class Hit extends AbstractEntity
      *
      * @Column(
      *     type="integer",
-     *     nullable=false
+     *     nullable=false,
+     *     options={
+     *         "default":0
+     *     }
      * )
      */
     protected $userId = 0;
@@ -103,7 +112,10 @@ class Hit extends AbstractEntity
      * @Column(
      *     type="string",
      *     length=45,
-     *     nullable=false
+     *     nullable=false,
+     *     options={
+     *         "default":""
+     *     }
      * )
      */
     protected $ip = '';
@@ -113,7 +125,10 @@ class Hit extends AbstractEntity
      *
      * @Column(
      *     type="text",
-     *     nullable=false
+     *     nullable=false,
+     *     options={
+     *         "default":""
+     *     }
      * )
      */
     protected $query = '';
@@ -124,7 +139,10 @@ class Hit extends AbstractEntity
      * @Column(
      *     type="string",
      *     length=1024,
-     *     nullable=false
+     *     nullable=false,
+     *     options={
+     *         "default":""
+     *     }
      * )
      */
     protected $referrer = '';
@@ -135,7 +153,10 @@ class Hit extends AbstractEntity
      * @Column(
      *     type="string",
      *     length=1024,
-     *     nullable=false
+     *     nullable=false,
+     *     options={
+     *         "default":""
+     *     }
      * )
      */
     protected $userAgent = '';
@@ -146,7 +167,10 @@ class Hit extends AbstractEntity
      * @Column(
      *     type="string",
      *     length=190,
-     *     nullable=false
+     *     nullable=false,
+     *     options={
+     *         "default":""
+     *     }
      * )
      */
     protected $acceptLanguage = '';
