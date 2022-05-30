@@ -68,23 +68,12 @@ class BrowseController extends AbstractActionController
         $year = $query['year'] ?? null;
         $month = $query['month'] ?? null;
 
-        $bind = [];
-        $types = [];
-        $force = $whereYear = $whereMonth = '';
-        if ($year || $month) {
-            // This is the doctrine hashed name index for the column "created".
-            $force = 'FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
-            if ($year) {
-                $whereYear = "\nAND YEAR(hit.created) = :year";
-                $bind['year'] = $year;
-                $types['year'] = \Doctrine\DBAL\ParameterType::INTEGER;
-            }
-            if ($month) {
-                $whereMonth = "\nAND MONTH(hit.created) = :month";
-                $bind['month'] = $month;
-                $types['month'] = \Doctrine\DBAL\ParameterType::INTEGER;
-            }
-        }
+        $appendDates = $this->whereDate($year, $month, [], []);
+        $bind = $appendDates['bind'];
+        $types = $appendDates['types'];
+        $force = $appendDates['force'];
+        $whereYear = $appendDates['whereYear'];
+        $whereMonth = $appendDates['whereMonth'];
 
         $sql = <<<SQL
 SELECT hit.site_id, COUNT(hit.id) AS total_hits
@@ -335,23 +324,12 @@ SQL;
         $year = $query['year'] ?? null;
         $month = $query['month'] ?? null;
 
-        $bind = [];
-        $types = [];
-        $force = $whereYear = $whereMonth = '';
-        if ($year || $month) {
-            // This is the doctrine hashed name index for the column "created".
-            $force = 'FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
-            if ($year) {
-                $whereYear = "\nAND YEAR(hit.created) = :year";
-                $bind['year'] = $year;
-                $types['year'] = \Doctrine\DBAL\ParameterType::INTEGER;
-            }
-            if ($month) {
-                $whereMonth = "\nAND MONTH(hit.created) = :month";
-                $bind['month'] = $month;
-                $types['month'] = \Doctrine\DBAL\ParameterType::INTEGER;
-            }
-        }
+        $appendDates = $this->whereDate($year, $month, [], []);
+        $bind = $appendDates['bind'];
+        $types = $appendDates['types'];
+        $force = $appendDates['force'];
+        $whereYear = $appendDates['whereYear'];
+        $whereMonth = $appendDates['whereMonth'];
 
         $sql = <<<SQL
 SELECT item_item_set.item_set_id, COUNT(hit.id) AS total_hits
@@ -458,23 +436,14 @@ SQL;
         $property = $query['property'] ?? null;
         $typeFilter = $query['value_type'] ?? null;
 
-        $bind = [];
-        $types = [];
-        $force = $whereYear = $whereMonth = '';
-        if ($year || $month) {
-            // This is the doctrine hashed name index for the column "created".
-            $force = 'FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
-            if ($year) {
-                $whereYear = "\nAND YEAR(hit.created) = :year";
-                $bind['year'] = $year;
-                $types['year'] = \Doctrine\DBAL\ParameterType::INTEGER;
-            }
-            if ($month) {
-                $whereMonth = "\nAND MONTH(hit.created) = :month";
-                $bind['month'] = $month;
-                $types['month'] = \Doctrine\DBAL\ParameterType::INTEGER;
-            }
-        }
+        // TODO Manage "force index" via query builder.
+        // $qb = $this->connection->createQueryBuilder();
+        $appendDates = $this->whereDate($year, $month, [], []);
+        $bind = $appendDates['bind'];
+        $types = $appendDates['types'];
+        $force = $appendDates['force'];
+        $whereYear = $appendDates['whereYear'];
+        $whereMonth = $appendDates['whereMonth'];
 
         // A property is required to get stats.
         if ($property && $propertyId = $this->getPropertyId($property)) {
@@ -585,6 +554,34 @@ SQL;
             $query['sort_order'] = 'desc';
         }
         return $query;
+    }
+
+    protected function whereDate($year = null, $month = null, array $bind = [], array $types = []): array
+    {
+        if ($year || $month) {
+            // This is the doctrine hashed name index for the column "created".
+            $force = 'FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
+            if ($year && $month) {
+                $whereYear = "\nAND EXTRACT(YEAR_MONTH FROM hit.created) = :year_month";
+                $bind['year_month'] = sprintf('%04d%02d', $year, $month);
+                $types['year_month'] = \Doctrine\DBAL\ParameterType::INTEGER;
+            } elseif ($year) {
+                $whereYear = "\nAND EXTRACT(YEAR FROM hit.created) = :year";
+                $bind['year'] = $year;
+                $types['year'] = \Doctrine\DBAL\ParameterType::INTEGER;
+            } elseif ($month) {
+                $whereMonth = "\nAND EXTRACT(MONTH FROM hit.created) = :month";
+                $bind['month'] = $month;
+                $types['month'] = \Doctrine\DBAL\ParameterType::INTEGER;
+            }
+        }
+        return [
+            'bind' => $bind,
+            'types' => $types,
+            'force' => $force ?? '',
+            'whereYear' => $whereYear ?? '',
+            'whereMonth' => $whereMonth ?? '',
+        ];
     }
 
     protected function listAvailableYears(): array
