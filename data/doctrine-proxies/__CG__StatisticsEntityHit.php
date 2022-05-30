@@ -66,10 +66,10 @@ class Hit extends \Statistics\Entity\Hit implements \Doctrine\ORM\Proxy\Proxy
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'id', 'url', 'entityId', 'entityName', 'userId', 'ip', 'query', 'referrer', 'userAgent', 'acceptLanguage', 'created'];
+            return ['__isInitialized__', 'id', 'url', 'entityId', 'entityName', 'siteId', 'userId', 'ip', 'query', 'referrer', 'userAgent', 'acceptLanguage', 'created'];
         }
 
-        return ['__isInitialized__', 'id', 'url', 'entityId', 'entityName', 'userId', 'ip', 'query', 'referrer', 'userAgent', 'acceptLanguage', 'created'];
+        return ['__isInitialized__', 'id', 'url', 'entityId', 'entityName', 'siteId', 'userId', 'ip', 'query', 'referrer', 'userAgent', 'acceptLanguage', 'created'];
     }
 
     /**
@@ -255,6 +255,28 @@ class Hit extends \Statistics\Entity\Hit implements \Doctrine\ORM\Proxy\Proxy
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getEntityName', []);
 
         return parent::getEntityName();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setSiteId(?int $siteId): \Statistics\Entity\Hit
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setSiteId', [$siteId]);
+
+        return parent::setSiteId($siteId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getSiteId(): int
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getSiteId', []);
+
+        return parent::getSiteId();
     }
 
     /**

@@ -18,7 +18,7 @@ use Omeka\Stdlib\Message;
 $services = $serviceLocator;
 $settings = $services->get('Omeka\Settings');
 // $config = require dirname(dirname(__DIR__)) . '/config/module.config.php';
-// $connection = $services->get('Omeka\Connection');
+$connection = $services->get('Omeka\Connection');
 // $entityManager = $services->get('Omeka\EntityManager');
 // $plugins = $services->get('ControllerPluginManager');
 // $api = $plugins->get('api');
@@ -37,4 +37,26 @@ if (version_compare($oldVersion, '3.3.4.2', '<')) {
     );
     $message->setEscapeHtml(false);
     $messenger->addWarning($message);
+}
+
+if (version_compare($oldVersion, '3.3.4.3', '<')) {
+    // Update table.
+    $sql = <<<'SQL'
+DROP INDEX `IDX_5AD22641ED646567` ON `hit`;
+DROP INDEX `IDX_5AD22641C44967C5` ON `hit`;
+ALTER TABLE `hit`
+    ADD `site_id` INT DEFAULT 0 NOT NULL AFTER `entity_name`,
+    CHANGE `entity_id` `entity_id` INT DEFAULT 0 NOT NULL,
+    CHANGE `entity_name` `entity_name` VARCHAR(190) DEFAULT '' NOT NULL,
+    CHANGE `user_id` `user_id` INT DEFAULT 0 NOT NULL,
+    CHANGE `ip` `ip` VARCHAR(45) DEFAULT '' NOT NULL,
+    CHANGE `referrer` `referrer` VARCHAR(1024) DEFAULT '' NOT NULL,
+    CHANGE `user_agent` `user_agent` VARCHAR(1024) DEFAULT '' NOT NULL,
+    CHANGE `accept_language` `accept_language` VARCHAR(190) DEFAULT '' NOT NULL,
+    CHANGE `created` `created` DATETIME NOT NULL;
+CREATE INDEX `IDX_5AD22641F6BD1646` ON `hit` (`site_id`);
+CREATE INDEX `IDX_5AD22641ED646567` ON `hit` (`referrer`);
+CREATE INDEX `IDX_5AD22641C44967C5` ON `hit` (`user_agent`);
+SQL;
+    $connection->executeStatement($sql);
 }

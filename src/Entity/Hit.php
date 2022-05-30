@@ -21,6 +21,7 @@ use Omeka\Entity\AbstractEntity;
  *         @Index(columns={"entity_id"}),
  *         @Index(columns={"entity_name"}),
  *         @Index(columns={"entity_id", "entity_name"}),
+ *         @Index(columns={"site_id"}),
  *         @Index(columns={"user_id"}),
  *         @Index(columns={"ip"}),
  *         @Index(columns={"referrer"}),
@@ -90,6 +91,21 @@ class Hit extends AbstractEntity
      * )
      */
     protected $entityName = '';
+
+    /**
+     * Site id.
+     *
+     * @var int
+     *
+     * @Column(
+     *     type="integer",
+     *     nullable=false,
+     *     options={
+     *         "default":0
+     *     }
+     * )
+     */
+    protected $siteId = 0;
 
     /**
      * @var int
@@ -221,6 +237,17 @@ class Hit extends AbstractEntity
     public function getEntityName(): string
     {
         return $this->entityName;
+    }
+
+    public function setSiteId(?int $siteId): self
+    {
+        $this->siteId = (int) $siteId;
+        return $this;
+    }
+
+    public function getSiteId(): int
+    {
+        return $this->siteId;
     }
 
     public function setUserId(?int $userId): self

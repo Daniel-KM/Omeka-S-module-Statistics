@@ -25,6 +25,7 @@ class HitAdapter extends AbstractEntityAdapter
         'url' => 'url',
         'entity_name' => 'entityName',
         'entity_id' => 'entityId',
+        'site_id' => 'siteId',
         'ip' => 'ip',
         'referrer' => 'referrer',
         'user_agent' => 'userAgent',
@@ -128,6 +129,20 @@ class HitAdapter extends AbstractEntityAdapter
                 $qb->andWhere($expr->eq(
                     'omeka_root.entityId',
                     $this->createNamedParameter($qb, '0')
+                ));
+            }
+        }
+
+        if (isset($query['site_id'])) {
+            if (is_array($query['site_id'])) {
+                $qb->andWhere($expr->in(
+                    'omeka_root.siteId',
+                    $this->createNamedParameter($qb, $query['site_id'])
+                ));
+            } else {
+                $qb->andWhere($expr->eq(
+                    'omeka_root.siteId',
+                    $this->createNamedParameter($qb, $query['site_id'])
                 ));
             }
         }
@@ -370,6 +385,7 @@ class HitAdapter extends AbstractEntityAdapter
             'o:url' => 'setUrl',
             'o:entity_id' => 'setEntityId',
             'o:entity_name' => 'setEntityName',
+            'o:site_id' => 'setSiteId',
             'o:user_id' => 'setUserId',
             'o:ip' => 'setIp',
             'o:referrer' => 'setReferrer',
@@ -384,7 +400,7 @@ class HitAdapter extends AbstractEntityAdapter
                 continue;
             }
             $method = $keyMethods[$keyName];
-            if (in_array($key, ['o:entity_id', 'o:user_id'])) {
+            if (in_array($key, ['o:entity_id', 'o:site_id', 'o:user_id'])) {
                 $value = (int) $value;
             }
             $entity->$method($value);
@@ -513,6 +529,7 @@ class HitAdapter extends AbstractEntityAdapter
             'url' => 'o:url',
             'entity_id' => 'o:entity_id',
             'entity_name' => 'o:entity_name',
+            'site_id' => 'o:site_id',
             'user_id' => 'o:user_id',
             'ip' => 'o:ip',
             'query' => 'o:query',
@@ -522,7 +539,7 @@ class HitAdapter extends AbstractEntityAdapter
             'created' => 'o:created',
         ];
 
-        $currentEntityNameAndId = $this->currentEntityNameAndId();
+        $currentDataFromRoute = $this->currentDataFromRoute();
         $currentRequest = $this->currentRequest();
 
         $result = array_fill_keys($keys, null);
@@ -540,10 +557,13 @@ class HitAdapter extends AbstractEntityAdapter
                         $value = $currentRequest['url'];
                         break;
                     case 'o:entity_id':
-                        $value = $currentEntityNameAndId ? $currentEntityNameAndId['id'] : null;
+                        $value = $currentDataFromRoute['id'];
                         break;
                     case 'o:entity_name':
-                        $value = $currentEntityNameAndId ? $currentEntityNameAndId['name'] : null;
+                        $value = $currentDataFromRoute['name'];
+                        break;
+                    case 'o:site_id':
+                        $value = $currentDataFromRoute['site_id'];
                         break;
                     case 'o:user_id':
                         $value = $this->currentUser();
@@ -628,27 +648,56 @@ class HitAdapter extends AbstractEntityAdapter
     }
 
     /**
-     * Get the name and the id of the current entity from the route.
+     * Get the name and id of the current entity and the site id from the route.
+     *
+     * An entity is commonly a resource (item, item set, media) or a site page.
      *
      * The filter event "stats_resource" from Omeka classic is useless now.
-     *
-     * @todo Store the site id and the site page id (it may be slow, so set it during routing?).
      */
-    protected function currentEntityNameAndId(): ?array
+    protected function currentDataFromRoute(): array
     {
-        /** @var \Laminas\Mvc\MvcEvent $event */
-        $event = $this->getServiceLocator()->get('Application')->getMvcEvent();
+        /**
+         * @var \Laminas\ServiceManager\ServiceLocatorInterface $services
+         * @var \Doctrine\ORM\EntityManager $entityManager
+         * @var \Laminas\Mvc\MvcEvent $event
+         */
+        $services = $this->getServiceLocator();
+        $entityManager = $services->get('Omeka\EntityManager');
+        $event = $services->get('Application')->getMvcEvent();
         $routeParams = $event->getRouteMatch()->getParams();
+
+        // Get site id first. The site id may be added by module CleanUrl.
+        if (!empty($routeParams['site_id'])) {
+            $siteId = (int) $routeParams['site_id'];
+        } elseif (!empty($routeParams['site-slug'])) {
+            // Most of the time, the site is already or will be loaded, so it is
+            // already fetched by the entity manager.
+            $siteId = $entityManager->getRepository(\Omeka\Entity\Site::class)
+                ->findOneBy(['slug' => $routeParams['site-slug']]);
+            $siteId = $siteId ? (int) $siteId->getId() : null;
+        } else {
+            $siteId = null;
+        }
+
+        $result = [
+            'site_id' => $siteId,
+            'name' => null,
+            'id' => null,
+        ];
 
         $name = $routeParams['__CONTROLLER__'] ?? $routeParams['controller'] ?? $routeParams['resource'] ?? null;
         if (!$name) {
-            return null;
+            return $result;
         }
 
         if ($name === 'AccessResource'
             || $name === 'Download'
         ) {
-            return $this->currentMediaId($routeParams);
+            $result['id'] = $this->currentMediaId($routeParams);
+            if ($result['id']) {
+                $result['name'] = 'media';
+            }
+            return $result;
         }
 
         // TODO Get the full mapping from controllers to api names.
@@ -674,12 +723,12 @@ class HitAdapter extends AbstractEntityAdapter
         if (isset($controllerToNames[$name])) {
             $name = $controllerToNames[$name];
         // } elseif ($name === 'GuestBoard') {
-        //     return null;
+        //     return $result;
         // } elseif (strpos($name, '\\')) {
         //     // This is an unknown controller.
-        //     return null;
+        //     return $result;
         } else {
-            return null;
+            return $result;
         }
 
         // Manage exception for item sets (the item set id is get below).
@@ -687,18 +736,18 @@ class HitAdapter extends AbstractEntityAdapter
             $name = 'item_sets';
         }
 
+        // Check for a resource (item, item set, media).
         $id = $routeParams['id'] ?? $routeParams['resource-id'] ?? $routeParams['media-id'] ?? $routeParams['item-id'] ?? $routeParams['item-set-id'] ?? null;
-        if (!$id) {
-            return null;
+        if ($id) {
+            $result['name'] = $name;
+            $result['id'] = $id;
+            return $result;
         }
 
-        return [
-            'name' => $name,
-            'id' => $id,
-        ];
+        return $result;
     }
 
-    protected function currentMediaId(array $params): ?array
+    protected function currentMediaId(array $params): ?int
     {
         if (empty($params['type']) || empty($params['filename'])) {
             return null;
@@ -721,10 +770,7 @@ class HitAdapter extends AbstractEntityAdapter
 
         try {
             $media = $this->getAdapter('media')->findEntity(['storageId' => $storageId]);
-            return [
-                'name' => 'media',
-                'id' => $media->getId(),
-            ];
+            return $media->getId();
         } catch (\Omeka\Api\Exception\NotFoundException $e) {
             return null;
         }

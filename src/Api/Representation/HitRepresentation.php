@@ -29,6 +29,7 @@ class HitRepresentation extends AbstractEntityRepresentation
             'o:url' => $this->hitUrl(),
             'o:entity_id' => $this->entityId(),
             'o:entity_name' => $this->entityName(),
+            'o:site_id' => $this->siteId(),
             'o:user_id' => $this->userId(),
             'o:ip' => $this->ip(),
             'o:referrer' => $this->referrer(),
@@ -60,6 +61,8 @@ class HitRepresentation extends AbstractEntityRepresentation
     /**
      * The resource type (api name) when the page is dedicated to a resource.
      *
+      * It is commonly a resource (item, item set, media) or a site page.
+    *
      * Only one resource is saved by hit, the first one, so this should be the
      * dedicated page of a resource , for example "/item/#xxx".
      *
@@ -101,6 +104,14 @@ class HitRepresentation extends AbstractEntityRepresentation
     public function resourceId(): ?string
     {
         return $this->resource->getEntityId() ?: null;
+    }
+
+    /**
+     * The site id of the page.
+     */
+    public function siteId(): ?int
+    {
+        return $this->resource->getSiteId() ?: null;
     }
 
     /**
