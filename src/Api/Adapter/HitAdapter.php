@@ -744,6 +744,21 @@ class HitAdapter extends AbstractEntityAdapter
             return $result;
         }
 
+        // Check for a site page.
+        // Get site id first. The site id may be added by module CleanUrl.
+        if (!empty($routeParams['site_page_id'])) {
+            $result['name'] = 'site_pages';
+            $result['id'] = (int) $routeParams['site_page_id'];
+        } elseif (!empty($routeParams['page-slug'])) {
+            // The page is already or will be loaded, so it is already fetched.
+            $pageId = $entityManager->getRepository(\Omeka\Entity\SitePage::class)
+                ->findOneBy(['slug' => $routeParams['page-slug']]);
+            if ($pageId) {
+                $result['name'] = 'site_pages';
+                $result['id'] = (int) $pageId;
+            }
+        }
+
         return $result;
     }
 
