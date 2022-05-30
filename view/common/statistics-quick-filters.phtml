@@ -19,6 +19,9 @@ $routeStatistics = $this->status()->isAdminRequest() ? 'admin/statistics/default
         */ ?>
 <?php
 switch ($type):
+    case 'site': ?>
+        <?php break;
+
     case 'page': ?>
         <li><a href="<?= $url($routeStatistics, ['action' => 'by-page'], true) ?>"><?= $translate('View all') ?></a></li>
         <li><a href="<?= $url($routeStatistics, ['action' => 'by-page'], ['query' => ['has_resource' => true]], true) ?>"><?= $translate('With resource') ?></a></li>

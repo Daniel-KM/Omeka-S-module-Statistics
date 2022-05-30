@@ -21,6 +21,7 @@ if ($isAdminRequest || $this->setting('statistics_public_allow_summary')) {
     $sectionNavs[$urlHelper($routeSummary, [], true)] = $translate('Summary');
 }
 if ($isAdminRequest || $this->setting('statistics_public_allow_browse')) {
+    $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-site'], true)] = $translate('By site');
     $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-page'], true)] = $translate('By page');
     $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-resource'], true)] = $translate('By resource');
     $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-download'], true)] = $translate('By download');

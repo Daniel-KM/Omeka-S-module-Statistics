@@ -41,6 +41,108 @@ class BrowseController extends AbstractActionController
         return $this->redirect()->toRoute($isSiteRequest ? 'site/statistics/default' : 'admin/statistics/default', $query);
     }
 
+    public function bySiteAction()
+    {
+        // FIXME Stats by site has not been fully checked.
+        // TODO Add a column "site_id" in table "stat".
+        // TODO Factorize with byItemSetAction?
+        // TODO Move the process into view helper Statistic.
+        // TODO Enlarge byItemSet to byResource (since anything is resource).
+
+        $isAdminRequest = $this->status()->isAdminRequest();
+        $settings = $this->settings();
+
+        $userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
+
+        if ($userStatus === 'anonymous') {
+            $whereStatus = "\nAND hit.user_id = 0";
+        } elseif ($userStatus === 'identified') {
+            $whereStatus = "\nAND hit.user_id <> 0";
+        } else {
+            $whereStatus = '';
+        }
+
+        $query = $this->params()->fromQuery();
+        $year = $query['year'] ?? null;
+        $month = $query['month'] ?? null;
+
+        $bind = [];
+        $types = [];
+        $force = $whereYear = $whereMonth = '';
+        if ($year || $month) {
+            // This is the doctrine hashed name index for the column "created".
+            $force = 'FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
+            if ($year) {
+                $whereYear = "\nAND YEAR(hit.created) = :year";
+                $bind['year'] = $year;
+                $types['year'] = \Doctrine\DBAL\ParameterType::INTEGER;
+            }
+            if ($month) {
+                $whereMonth = "\nAND MONTH(hit.created) = :month";
+                $bind['month'] = $month;
+                $types['month'] = \Doctrine\DBAL\ParameterType::INTEGER;
+            }
+        }
+
+        $sql = <<<SQL
+SELECT hit.site_id, COUNT(hit.id) AS total_hits
+FROM hit hit $force
+WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth
+GROUP BY hit.site_id
+ORDER BY total_hits
+;
+SQL;
+        $hitsPerSite = $this->connection->executeQuery($sql, $bind, $types)->fetchAllKeyValue();
+
+        $removedSite = $this->translate('[Removed site #%d]'); // @translate
+
+        $api = $this->api();
+        $results = [];
+        foreach ($hitsPerSite as $siteId => $hits) {
+            try {
+                $siteTitle = $api->read('sites', ['id' => $siteId])->getContent()->title();
+            } catch (\Exception $e) {
+                $siteTitle = sprintf($removedSite, $siteId);
+            }
+            $results[] = [
+                'site' => $siteTitle,
+                'hits' => $hits,
+                'hitsInclusive' => '',
+            ];
+        }
+
+        $this->paginator(count($results));
+
+        // TODO Manage special sort fields.
+        $sortBy = $query['sort_by'] ?? null;
+        if (empty($sortBy) || !in_array($sortBy, ['site', 'hits', 'hitsInclusive'])) {
+            $sortBy = 'hitsInclusive';
+        }
+        $sortOrder = $query['sort_order'] ?? null;
+        if (empty($sortOrder) || $sortOrder !== 'asc') {
+            $sortOrder = 'desc';
+        }
+
+        usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
+            $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
+            return $sortOrder === 'desc' ? -$cmp : $cmp;
+        });
+
+        $years = $this->listAvailableYears();
+
+        $view = new ViewModel([
+            'type' => 'site',
+            'results' => $results,
+            'years' => $years,
+            'yearFilter' => $year,
+            'monthFilter' => $month,
+        ]);
+        return $view
+            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-site' : 'statistics/site/browse/by-site');
+    }
+
     /**
      * Browse rows by page action.
      */
@@ -269,6 +371,8 @@ ORDER BY total_hits
 SQL;
         $hitsPerItemSet = $this->connection->executeQuery($sql, $bind, $types)->fetchAllKeyValue();
 
+        $removedItemSet = $this->translate('[Removed item set #%d]'); // @translate
+
         $api = $this->api();
         $results = [];
         // TODO Check and integrate statistics for item set tree (with performance).
@@ -277,8 +381,13 @@ SQL;
             foreach ($itemSetIds as $itemSetId) {
                 $hitsInclusive = $this->getHitsPerItemSet($hitsPerItemSet, $itemSetId);
                 if ($hitsInclusive > 0) {
+                    try {
+                        $itemSetTitle = $api->read('item_sets', ['id' => $itemSetId])->getContent()->displayTitle();
+                    } catch (\Exception $e) {
+                        $itemSetTitle = sprintf($removedItemSet, $itemSetId);
+                    }
                     $results[] = [
-                        'item-set' => $api->read('item_sets', ['id' => $itemSetId])->getContent()->displayTitle(),
+                        'item-set' => $itemSetTitle,
                         'hits' => $hitsPerItemSet[$itemSetId] ?? 0,
                         'hitsInclusive' => $hitsInclusive,
                     ];
@@ -286,8 +395,13 @@ SQL;
             }
         } else {
             foreach ($hitsPerItemSet as $itemSetId => $hits) {
+                try {
+                    $itemSetTitle = $api->read('item_sets', ['id' => $itemSetId])->getContent()->displayTitle();
+                } catch (\Exception $e) {
+                    $itemSetTitle = sprintf($removedItemSet, $itemSetId);
+                }
                 $results[] = [
-                    'item-set' => $api->read('item_sets', ['id' => $itemSetId])->getContent()->displayTitle(),
+                    'item-set' => $itemSetTitle,
                     'hits' => $hits,
                     'hitsInclusive' => '',
                 ];
@@ -311,13 +425,7 @@ SQL;
             return $sortOrder === 'desc' ? -$cmp : $cmp;
         });
 
-        // List of all available years.
-        $qb = $this->connection->createQueryBuilder();
-        $qb
-            ->select('DISTINCT YEAR(hit.created) AS year')
-            ->from('hit', 'hit')
-            ->orderBy('year', 'desc');
-        $years = $this->connection->executeQuery($qb)->fetchFirstColumn();
+        $years = $this->listAvailableYears();
 
         $view = new ViewModel([
             'type' => 'item-set',
@@ -341,5 +449,16 @@ SQL;
             $childrenHits += $this->getHitsPerItemSet($hitsPerItemSet, $childItemSetId);
         }
         return ($hitsPerItemSet[$itemSetId] ?? 0) + $childrenHits;
+    }
+
+    protected function listAvailableYears(): array
+    {
+        // List of all available years.
+        $qb = $this->connection->createQueryBuilder();
+        $qb
+            ->select('DISTINCT YEAR(hit.created) AS year')
+            ->from('hit', 'hit')
+            ->orderBy('year', 'desc');
+        return $this->connection->executeQuery($qb)->fetchFirstColumn();
     }
 }
