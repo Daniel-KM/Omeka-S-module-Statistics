@@ -554,7 +554,7 @@ class HitAdapter extends AbstractEntityAdapter
                         $value = null;
                         break;
                     case 'o:url':
-                        $value = $currentRequest['url'];
+                        $value = substr((string) $currentRequest['url'], 0, 1024);
                         break;
                     case 'o:entity_id':
                         $value = $currentDataFromRoute['id'];
@@ -576,13 +576,14 @@ class HitAdapter extends AbstractEntityAdapter
                         $value = $currentRequest['query'];
                         break;
                     case 'o:referrer':
-                        $value = $currentRequest['referrer'];
+                        // Use substr: headings should be us-ascii.
+                        $value = substr((string) $currentRequest['referrer'], 0, 1024);
                         break;
                     case 'o:user_agent':
-                        $value = $currentRequest['user_agent'];
+                        $value = substr((string) $currentRequest['user_agent'], 0, 1024);
                         break;
                     case 'o:accept_language':
-                        $value = $currentRequest['accept_language'];
+                        $value = substr((string) $currentRequest['accept_language'], 0, 190);
                         break;
                     case 'o:created':
                         $value = new DateTime('now');
