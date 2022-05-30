@@ -40,4 +40,11 @@
     .statistics .section-nav .navigation li.active {
         font-weight: bold;
     }
+
+    .statistics .section-nav {
+        height: fit-content;
+    }
+    .statistics .flex-container {
+        width: fit-content;
+    }
 }
