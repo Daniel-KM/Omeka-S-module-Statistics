@@ -207,13 +207,15 @@ Notes
 TODO
 ----
 
+- [ ] Fixme: stats by value is wrong when a property has duplicate values for a resource (so fix it or warn about deduplicating values regularly (module BulkEdit)).
 - [x] Fix and finalize statistics for public side and shortcodes.
 - [ ] Replace public statistics pages by a block and remove public routes.
 - [ ] Statistics for api.
 - [x] Add summary in public side.
 - [ ] Move some options to site settings.
-- [ ] Store the site id.
-- [ ] Add stats by site.
+- [x] Store the site id in hits.
+- [ ] Store the site id in stats and update all stats and queries.
+- [x] Add stats by site.
 - [ ] Check CleanUrl.
 - [ ] Merge the stats page/download and resource.
 - [ ] Improve rights to read/create or filter visitors data on api.
@@ -221,6 +223,8 @@ TODO
 - [ ] Improve stats by item sets and move to helper Statistic.
 - [ ] Enlarge item sets to any resource (item for media, periods, item set tree).
 - [ ] Add tests.
+- [ ] Add stored generated index (year, month, day, hour) (doctrine 2.11, so Omeka 4).
+- [ ] Add a table to store search (q, fulltext_search, others?).
 
 
 Warning
