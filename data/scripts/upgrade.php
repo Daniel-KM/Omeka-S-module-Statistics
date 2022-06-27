@@ -150,4 +150,18 @@ SQL;
             $connection->executeStatement($sql, $bind, $types);
         }
     }
+
+    $messenger = new Messenger;
+    $message = new Message(
+        'There are now analytics by period for properties.' // @translate
+    );
+    $messenger->addSuccess($message);
+}
+
+if (version_compare($oldVersion, '3.3.5', '<')) {
+    $messenger = new Messenger;
+    $message = new Message(
+        'There are now statistics about resources and values.' // @translate
+    );
+    $messenger->addSuccess($message);
 }
