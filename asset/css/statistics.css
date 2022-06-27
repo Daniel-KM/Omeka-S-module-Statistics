@@ -57,4 +57,8 @@
         width: inherit;
         max-width: 50%;
     }
+
+    .statistics .statistics-totals {
+        text-transform: uppercase;
+    }
 }

@@ -2,6 +2,7 @@
 /**
  * @var \Laminas\View\Renderer\PhpRenderer $this
  * @var array $results
+ * @var array $totals
  * @var string $type "value"
  * @var string[] $resourceTypes
  * @var int[]|null $periods
@@ -153,6 +154,15 @@ $isYearPeriods = $byPeriodFilter === 'year';
         </tr>
     </thead>
     <tbody>
+        <tr class="statistics-stat">
+            <td class="statistics-field statistics-totals"><?= $translate('Totals') ?></td>
+            <?php if ($isResource): ?>
+            <td class="statistics-label statistics-totals"></td>
+            <?php endif; ?>
+            <?php foreach ($resourceTypes as $resourceType): ?>
+            <td class="statistics-hits statistics-totals"><?= isset($totals[$period][$resourceType]) ? $totals[$period][$resourceType] : '' ?></td>
+            <?php endforeach; ?>
+        </tr>
 <?php foreach ($results as $value => $result): ?>
         <tr class="statistics-stat">
             <td class="statistics-field"><?= $isUri ? '<a href="' . $escapeAttr($value) . '" target="_blank">' . $escape($result['l']) . '</a>' : $escape($value) ?></td>
@@ -188,6 +198,19 @@ $isYearPeriods = $byPeriodFilter === 'year';
         </tr>
     </thead>
     <tbody>
+        <tr class="statistics-stat">
+            <td class="statistics-field statistics-totals"><?= $translate('Totals') ?></td>
+            <?php if ($isResource): ?>
+            <td class="statistics-label statistics-totals"></td>
+            <?php endif; ?>
+            <?php foreach (array_keys($periods) as $period): ?>
+            <td class="statistics-hits statistics-totals"><?php
+                // There may be missing resource types.
+                $t = isset($totals[$period]) ? array_replace(array_fill_keys($resourceTypes, null), $totals[$period]) : array_fill_keys($resourceTypes, null);
+                echo implode(' / ', $t);
+            ?></td>
+            <?php endforeach; ?>
+        </tr>
 <?php foreach ($results as $value => $result): ?>
         <tr class="statistics-stat">
             <td class="statistics-field"><?= $isUri ? '<a href="' . $escapeAttr($value) . '" target="_blank">' . $escape($result['l']) . '</a>' : $escape($value) ?></td>

@@ -226,6 +226,7 @@ class StatisticsController extends AbstractActionController
 
         $resourceTypes = empty($query['resource_type']) ? ['items'] : (is_array($query['resource_type']) ? $query['resource_type'] : [$query['resource_type']]);
         $resourceTypes = array_intersect(['resources', 'item_sets', 'items', 'media'], $resourceTypes) ?: ['items'];
+        $originalResourceTypes = $resourceTypes;
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $property = $query['property'] ?? null;
@@ -272,6 +273,7 @@ class StatisticsController extends AbstractActionController
         $view = new ViewModel([
             'type' => 'value',
             'results' => [],
+            'totals' => [],
             'resourceTypes' => $resourceTypes,
             'years' => $this->listYears('resource', null, null, true),
             'periods' => $periods,
@@ -563,12 +565,14 @@ class StatisticsController extends AbstractActionController
         // Make the table simpler to manage in the view, nearly like a spreadsheet.
         $hasValueLabel = in_array($typeFilter, ['resource', 'uri']);
         $results = $this->mergeResultsByValue($results, $hasValueLabel);
+        $totals = $this->totalsByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
 
         // TODO There is no pagination currently in stats by value.
         // TODO Manage the right paginator.
         $this->paginator(count($results));
 
         $view->setVariable('results', $results);
+        $view->setVariable('totals', $totals);
 
         $output = $this->params()->fromRoute('output');
         if ($output) {
@@ -668,6 +672,28 @@ class StatisticsController extends AbstractActionController
         asort($valuesMaxCounts);
         $valuesMaxCounts = array_reverse($valuesMaxCounts, true);
         return array_replace($valuesMaxCounts, $valuesByPeriod);
+    }
+
+    /**
+     * Get the totals for each column.
+     */
+    protected function totalsByValue(array $results, $resourceTypes, $periods): array
+    {
+        $totals = [];
+        foreach ($results as $result) {
+            foreach (array_keys($periods) as $period) {
+                foreach ($resourceTypes as $resourceType) {
+                    if (!empty($result['t'][$period][$resourceType])) {
+                        if (isset($totals[$period][$resourceType])) {
+                            $totals[$period][$resourceType] += $result['t'][$period][$resourceType];
+                        } else {
+                            $totals[$period][$resourceType] = $result['t'][$period][$resourceType];
+                        }
+                    }
+                }
+            }
+        }
+        return $totals;
     }
 
     /**
@@ -780,8 +806,6 @@ class StatisticsController extends AbstractActionController
         } elseif (in_array($type, ['value'])) {
             $isSimpleValue = !in_array($valueTypeFilter, ['resource', 'uri']);
             $hasValueLabel = !$isSimpleValue;
-            $isByAll = !in_array($byPeriodFilter, ['year', 'month']);
-
             $isAllPeriods = $byPeriodFilter === 'all';
             $isYearPeriods = $byPeriodFilter === 'year';
 
