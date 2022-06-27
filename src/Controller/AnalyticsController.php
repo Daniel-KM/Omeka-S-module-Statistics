@@ -571,24 +571,24 @@ SQL;
 
         // TODO Add a type filter for all, or no type filter.
         switch ($typeFilter) {
+            default:
+            case 'value':
+                $joinResource = '';
+                $selectValue = 'value.value AS "value", "" AS "label"';
+                $typeFilterValue = 'value.value';
+                $whereFilterValue = "\nAND value.value IS NOT NULL\nAND value.value <> ''\nAND (value.uri IS NULL OR value.uri = '')\nAND (value.value_resource_id IS NULL OR value.value_resource_id = '')";
+                break;
             case 'resource':
                 $joinResource = "\nLEFT JOIN resource ON resource.id = value.value_resource_id";
                 $selectValue = 'value.value_resource_id AS "value", resource.title AS "label"';
                 $typeFilterValue = 'value.value_resource_id';
-                $whereFilterValue = "\nAND value.value_resource_id IS NOT NULL\nAND value.value_resource_id <> 0";
+                $whereFilterValue = "\nAND value.value_resource_id IS NOT NULL\nAND value.value_resource_id <> 0\nAND (value.value IS NULL OR value.value= '')\nAND (value.uri IS NULL OR value.uri = '')";
                 break;
             case 'uri':
                 $joinResource = '';
                 $selectValue = 'value.uri AS "value", value.value AS "label"';
                 $typeFilterValue = 'value.uri';
-                $whereFilterValue = "\nAND value.uri IS NOT NULL\nAND value.uri <> ''";
-                break;
-            case 'value':
-            default:
-                $joinResource = '';
-                $selectValue = 'value.value AS "value", "" AS "label"';
-                $typeFilterValue = 'value.value';
-                $whereFilterValue = "\nAND value.value IS NOT NULL\nAND value.value <> ''";
+                $whereFilterValue = "\nAND value.uri IS NOT NULL\nAND value.uri <> ''\nAND (value.value_resource_id IS NULL OR value.value_resource_id = '')";
                 break;
         }
 

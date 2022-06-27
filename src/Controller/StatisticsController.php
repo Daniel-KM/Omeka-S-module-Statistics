@@ -349,34 +349,48 @@ class StatisticsController extends AbstractActionController
 
             // TODO Add a type filter for all, or no type filter.
             switch ($typeFilter) {
+                default:
+                case 'value':
+                    $qb
+                        // Not possible to select an empty string for label with orm qb, so select the uri, that is null.
+                        ->select('value.value AS v', 'MIN(IDENTITY(value.valueResource)) AS l', 'COUNT(omeka_root.id) AS t')
+                        ->groupBy('value.value')
+                        ->where($expr->andX(
+                            $expr->isNotNull('value.value'),
+                            $expr->neq('value.value', ':empty_string'),
+                            $expr->orX($expr->isNull('value.uri'), $expr->eq('value.uri', ':empty_string')),
+                            $expr->orX($expr->isNull('value.valueResource'), $expr->eq('value.valueResource', ':empty_int'))
+                        ))
+                    ;
+                    break;
                 case 'resource':
                     $qb
                         ->select('IDENTITY(value.valueResource) AS v', 'res.title AS l', 'COUNT(omeka_root.id) AS t')
                         ->leftJoin(\Omeka\Entity\Resource::class, 'res', \Doctrine\ORM\Query\Expr\Join::WITH, 'res = value.valueResource')
                         ->groupBy('value.valueResource')
-                        ->where($expr->andX($expr->isNotNull('value.valueResource'), $expr->neq('value.valueResource', ':empty_int')))
-                        ->setParameter('empty_int', 0, \Doctrine\DBAL\ParameterType::INTEGER)
+                        ->where($expr->andX(
+                            $expr->isNotNull('value.valueResource'),
+                            $expr->neq('value.valueResource', ':empty_int'),
+                            $expr->orX($expr->isNull('value.value'), $expr->eq('value.value', ':empty_string')),
+                            $expr->orX($expr->isNull('value.uri'), $expr->eq('value.value', ':empty_string')),
+                        ))
                     ;
                     break;
                 case 'uri':
                     $qb
                         ->select('value.uri AS v', 'value.label AS l', 'COUNT(omeka_root.id) AS t')
                         ->groupBy('value.uri')
-                        ->where($expr->andX($expr->isNotNull('value.uri'), $expr->neq('value.uri', ':empty_string')))
-                        ->setParameter('empty_string', '', \Doctrine\DBAL\ParameterType::STRING)
-                    ;
-                    break;
-                case 'value':
-                default:
-                    $qb
-                        // Not possible to select an empty string for label with orm qb, so select the uri, that is null.
-                        ->select('value.value AS v', 'MIN(IDENTITY(value.valueResource)) AS l', 'COUNT(omeka_root.id) AS t')
-                        ->groupBy('value.value')
-                        ->where($expr->andX($expr->isNotNull('value.value'), $expr->neq('value.value', ':empty_string')))
-                        ->setParameter('empty_string', '', \Doctrine\DBAL\ParameterType::STRING)
+                        ->where($expr->andX(
+                            $expr->isNotNull('value.uri'),
+                            $expr->neq('value.uri', ':empty_string'),
+                            $expr->orX($expr->isNull('value.valueResource'), $expr->eq('value.valueResource', ':empty_int'))
+                        ))
                     ;
                     break;
             }
+            $qb
+                ->setParameter('empty_int', 0, \Doctrine\DBAL\ParameterType::INTEGER)
+                ->setParameter('empty_string', '', \Doctrine\DBAL\ParameterType::STRING);
 
             // FIXME The results are doubled when the property has duplicate values for a resource, so fix it or warn about deduplicating values regularly (module BulkEdit).
 
