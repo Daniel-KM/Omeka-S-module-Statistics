@@ -21,8 +21,10 @@ trait StatisticsTrait
         // Don't use function YEAR() in where for speed. Extract() is useless here.
         // TODO Add a generated index (doctrine 2.11, so Omeka 4).
         if ($fromYear && $toYear) {
+            method_exists($expr, 'between')
+                ? $qb->andWhere($expr->between($table . '.' . $field, ':from_date', ':to_date'))
+                : $qb->andWhere($expr->and($expr->gte($table . '.' . $field, ':from_date'), $expr->lte($table . '.' . $field, ':to_date')));
             $qb
-                ->andWhere($expr->between($table . '.' . $field, ':from_date', ':to_date'))
                 ->setParameters([
                     'from_date' => $fromYear . '-01-01 00:00:00',
                     'to_date' => $toYear . '-12-31 23:59:59',
@@ -80,7 +82,9 @@ trait StatisticsTrait
             $types['to_date'] = \Doctrine\DBAL\ParameterType::STRING;
         }
         if ($fromYearMonth && $toYearMonth) {
-            $qb->andWhere($expr->between($table . '.' . $field, ':from_date', ':to_date'));
+            method_exists($expr, 'between')
+                ? $qb->andWhere($expr->between($table . '.' . $field, ':from_date', ':to_date'))
+                : $qb->andWhere($expr->and($expr->gte($table . '.' . $field, ':from_date'), $expr->lte($table . '.' . $field, ':to_date')));
         } elseif ($fromYearMonth) {
             $qb->andWhere($expr->gte($table . '.' . $field, ':from_date'));
         } elseif ($toYearMonth) {
