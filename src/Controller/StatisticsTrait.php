@@ -16,6 +16,7 @@ trait StatisticsTrait
         $expr = $qb->expr();
         $qb
             ->select("DISTINCT EXTRACT(YEAR FROM $table.$field) AS 'period'")
+            // ->select("DISTINCT SUBSTRING($table.$field, 1, 4) AS 'period'")
             ->from($table, $table)
             ->orderBy('period', 'asc');
         // Don't use function YEAR() in where for speed. Extract() is useless here.
@@ -64,6 +65,7 @@ trait StatisticsTrait
         $expr = $qb->expr();
         $qb
             ->select("DISTINCT EXTRACT(YEAR_MONTH FROM $table.$field) AS 'period'")
+            // ->select("DISTINCT CONCAT(SUBSTRING($table.$field, 1, 4), SUBSTRING($table.$field, 6, 2)) AS 'period'")
             ->from($table, $table)
             ->orderBy('period', 'asc');
         // Don't use function YEAR() in where for speed. Extract() is useless here.
