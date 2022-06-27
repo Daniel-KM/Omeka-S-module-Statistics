@@ -185,7 +185,7 @@ SQL;
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
-            $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
+            $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
             return $sortOrder === 'desc' ? -$cmp : $cmp;
         });
 
@@ -459,7 +459,7 @@ SQL;
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
-            $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
+            $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
             return $sortOrder === 'desc' ? -$cmp : $cmp;
         });
 
@@ -633,7 +633,7 @@ SQL;
                 $result = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();
 
                 usort($result, function ($a, $b) use ($sortBy, $sortOrder) {
-                    $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
+                    $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
                     return $sortOrder === 'desc' ? -$cmp : $cmp;
                 });
 
@@ -665,7 +665,7 @@ SQL;
 
             // TODO Reinclude sort order inside sql.
             usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
-                $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
+                $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
                 return $sortOrder === 'desc' ? -$cmp : $cmp;
             });
 

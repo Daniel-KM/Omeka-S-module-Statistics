@@ -181,15 +181,15 @@ class StatisticsController extends AbstractActionController
         if ($sortBy === 'site') {
             $sortBy = 'label';
             usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
-                $cmp = $a[$sortBy] <=> $b[$sortBy];
+                $cmp = ($a[$sortBy] ?? null) <=> ($b[$sortBy] ?? null);
                 return $sortOrder === 'desc' ? -$cmp : $cmp;
             });
         } elseif (in_array($sortBy, ['total', 'resources', 'item_sets', 'items', 'media'])) {
             if ($sortBy === 'total') {
-                $sortBy = 'resources';
+                $sortBy = reset($resourceTypes);
             }
             usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
-                $cmp = $a['count'][$sortBy] <=> $b['count'][$sortBy];
+                $cmp = ($a['count'][$sortBy] ?? null) <=> ($b['count'][$sortBy] ?? null);
                 return $sortOrder === 'desc' ? -$cmp : $cmp;
             });
         }
@@ -436,7 +436,7 @@ class StatisticsController extends AbstractActionController
 
                     /*
                     usort($result, function ($a, $b) use ($sortBy, $sortOrder) {
-                        $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
+                        $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
                         return $sortOrder === 'desc' ? -$cmp : $cmp;
                     });
                     */
@@ -477,7 +477,7 @@ class StatisticsController extends AbstractActionController
                 // TODO Reinclude sort order inside sql.
                 /*
                 usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
-                    $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
+                    $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
                     return $sortOrder === 'desc' ? -$cmp : $cmp;
                 });
                 */
