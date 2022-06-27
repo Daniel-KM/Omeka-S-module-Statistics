@@ -36,6 +36,7 @@ return [
         'factories' => [
             'Statistics\Controller\Analytics' => Service\Controller\AnalyticsControllerFactory::class ,
             'Statistics\Controller\Download' => Service\Controller\DownloadControllerFactory::class,
+            'Statistics\Controller\Statistics' => Service\Controller\StatisticsControllerFactory::class ,
         ],
     ],
     'controller_plugins' => [
@@ -55,6 +56,20 @@ return [
                 'pages' => [
                     [
                         'route' => 'admin/analytics/default',
+                        'visible' => false,
+                    ],
+                ],
+            ],
+            'statistics' => [
+                'label' => 'Statistics', // @translate
+                'route' => 'admin/statistics',
+                'controller' => 'Statistics',
+                'action' => 'index',
+                'resource' => 'Statistics\Controller\Statistics',
+                'class' => 'o-icon- fa-chart-line',
+                'pages' => [
+                    [
+                        'route' => 'admin/statistics/default',
                         'visible' => false,
                     ],
                 ],
@@ -89,6 +104,30 @@ return [
                             ],
                         ],
                     ],
+                    'statistics' => [
+                        'type' => \Laminas\Router\Http\Literal::class,
+                        'options' => [
+                            'route' => '/statistics',
+                            'defaults' => [
+                                '__NAMESPACE__' => 'Statistics\Controller',
+                                '__SITE__' => true,
+                                'controller' => 'Statistics',
+                                'action' => 'index',
+                            ],
+                        ],
+                        'may_terminate' => true,
+                        'child_routes' => [
+                            'default' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/:action',
+                                    'constraints' => [
+                                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
             ],
             'admin' => [
@@ -101,6 +140,30 @@ return [
                                 '__NAMESPACE__' => 'Statistics\Controller',
                                 '__ADMIN__' => true,
                                 'controller' => 'Analytics',
+                                'action' => 'index',
+                            ],
+                        ],
+                        'may_terminate' => true,
+                        'child_routes' => [
+                            'default' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/:action',
+                                    'constraints' => [
+                                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'statistics' => [
+                        'type' => \Laminas\Router\Http\Literal::class,
+                        'options' => [
+                            'route' => '/statistics',
+                            'defaults' => [
+                                '__NAMESPACE__' => 'Statistics\Controller',
+                                '__ADMIN__' => true,
+                                'controller' => 'Statistics',
                                 'action' => 'index',
                             ],
                         ],
@@ -168,6 +231,7 @@ return [
             'statistics_per_page_admin' => 100,
             'statistics_per_page_public' => 10,
             // Without roles.
+            'statistics_public_allow_statistics' => false,
             'statistics_public_allow_summary' => false,
             'statistics_public_allow_browse' => false,
             // With roles, in particular if Guest is installed.

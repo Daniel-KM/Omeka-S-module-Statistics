@@ -41,42 +41,42 @@ class AnalyticsController extends AbstractActionController
 
         $translate = $this->plugins->get('translate');
 
-        $results['all'] = $this->statsPeriod();
+        $results['all'] = $this->analyticsPeriod();
 
-        $results['today'] = $this->statsPeriod(strtotime('today'));
+        $results['today'] = $this->analyticsPeriod(strtotime('today'));
 
-        $results['history'][$translate('Last year')] = $this->statsPeriod( // @translate
+        $results['history'][$translate('Last year')] = $this->analyticsPeriod( // @translate
             strtotime('-1 year', strtotime(date('Y-1-1', $time))),
             strtotime(date('Y-1-1', $time) . ' - 1 second')
         );
-        $results['history'][$translate('Last month')] = $this->statsPeriod( // @translate
+        $results['history'][$translate('Last month')] = $this->analyticsPeriod( // @translate
             strtotime('-1 month', strtotime(date('Y-m-1', $time))),
             strtotime(date('Y-m-1', $time) . ' - 1 second')
         );
-        $results['history'][$translate('Last week')] = $this->statsPeriod( // @translate
+        $results['history'][$translate('Last week')] = $this->analyticsPeriod( // @translate
             strtotime("previous week"),
             strtotime("previous week + 6 days")
         );
-        $results['history'][$translate('Yesterday')] = $this->statsPeriod( // @translate
+        $results['history'][$translate('Yesterday')] = $this->analyticsPeriod( // @translate
             strtotime('-1 day', strtotime(date('Y-m-d', $time))),
             strtotime('-1 day', strtotime(date('Y-m-d', $time)))
         );
 
         $results['current'][$translate('This year')] = // @translate
-        $this->statsPeriod(strtotime(date('Y-1-1', $time)));
+        $this->analyticsPeriod(strtotime(date('Y-1-1', $time)));
         $results['current'][$translate('This month')] =  // @translate
-        $this->statsPeriod(strtotime(date('Y-m-1', $time)));
+        $this->analyticsPeriod(strtotime(date('Y-m-1', $time)));
         $results['current'][$translate('This week')] = // @translate
-        $this->statsPeriod(strtotime('this week'));
+        $this->analyticsPeriod(strtotime('this week'));
         $results['current'][$translate('This day')] = // @translate
-        $this->statsPeriod(strtotime('today'));
+        $this->analyticsPeriod(strtotime('today'));
 
         foreach ([365 => null, 30 => null, 7 => null, 1 => null] as $start => $endPeriod) {
             $startPeriod = strtotime("- {$start} days");
             $label = ($start == 1)
                 ? $translate('Last 24 hours') // @translate
                 : sprintf($translate('Last %s days'), $start); // @translate
-            $results['rolling'][$label] = $this->statsPeriod($startPeriod, $endPeriod);
+            $results['rolling'][$label] = $this->analyticsPeriod($startPeriod, $endPeriod);
         }
 
         if ($this->userIsAllowed('Statistics\Controller\Analytics', 'by-page')) {
@@ -712,7 +712,7 @@ SQL;
      * @param int $endPeriod Number of days before today (default is now).
      * @return array
      */
-    protected function statsPeriod(?int $startPeriod = null, ?int $endPeriod = null): array
+    protected function analyticsPeriod(?int $startPeriod = null, ?int $endPeriod = null): array
     {
         $query = [];
         if ($startPeriod) {
@@ -726,9 +726,9 @@ SQL;
         if ($this->status()->isAdminRequest()) {
             // TODO Use a single query (see version for Omeka Classic).
             $query['user_status'] = 'anonymous';
-            $anonymous = $api->search('hits', $query)->getTotalResults();
+            $anonymous = $api->search('hits', $query, ['initialize' => false, 'finalize' => false])->getTotalResults();
             $query['user_status'] = 'identified';
-            $identified = $api->search('hits', $query)->getTotalResults();
+            $identified = $api->search('hits', $query, ['initialize' => false, 'finalize' => false])->getTotalResults();
             return [
                 'anonymous' => $anonymous,
                 'identified' => $identified,
@@ -738,7 +738,7 @@ SQL;
 
         $query['user_status'] = $this->userStatus ?: 'hits';
         return [
-            'total' => $api->search('hits', $query)->getTotalResults(),
+            'total' => $api->search('hits', $query, ['initialize' => false, 'finalize' => false])->getTotalResults(),
         ];
     }
 

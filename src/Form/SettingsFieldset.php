@@ -100,6 +100,17 @@ class SettingsFieldset extends Fieldset
             ])
 
             ->add([
+                'name' => 'statistics_public_allow_statistics',
+                'type' => Element\Checkbox::class,
+                'options' => [
+                    'label' => 'Allow public to access statistics', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'statistics_public_allow_statistics',
+                ],
+            ])
+
+            ->add([
                 'name' => 'statistics_public_allow_summary',
                 'type' => Element\Checkbox::class,
                 'options' => [

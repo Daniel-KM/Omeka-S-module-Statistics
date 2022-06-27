@@ -11,29 +11,26 @@ $translate = $plugins->get('translate');
 $urlHelper = $plugins->get('url');
 
 $isAdminRequest = $this->status()->isAdminRequest();
-$routeSummary = $isAdminRequest ? 'admin/analytics' : 'site/analytics';
-$routeStatistics = $isAdminRequest ? 'admin/analytics/default' : 'site/analytics/default';
+$route = $isAdminRequest ? 'admin/analytics/default' : 'site/analytics/default';
 
 $isAdminRequest = $this->status()->isAdminRequest();
 
 $sectionNavs = [];
 if ($isAdminRequest || $this->setting('statistics_public_allow_summary')) {
-    $sectionNavs[$urlHelper($routeSummary, [], true)] = $translate('Summary');
+    $sectionNavs[$urlHelper(dirname($route), ['action' => 'index'], true)] = $translate('Summary');
 }
 if ($isAdminRequest || $this->setting('statistics_public_allow_browse')) {
-    $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-site'], true)] = $translate('By site');
-    $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-page'], true)] = $translate('By page');
-    $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-resource'], true)] = $translate('By resource');
-    $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-download'], true)] = $translate('By download');
-    $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-field'], true)] = $translate('By field');
-    $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-item-set'], true)] = $translate('By item set');
-    $sectionNavs[$urlHelper($routeStatistics, ['action' => 'by-value'], true)] = $translate('By value');
+    $sectionNavs[$urlHelper($route, ['action' => 'by-site'], true)] = $translate('By site');
+    $sectionNavs[$urlHelper($route, ['action' => 'by-page'], true)] = $translate('By page');
+    $sectionNavs[$urlHelper($route, ['action' => 'by-resource'], true)] = $translate('By resource');
+    $sectionNavs[$urlHelper($route, ['action' => 'by-download'], true)] = $translate('By download');
+    $sectionNavs[$urlHelper($route, ['action' => 'by-field'], true)] = $translate('By field');
+    $sectionNavs[$urlHelper($route, ['action' => 'by-item-set'], true)] = $translate('By item set');
+    $sectionNavs[$urlHelper($route, ['action' => 'by-value'], true)] = $translate('By value');
 }
 if (count($sectionNavs) <= 1) return;
 
 $currentUrl = $urlHelper(null, [], true);
-// Fix summary url.
-if (substr($currentUrl, -6) === '/index') $currentUrl = substr($currentUrl, 0, -6);
 ?>
 
 <nav class="section-nav">

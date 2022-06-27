@@ -79,6 +79,13 @@ class Module extends AbstractModule
 
         // The public rights are checked in controller according to the config.
         $settings = $services->get('Omeka\Settings');
+        if ($settings->get('statistics_public_allow_statistics')) {
+            $acl
+                ->allow(
+                    null,
+                    ['Statistics\Controller\Statistics']
+                );
+        }
         if ($settings->get('statistics_public_allow_summary')) {
             $acl
                 ->allow(

@@ -41,7 +41,7 @@ $basePath = $this->basePath();
         <ul>
         <?php foreach ($results['history'] as $label => $value): ?>
             <li><?=
-                sprintf('%s: %d [%d / %d]', $label, $value['total'], $value['anonymous'], $value['identified'])
+                sprintf('%s: %d [%d / %d]', $escape($label), $value['total'], $value['anonymous'], $value['identified'])
             ?></li>
         <?php endforeach; ?>
         </ul>
@@ -52,7 +52,7 @@ $basePath = $this->basePath();
         <ul>
         <?php foreach ($results['current'] as $label => $value): ?>
             <li><?=
-                sprintf('%s: %d [%d / %d]', $label, $value['total'], $value['anonymous'], $value['identified'])
+                sprintf('%s: %d [%d / %d]', $escape($label), $value['total'], $value['anonymous'], $value['identified'])
             ?></li>
         <?php endforeach; ?>
         </ul>
@@ -63,7 +63,7 @@ $basePath = $this->basePath();
         <ul>
         <?php foreach ($results['rolling'] as $label => $value): ?>
             <li><?=
-                sprintf('%s: %d [%d / %d]', $label, $value['total'], $value['anonymous'], $value['identified'])
+                sprintf('%s: %d [%d / %d]', $escape($label), $value['total'], $value['anonymous'], $value['identified'])
             ?></li>
         <?php endforeach; ?>
         </ul>
