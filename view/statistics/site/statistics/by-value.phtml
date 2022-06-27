@@ -206,12 +206,12 @@ $isYearPeriods = $byPeriodFilter === 'year';
 <?php else: ?>
 
     <br class="clear" />
-    <?php $totalHits = $this->api()->search('hits')->getTotalResults(); ?>
-    <?php if (!$totalHits): ?>
-        <h2><?= $translate('There is no hit yet.') ?></h2>
+    <?php $totalResources = $this->api()->search('resources')->getTotalResults(); ?>
+    <?php if (!$totalResources): ?>
+        <h2><?= $translate('There is no resources yet.') ?></h2>
     <?php else: ?>
-        <p><?= sprintf($translate('The query searched %s hits and returned no results.'), $totalHits) ?></p>
-        <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-item-set'], true) ?>"><?= $translate('See all statistics.') ?></a></p>
+        <p><?= sprintf($translate('The query searched %s resources and returned no results.'), $totalResources) ?></p>
+        <p><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-value'], true) ?>"><?= $translate('See all statistics.') ?></a></p>
     <?php endif; ?>
 
 <?php endif; ?>

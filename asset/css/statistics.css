@@ -51,4 +51,10 @@
     .statistics .browse-controls {
         justify-content: flex-end;
     }
+
+    .statistics td:first-child,
+    .statistics th:first-child {
+        width: inherit;
+        max-width: 50%;
+    }
 }
