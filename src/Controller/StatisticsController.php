@@ -555,6 +555,12 @@ class StatisticsController extends AbstractActionController
         $this->paginator(count($results));
 
         $view->setVariable('results', $results);
+
+        $output = $this->params()->fromRoute('output');
+        if ($output) {
+            return $this->exportResults($view->getVariables(), $output) ?: $view;
+        }
+
         return $view;
     }
 
@@ -657,6 +663,9 @@ class StatisticsController extends AbstractActionController
     protected function exportResults($variables, $output)
     {
         /**
+         * Depend on the type, but only common are used.
+         *
+         * Site
          * @var array $results
          * @var string $type "site"
          * @var string[] $resourceTypes
@@ -664,11 +673,30 @@ class StatisticsController extends AbstractActionController
          * @var int $yearFilter
          * @var int $monthFilter
          * @var bool $hasAdvancedSearch
+         *
+         * Value
+         * @var \Laminas\View\Renderer\PhpRenderer $this
+         * @var array $results
+         * @var string $type "value"
+         * @var string[] $resourceTypes
+         * @var int[]|null $periods
+         * @var int[] $years
+         * @var int $yearFilter
+         * @var int $monthFilter
+         * @var string $propertyFilter
+         * @var string $valueTypeFilter
+         * @var string $byPeriodFilter
+         * @var bool $hasAdvancedSearch
          */
         extract($variables);
 
         if (!count($results)) {
             $this->messenger()->addError(new Message('There is no results.')); // @translate
+            return null;
+        }
+
+        if ($type === 'value' && (!$propertyFilter || is_null($periods))) {
+            $this->messenger()->addError(new Message('Check the form.')); // @translate
             return null;
         }
 
@@ -720,20 +748,73 @@ class StatisticsController extends AbstractActionController
 
         $translate = $this->plugin('translate');
 
-        $headers = [
-            $translate('Site'),
-            implode(' / ', $resourceTypes),
-        ];
-        $rowFromValues = WriterEntityFactory::createRowFromArray($headers);
-        $writer->addRow($rowFromValues);
-
-        foreach ($results as $result) {
-            $cells = [
-                $result['label'],
-                implode(' / ', $result['count']),
+        if (in_array($type, ['site'])) {
+            $headers = [
+                $translate('Site'),
+                implode(' / ', $resourceTypes),
             ];
-            $rowFromValues = WriterEntityFactory::createRowFromArray($cells);
+            $rowFromValues = WriterEntityFactory::createRowFromArray($headers);
             $writer->addRow($rowFromValues);
+            foreach ($results as $result) {
+                $cells = [
+                    $result['label'],
+                    implode(' / ', $result['count']),
+                ];
+                $rowFromValues = WriterEntityFactory::createRowFromArray($cells);
+                $writer->addRow($rowFromValues);
+            }
+        } elseif (in_array($type, ['value'])) {
+            $isSimpleValue = !in_array($valueTypeFilter, ['resource', 'uri']);
+            $hasValueLabel = !$isSimpleValue;
+            $isByAll = !in_array($byPeriodFilter, ['year', 'month']);
+
+            $isAllPeriods = $byPeriodFilter === 'all';
+            $isYearPeriods = $byPeriodFilter === 'year';
+
+            if ($isAllPeriods) {
+                $period = 'all';
+                $headers = $hasValueLabel
+                    ? [$translate('Value'), $translate('Label')]
+                    : [$translate('Value')];
+                $headers += $resourceTypes;
+                $rowFromValues = WriterEntityFactory::createRowFromArray($headers);
+                $writer->addRow($rowFromValues);
+                foreach ($results as $value => $result) {
+                    $cells = $hasValueLabel
+                        ? [$value, $result['l']]
+                        : [$value];
+                    foreach ($resourceTypes as $resourceType) {
+                        $cells[] = isset($result['t'][$period][$resourceType]) ? $result['t'][$period][$resourceType] : '';
+                    }
+                    $rowFromValues = WriterEntityFactory::createRowFromArray($cells);
+                    $writer->addRow($rowFromValues);
+                }
+            } else {
+                $headers = $hasValueLabel
+                    ? [$translate('Value'), $translate('Label')]
+                    : [$translate('Value')];
+                foreach (array_keys($periods) as $period) {
+                    $headers[] = $isYearPeriods
+                        ? $period
+                        : sprintf('%04d-%02d', substr((string) $period, 0, 4), substr((string) $period, 4, 2));
+                }
+                $rowFromValues = WriterEntityFactory::createRowFromArray($headers);
+                $writer->addRow($rowFromValues);
+                foreach ($results as $value => $result) {
+                    $cells = $hasValueLabel
+                        ? [$value, $result['l']]
+                        : [$value];
+                    foreach (array_keys($periods) as $period) {
+                        // There may be missing resource types.
+                        $t = isset($result['t'][$period])
+                            ? array_replace(array_fill_keys($resourceTypes, null), $result['t'][$period])
+                            : array_fill_keys($resourceTypes, null);
+                        $cells[] = implode(' / ', $t);
+                    }
+                    $rowFromValues = WriterEntityFactory::createRowFromArray($cells);
+                    $writer->addRow($rowFromValues);
+                }
+            }
         }
 
         $writer->close();
