@@ -5,6 +5,7 @@ namespace Statistics\Controller;
 use Doctrine\DBAL\Connection;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
+use Omeka\Api\Adapter\Manager as AdapterManager;
 use Omeka\Stdlib\Message;
 use Statistics\Entity\Stat;
 
@@ -16,19 +17,27 @@ use Statistics\Entity\Stat;
  */
 class StatisticsController extends AbstractActionController
 {
+    use StatisticsTrait;
+
     /**
      * @var \Doctrine\DBAL\Connection
      */
     protected $connection;
 
     /**
+     * @var \Omeka\Api\Adapter\Manager
+     */
+    protected $adapterManager;
+
+    /**
      * @var bool
      */
     protected $hasAdvancedSearch;
 
-    public function __construct(Connection $connection, bool $hasAdvancedSearch)
+    public function __construct(Connection $connection, AdapterManager $adapterManager, bool $hasAdvancedSearch)
     {
         $this->connection = $connection;
+        $this->adapterManager = $adapterManager;
         $this->hasAdvancedSearch = $hasAdvancedSearch;
     }
 
@@ -141,13 +150,12 @@ class StatisticsController extends AbstractActionController
         $sites = $api->search('sites', [], ['initialize' => false, 'finalize' => false, 'returnScalar' => 'title'])->getContent();
 
         $query = $this->params()->fromQuery();
+        $baseQuery = $query;
 
         $resourceTypes = empty($query['resource_type']) ? ['items'] : (is_array($query['resource_type']) ? $query['resource_type'] : [$query['resource_type']]);
         $resourceTypes = array_intersect(['resources', 'item_sets', 'items', 'media'], $resourceTypes) ?: ['items'];
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
-
-        $baseQuery = $query;
 
         $results = [];
         foreach ($sites as $siteId => $title) {
@@ -157,6 +165,7 @@ class StatisticsController extends AbstractActionController
             $results[$siteId]['count'] = $this->statisticsPeriod($year, $month, $query, 'created', $resourceTypes);
         }
 
+        // TODO There is no pagination currently in stats by value.
         $this->paginator(count($results));
 
         // TODO Manage special sort fields.
@@ -182,19 +191,357 @@ class StatisticsController extends AbstractActionController
             });
         }
 
-        $years = $this->listYears(null, null, false);
-
         $view = new ViewModel([
             'type' => 'site',
             'results' => $results,
             'resourceTypes' => $resourceTypes,
-            'years' => $years,
+            'years' => $this->listYears('resource', null, null, false),
             'yearFilter' => $year,
             'monthFilter' => $month,
             'hasAdvancedSearch' => $this->hasAdvancedSearch,
         ]);
         return $view
             ->setTemplate($isAdminRequest ? 'statistics/admin/statistics/by-site' : 'statistics/site/statistics/by-site');
+    }
+
+    public function byValueAction()
+    {
+        if (!$this->hasAdvancedSearch) {
+            return $this->redirectToIndex();
+        }
+
+        $isAdminRequest = $this->status()->isAdminRequest();
+
+        $query = $this->params()->fromQuery();
+
+        $resourceTypes = empty($query['resource_type']) ? ['items'] : (is_array($query['resource_type']) ? $query['resource_type'] : [$query['resource_type']]);
+        $resourceTypes = array_intersect(['resources', 'item_sets', 'items', 'media'], $resourceTypes) ?: ['items'];
+        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
+        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
+        $property = $query['property'] ?? null;
+        $typeFilter = $query['value_type'] ?? null;
+        $byPeriodFilter = isset($query['by_period']) && in_array($query['by_period'], ['year', 'month']) ? $query['by_period'] : 'all';
+        $sortBy = isset($query['sort_by']) && in_array($query['sort_by'], ['value', 'resources', 'item_sets', 'items', 'media']) ? $query['sort_by'] : 'total';
+        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
+
+        // A property is required to get stats, so get empty without a good one.
+        if ($property && $propertyId = $this->getPropertyId($property)) {
+            if (is_numeric($property)) {
+                $property = $this->getPropertyId([$propertyId]);
+                $property = key($property);
+            }
+        } else {
+            $property = null;
+            if ($query) {
+                $this->messenger()->addError(new Message('A property is required to get statistics.')); // @translate
+            }
+        }
+
+        switch ($byPeriodFilter) {
+            case 'year':
+                $periods = $this->listYears('resource', $year, $year, true);
+                break;
+            case 'month':
+                if ($year && $month) {
+                    $periods = $this->listYearMonths('resource', (int) sprintf('%04d%02d', $year, $month), (int) sprintf('%04d%02d', $year, $month), true);
+                } elseif ($year) {
+                    $periods = $this->listYearMonths('resource', (int) sprintf('%04d01', $year), (int) sprintf('%04d12', $year), true);
+                } elseif ($month) {
+                    $periods = null;
+                    $this->messenger()->addError(new Message('A year is required to get details by month.')); // @translate
+                } else {
+                    $periods = $this->listYearMonths('resource', null, null, true);
+                }
+                break;
+            case 'all':
+            default:
+                $periods = [];
+                break;
+        }
+
+        $view = new ViewModel([
+            'type' => 'value',
+            'results' => [],
+            'resourceTypes' => $resourceTypes,
+            'years' => $this->listYears('resource', null, null, true),
+            'periods' => $periods,
+            'yearFilter' => $year,
+            'monthFilter' => $month,
+            'propertyFilter' => $property,
+            'valueTypeFilter' => $typeFilter,
+            'byPeriodFilter' => $byPeriodFilter,
+            'hasAdvancedSearch' => $this->hasAdvancedSearch,
+        ]);
+        $view
+            ->setTemplate($isAdminRequest ? 'statistics/admin/statistics/by-value' : 'statistics/site/statistics/by-value');
+
+        if (is_null($periods) || !$property) {
+            return $view;
+        }
+
+        // "resources" is not searchable currently, pull request #1799 is not merged.
+        $isOnlyResources = array_values($resourceTypes) === ['resources'];
+        $hasResources = array_search('resources', $resourceTypes);
+        if ($isOnlyResources) {
+            $resourceTypes = ['item_sets', 'items', 'media'];
+        } elseif ($hasResources !== false) {
+            unset($resourceTypes[$hasResources]);
+            $hasResources = true;
+        }
+
+        /** @see \Omeka\Api\Adapter\AbstractEntityAdapter::search() */
+        // Set default query parameters
+        $defaultQuery = [
+            'page' => null,
+            'per_page' => null,
+            'limit' => null,
+            'offset' => null,
+            'sort_by' => null,
+            'sort_order' => null,
+        ];
+        $query += $defaultQuery;
+        $query['sort_order'] = $sortOrder;
+
+        $results = [];
+
+        foreach ($resourceTypes as $resourceType) {
+            /** @var \Omeka\Api\Adapter\AbstractResourceEntityAdapter $adapter */
+            $adapter = $this->adapterManager->get($resourceType);
+            $request = new \Omeka\Api\Request('search', $resourceType);
+            $request
+                ->setContent($query)
+                ->setOption(['initialize' => false, 'finalize' => false]);
+
+            // Begin building the search query.
+            /** @see \Omeka\Api\Adapter\AbstractEntityAdapter::search() */
+            $entityClass = $adapter->getEntityClass();
+            $qb = $adapter->getEntityManager()
+                ->createQueryBuilder()
+                ->select('omeka_root')
+                ->from($entityClass, 'omeka_root');
+            $adapter->buildBaseQuery($qb, $query);
+            $adapter->buildQuery($qb, $query);
+            // $qb->groupBy('omeka_root.id');
+            $adapter->limitQuery($qb, $query);
+
+            // Trigger the search.query event (required for Advanced Search).
+            $event = new \Laminas\EventManager\Event('api.search.query', $adapter, [
+                'queryBuilder' => $qb,
+                'request' => $request,
+            ]);
+            $adapter->getEventManager()->triggerEvent($event);
+
+            $expr = $qb->expr();
+            // Set custom parameters.
+            $qb
+                // Use class, it is orm qb.
+                ->join(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, 'value.resource = omeka_root AND value.property = ' . $propertyId);
+
+            // TODO Add a type filter for all, or no type filter.
+            switch ($typeFilter) {
+                case 'resource':
+                    $qb
+                        ->select('IDENTITY(value.valueResource) AS v', 'res.title AS l', 'COUNT(omeka_root.id) AS t')
+                        ->leftJoin(\Omeka\Entity\Resource::class, 'res', \Doctrine\ORM\Query\Expr\Join::WITH, 'res = value.valueResource')
+                        ->groupBy('value.valueResource')
+                        ->where($expr->andX($expr->isNotNull('value.valueResource'), $expr->neq('value.valueResource', ':empty_int')))
+                        ->setParameter('empty_int', 0, \Doctrine\DBAL\ParameterType::INTEGER)
+                    ;
+                    break;
+                case 'uri':
+                    $qb
+                        ->select('value.uri AS v', 'value.label AS l', 'COUNT(omeka_root.id) AS t')
+                        ->groupBy('value.uri')
+                        ->where($expr->andX($expr->isNotNull('value.uri'), $expr->neq('value.uri', ':empty_string')))
+                        ->setParameter('empty_string', '', \Doctrine\DBAL\ParameterType::STRING)
+                    ;
+                    break;
+                case 'value':
+                default:
+                    $qb
+                        // Not possible to select an empty string for label with orm qb, so select the uri, that is null.
+                        ->select('value.value AS v', 'MIN(IDENTITY(value.valueResource)) AS l', 'COUNT(omeka_root.id) AS t')
+                        ->groupBy('value.value')
+                        ->where($expr->andX($expr->isNotNull('value.value'), $expr->neq('value.value', ':empty_string')))
+                        ->setParameter('empty_string', '', \Doctrine\DBAL\ParameterType::STRING)
+                    ;
+                    break;
+            }
+
+            // FIXME The results are doubled when the property has duplicate values for a resource, so fix it or warn about deduplicating values regularly (module BulkEdit).
+
+            if ($periods) {
+                // TODO Use a single query instead of a loop, so use periods as columns or rows.
+                $qbBase = $qb;
+                foreach ($periods as $period => $isEmpty) {
+                    if (empty($isEmpty)) {
+                        $results[$period] = [];
+                        continue;
+                    }
+
+                    $qb = clone $qbBase;
+
+                    // TODO Manage "force index" via query builder.
+                    if ($byPeriodFilter === 'year') {
+                        $yearPeriod = $period;
+                        $monthPeriod = null;
+                    } else {
+                        $yearPeriod = (int) substr((string) $period, 0, 4);
+                        $monthPeriod = (int) substr((string) $period, 4, 2);
+                    }
+                    if ($yearPeriod || $monthPeriod) {
+                        // TODO Add the index on table omeka resource for "created" and "modified".
+                        // This is the doctrine hashed name index for the column "created".
+                        // $force = ' FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
+                        if ($yearPeriod && $monthPeriod) {
+                            $qb
+                                ->andWhere($expr->eq('EXTRACT(YEAR_MONTH FROM omeka_root.created)', ':year_month'))
+                                ->setParameter('year_month', (int) sprintf('%04d%02d', $yearPeriod, $monthPeriod), \Doctrine\DBAL\ParameterType::INTEGER)
+                            ;
+                        } elseif ($yearPeriod) {
+                            $qb
+                                ->andWhere($expr->eq('EXTRACT(YEAR FROM omeka_root.created)', ':year'))
+                                ->setParameter('year', $yearPeriod, \Doctrine\DBAL\ParameterType::INTEGER)
+                            ;
+                        } elseif ($monthPeriod) {
+                            $qb
+                                ->andWhere($expr->eq('EXTRACT(MONTH FROM omeka_root.created)', ':month'))
+                                ->setParameter('month', $monthPeriod, \Doctrine\DBAL\ParameterType::INTEGER)
+                            ;
+                        }
+                    } else {
+                        // $force = '';
+                    }
+
+                    $qb
+                        ->addOrderBy('t', 'desc');
+
+                    // $sql = str_replace('COUNT(omeka_root.id) AS "t"', 'COUNT(omeka_root.id) AS "t"' . $force, $sql);
+                    // This is a qb from orm: it's not possible to use connection directly.
+                    $result = $qb->getQuery()->getScalarResult();
+
+                    /*
+                    usort($result, function ($a, $b) use ($sortBy, $sortOrder) {
+                        $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
+                        return $sortOrder === 'desc' ? -$cmp : $cmp;
+                    });
+                    */
+
+                    $results[$period][$resourceType] = $result;
+                }
+            } else {
+                if ($year || $month) {
+                    // TODO Add the index on table omeka resource for "created" and "modified".
+                    // This is the doctrine hashed name index for the column "created".
+                    // $force = ' FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
+                    if ($year && $month) {
+                        $qb
+                            ->andWhere($expr->eq('EXTRACT(YEAR_MONTH FROM omeka_root.created)', ':year_month'))
+                            ->setParameter('year_month', (int) sprintf('%04d%02d', $year, $month), \Doctrine\DBAL\ParameterType::INTEGER)
+                        ;
+                    } elseif ($year) {
+                        $qb
+                            ->andWhere($expr->eq('EXTRACT(YEAR FROM omeka_root.created)', ':year'))
+                            ->setParameter('year', $year, \Doctrine\DBAL\ParameterType::INTEGER)
+                        ;
+                    } elseif ($month) {
+                        $qb
+                            ->andWhere($expr->eq('EXTRACT(MONTH FROM omeka_root.created)', ':month'))
+                            ->setParameter('month', $month, \Doctrine\DBAL\ParameterType::INTEGER)
+                        ;
+                    }
+                } else {
+                    // $force = '';
+                }
+
+                $qb
+                    ->addOrderBy('t', 'desc');
+
+                // This is a qb from orm: it's not possible to use connection directly.
+                $results['all'][$resourceType] = $qb->getQuery()->getScalarResult();
+
+                // TODO Reinclude sort order inside sql.
+                /*
+                usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
+                    $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
+                    return $sortOrder === 'desc' ? -$cmp : $cmp;
+                });
+                */
+            }
+        }
+
+        // Merge the items sets/item/media into a single table.
+        if ($isOnlyResources) {
+            $output = ['resources' => []];
+            foreach ($results as $period => $periodResultsByResourceType) {
+                // Copy the first array directly. Normally, an empty result is
+                // impossible.
+                if (!count($periodResultsByResourceType)) {
+                    $output[$period]['resources'] = [];
+                    continue;
+                } elseif (count($periodResultsByResourceType) === 1) {
+                    $output[$period]['resources'] = reset($periodResultsByResourceType);
+                    continue;
+                }
+                // Get the total of other resources. Reorder is done below.
+                foreach ($periodResultsByResourceType as $resourceType => $values) {
+                    foreach ($values as $value) {
+                        $v = $value['v'];
+                        if (isset($output[$period]['resources'][$v])) {
+                            $output[$period]['resources'][$v]['t'] += $value['t'];
+                        } else {
+                            $output[$period]['resources'][$v] = $value;
+                        }
+                    }
+                }
+                $output[$period]['resources'] = array_values($output[$period]['resources']);
+            }
+            $results = $output;
+            unset($output);
+        }
+        // Or make the sum in a separate table.
+        elseif ($hasResources) {
+            foreach ($results as $period => $periodResultsByResourceType) {
+                // Copy the first array directly. Normally, an empty result is
+                // impossible.
+                if (!count($periodResultsByResourceType)) {
+                    $results[$period]['resources'] = [];
+                    continue;
+                } elseif (count($periodResultsByResourceType) === 1) {
+                    // Resources should be first.
+                    $key = key($periodResultsByResourceType);
+                    $results[$period] = ['resources' => $periodResultsByResourceType[$key], $key => $periodResultsByResourceType[$key]];
+                    continue;
+                }
+                // Resources should be first.
+                $results[$period] = ['resources' => []] + $results[$period];
+                foreach ($periodResultsByResourceType as $resourceType => $values) {
+                    if ($resourceType === 'resources') {
+                        continue;
+                    }
+                    foreach ($values as $value) {
+                        $v = $value['v'];
+                        if (isset($results[$period]['resources'][$v])) {
+                            $results[$period]['resources'][$v]['t'] += $value['t'];
+                        } else {
+                            $results[$period]['resources'][$v] = $value;
+                        }
+                    }
+                }
+                $results[$period]['resources'] = array_values($results[$period]['resources']);
+            }
+        }
+
+        // Make the table simpler to manage in the view, nearly like a spreadsheet.
+        $hasValueLabel = in_array($typeFilter, ['resource', 'uri']);
+        $results = $this->mergeResultsByValue($results, $hasValueLabel);
+
+        // TODO There is no pagination currently in stats by value.
+        // TODO Manage the right paginator.
+        $this->paginator(count($results));
+
+        $view->setVariable('results', $results);
+        return $view;
     }
 
     /**
@@ -246,7 +593,7 @@ class StatisticsController extends AbstractActionController
         $api = $this->api();
 
         $results = [];
-        // TODO A search by resources will allow only one query, but it is not yet merged by Omeka.
+        // TODO A search by resources will allow only one query, but it is not yet merged by Omeka (#1799).
         foreach ($resourceTypes as $resourceType) {
             $results[$resourceType] = $api->search($resourceType, $query, ['initialize' => false, 'finalize' => false])->getTotalResults();
         }
@@ -256,43 +603,36 @@ class StatisticsController extends AbstractActionController
         }
 
         return $hasResources
+            // Resources should be first.
             ? ['resources' => array_sum($results)] + $results
             : $results;
     }
 
     /**
-     * List years as key and value.
-     *
-     * When the option to include dates without value is set, value may be null.
+     * Get the results for all values for all periods, so fill empty values for
+     * all resource types.
      */
-    protected function listYears(?int $fromYear = null, ?int $toYear = null, bool $includeEmpty = false, string $field = 'created'): array
+    protected function mergeResultsByValue(array $results, bool $hasValueLabel = false): array
     {
-        $qb = $this->connection->createQueryBuilder();
-        $expr = $qb->expr();
-        $qb
-            ->select("DISTINCT EXTRACT(YEAR FROM resource.$field) AS 'period'")
-            ->from('resource', 'resource')
-            ->orderBy('period', 'asc');
-        // Don't use function YEAR() in where for speed. Extract() is useless here.
-        // TODO Add a generated index (doctrine 2.11, so Omeka 4).
-        if ($fromYear) {
-            $qb
-                ->andWhere($expr->gte('resource.' . $field, ':from_date'))
-                ->setParameter('from_date', $fromYear . '-01-01 00:00:00', \Doctrine\DBAL\ParameterType::STRING);
+        // Each result by period contains value, label, hits, inclusive hits.
+        // The table of values allows to sort hits by totals directly.
+        $valuesMaxCounts = [];
+        // This value is the merged results.
+        $valuesByPeriod = [];
+        foreach ($results as $period => $periodResultsByResourceType) {
+            foreach ($periodResultsByResourceType as $resourceType => $values) {
+                foreach ($values as $result) {
+                    $v = $result['v'];
+                    if ($hasValueLabel) {
+                        $valuesByPeriod[$v]['l'] = $result['l'];
+                    }
+                    $valuesByPeriod[$v]['t'][$period][$resourceType] = $result['t'];
+                    $valuesMaxCounts[$v] = isset($valuesMaxCounts[$v]) ? max($valuesMaxCounts[$v], $result['t']) : $result['t'];
+                }
+            }
         }
-        if ($toYear) {
-            $qb
-                ->andWhere($expr->lte('resource.' . $field, ':to_date'))
-                ->setParameter('to_date', $toYear . '-12-31 23:59:59', \Doctrine\DBAL\ParameterType::STRING);
-        }
-        $result = $this->connection->executeQuery($qb, $qb->getParameters(), $qb->getParameterTypes())->fetchFirstColumn();
-
-        $result = array_combine($result, $result);
-        if (!$includeEmpty || count($result) <= 1) {
-            return $result;
-        }
-
-        $range = array_fill_keys(range(min($result), max($result)), null);
-        return array_replace($range, $result);
+        asort($valuesMaxCounts);
+        $valuesMaxCounts = array_reverse($valuesMaxCounts, true);
+        return array_replace($valuesMaxCounts, $valuesByPeriod);
     }
 }

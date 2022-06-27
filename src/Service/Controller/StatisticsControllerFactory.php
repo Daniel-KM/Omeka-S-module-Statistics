@@ -18,6 +18,7 @@ class StatisticsControllerFactory implements FactoryInterface
 
         return new StatisticsController(
             $services->get('Omeka\Connection'),
+            $services->get('Omeka\ApiAdapterManager'),
             $hasAdvancedSearch
         );
     }
