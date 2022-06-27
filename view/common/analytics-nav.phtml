@@ -11,8 +11,8 @@ $translate = $plugins->get('translate');
 $urlHelper = $plugins->get('url');
 
 $isAdminRequest = $this->status()->isAdminRequest();
-$routeSummary = $isAdminRequest ? 'admin/statistics' : 'site/statistics';
-$routeStatistics = $isAdminRequest ? 'admin/statistics/default' : 'site/statistics/default';
+$routeSummary = $isAdminRequest ? 'admin/analytics' : 'site/analytics';
+$routeStatistics = $isAdminRequest ? 'admin/analytics/default' : 'site/analytics/default';
 
 $isAdminRequest = $this->status()->isAdminRequest();
 

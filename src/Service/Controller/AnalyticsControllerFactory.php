@@ -4,13 +4,13 @@ namespace Statistics\Service\Controller;
 
 use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Statistics\Controller\BrowseController;
+use Statistics\Controller\AnalyticsController;
 
-class BrowseControllerFactory implements FactoryInterface
+class AnalyticsControllerFactory implements FactoryInterface
 {
     public function __invoke(ContainerInterface $services, $requestedName, array $options = null)
     {
-        return new BrowseController(
+        return new AnalyticsController(
             $services->get('Omeka\Connection')
         );
     }

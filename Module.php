@@ -77,21 +77,22 @@ class Module extends AbstractModule
         // Only admins are allowed to browse stats.
         // The individual stats are always displayed in admin.
 
-        // The public rights are checked in controller Summary and Browse
-        // according to the config.
+        // The public rights are checked in controller according to the config.
         $settings = $services->get('Omeka\Settings');
         if ($settings->get('statistics_public_allow_summary')) {
             $acl
                 ->allow(
                     null,
-                    ['Statistics\Controller\Summary']
+                    ['Statistics\Controller\Analytics'],
+                    ['index']
                 );
         }
+        // Browse implies Summary.
         if ($settings->get('statistics_public_allow_browse')) {
             $acl
                 ->allow(
                     null,
-                    ['Statistics\Controller\Browse']
+                    ['Statistics\Controller\Analytics'],
                 );
         }
     }
@@ -181,14 +182,14 @@ class Module extends AbstractModule
     {
         $view = $event->getTarget();
         $resource = $view->vars()->offsetGet('resource');
-        echo $view->statistic()->textResource($resource);
+        echo $view->analytics()->textResource($resource);
     }
 
     public function viewDetails(Event $event): void
     {
         $view = $event->getTarget();
         $representation = $event->getParam('entity');
-        $statTitle = $view->translate('Statistics'); // @translate
+        $statTitle = $view->translate('Analytics'); // @translate
         $statText = $this->resultResource($view, $representation);
         $html = <<<HTML
 <div class="meta-group">
@@ -202,26 +203,26 @@ HTML;
 
     protected function resultResource(PhpRenderer $view, AbstractResourceRepresentation $resource)
     {
-        /** @var \Statistics\View\Helper\Statistic $statistic */
+        /** @var \Statistics\View\Helper\Analytics $analytics */
         $plugins = $view->getHelperPluginManager();
-        $statistic = $plugins->get('statistic');
+        $analytics = $plugins->get('analytics');
         $translate = $plugins->get('translate');
 
         $html = '<ul>';
         $html .= '<li>';
         $html .= sprintf(
             $translate('Views: %d (anonymous: %d / users: %d)'), // @translate
-            $statistic->totalResource($resource),
-            $statistic->totalResource($resource, null, 'anonymous'),
-            $statistic->totalResource($resource, null, 'identified')
+            $analytics->totalResource($resource),
+            $analytics->totalResource($resource, null, 'anonymous'),
+            $analytics->totalResource($resource, null, 'identified')
         );
         $html .= '</li>';
         $html .= '<li>';
         $html .= sprintf(
             $translate('Position: %d (anonymous: %d / users: %d)'), // @translate
-            $statistic->positionResource($resource),
-            $statistic->positionResource($resource, null, 'anonymous'),
-            $statistic->positionResource($resource, null, 'identified')
+            $analytics->positionResource($resource),
+            $analytics->positionResource($resource, null, 'anonymous'),
+            $analytics->positionResource($resource, null, 'identified')
         );
         $html .= '</li>';
         $html .= '</ul>';
@@ -234,20 +235,20 @@ HTML;
         $plugins = $view->getHelperPluginManager();
         $userIsAllowed = $plugins->get('userIsAllowed');
 
-        $userIsAllowedSummary = $userIsAllowed('Statistics\Controller\Summary', 'index');
-        $userIsAllowedBrowse = $userIsAllowed('Statistics\Controller\Browse', 'browse');
+        $userIsAllowedSummary = $userIsAllowed('Statistics\Controller\Analytics', 'index');
+        $userIsAllowedBrowse = $userIsAllowed('Statistics\Controller\Analytics', 'browse');
         if (!$userIsAllowedSummary && !$userIsAllowedBrowse) {
             return;
         }
 
         /**
-         * @var \Statistics\View\Helper\Statistic $statistic
+         * @var \Statistics\View\Helper\Analytics $analytics
          */
         $services = $this->getServiceLocator();
         $url = $plugins->get('url');
         $api = $services->get('Omeka\ApiManager');
         $escape = $plugins->get('escapeHtml');
-        $statistic = $plugins->get('statistic');
+        $analytics = $plugins->get('analytics');
         $settings = $services->get('Omeka\Settings');
         $translate = $plugins->get('translate');
         $escapeAttr = $plugins->get('escapeHtmlAttr');
@@ -263,7 +264,7 @@ HTML;
 HTML;
 
         if ($userIsAllowedSummary) {
-            $statsSummaryUrl = $url('admin/statistics', [], true);
+            $statsSummaryUrl = $url('admin/analytics', [], true);
             $statsSummaryText = sprintf($translate('Total Hits: %d'), $totalHits); // @translate
             $lastTexts = [
                 30 => $translate('Last 30 days'),
@@ -287,11 +288,11 @@ HTML;
         }
 
         if ($userIsAllowedBrowse) {
-            $statsBrowseUrl = $url('admin/statistics/default', ['action' => 'by-page'], true);
+            $statsBrowseUrl = $url('admin/analytics/default', ['action' => 'by-page'], true);
             $statsBrowseText = $translate('Most viewed public pages'); // @translate
             $html .= '<h4><a href="' . $statsBrowseUrl . '">' . $statsBrowseText . '</a></h4>';
             /** @var \Statistics\Api\Representation\StatRepresentation[] $stats */
-            $stats = $statistic->mostViewedPages(null, $userStatus, 1, 5);
+            $stats = $analytics->mostViewedPages(null, $userStatus, 1, 5);
             if (empty($stats)) {
                 $html .= '<p>' . $translate('None') . '</p>';
             } else {
@@ -309,10 +310,10 @@ HTML;
                 $html .= '</ol>';
             }
 
-            $statsBrowseUrl = $url('admin/statistics/default', ['action' => 'by-resource'], true);
+            $statsBrowseUrl = $url('admin/analytics/default', ['action' => 'by-resource'], true);
             $statsBrowseText = $translate('Most viewed public item'); // @translate
             $html .= '<h4><a href="' . $statsBrowseUrl . '">' . $statsBrowseText . '</a></h4>';
-            $stats = $statistic->mostViewedResources('items', $userStatus, 1, 5);
+            $stats = $analytics->mostViewedResources('items', $userStatus, 1, 5);
             if (empty($stats)) {
                 $html .= '<p>' . $translate('None') . '</p>';
             } else {
@@ -325,10 +326,10 @@ HTML;
                 $html .= '</ul>';
             }
 
-            $statsBrowseUrl = $url('admin/statistics/default', ['action' => 'by-resource'], true);
+            $statsBrowseUrl = $url('admin/analytics/default', ['action' => 'by-resource'], true);
             $statsBrowseText = $translate('Most viewed public item set'); // @translate
             $html .= '<h4><a href="' . $statsBrowseUrl . '">' . $statsBrowseText . '</a></h4>';
-            $stats = $statistic->mostViewedResources('item_sets', $userStatus, 1, 5);
+            $stats = $analytics->mostViewedResources('item_sets', $userStatus, 1, 5);
             if (empty($stats)) {
                 $html .= '<p>' . $translate('None') . '</p>';
             } else {
@@ -341,10 +342,10 @@ HTML;
                 $html .= '</ul>';
             }
 
-            $statsBrowseUrl = $url('admin/statistics/default', ['action' => 'by-download'], true);
+            $statsBrowseUrl = $url('admin/analytics/default', ['action' => 'by-download'], true);
             $statsBrowseText = $translate('Most downloaded file'); // @translate
             $html .= '<h4><a href="' . $statsBrowseUrl . '">' . $statsBrowseText . '</a></h4>';
-            $stats = $statistic->mostViewedDownloads($userStatus, 1, 1);
+            $stats = $analytics->mostViewedDownloads($userStatus, 1, 1);
             if (empty($stats)) {
                 $html .= '<p>' . $translate('None') . '</p>';
             } else {
@@ -357,7 +358,7 @@ HTML;
                 $html .= '</ul>';
             }
 
-            $statsBrowseUrl = $url('admin/statistics/default', ['action' => 'by-field'], true);
+            $statsBrowseUrl = $url('admin/analytics/default', ['action' => 'by-field'], true);
             $statsBrowseText = $translate('Most frequent fields'); // @translate
             $html .= '<h4><a href="' . $statsBrowseUrl . '">' . $statsBrowseText . '</a></h4>';
             /** @var \Statistics\Api\Representation\StatRepresentation[] $results */
@@ -367,13 +368,13 @@ HTML;
                 'user_agent' => $translate('User Agent'), // @translate
                 'accept_language' => $translate('Accepted Language'), // @translate
             ] as $field => $label) {
-                $results = $statistic->mostFrequents($field, $userStatus, 1, 1);
+                $results = $analytics->mostFrequents($field, $userStatus, 1, 1);
                 $html .= '<li>';
                 if (empty($results)) {
                     $html .= sprintf($translate('%s: None'), $label);
                 } else {
                     $result = reset($results);
-                    $html .= sprintf('%s: %s (%d%%)', sprintf('<a href="%s">%s</a>', $url('admin/statistics/default', ['action' => 'by-field'], true) . '?field=' . $field, $label), $result[$field], $result['hits'] * 100 / $totalHits);
+                    $html .= sprintf('%s: %s (%d%%)', sprintf('<a href="%s">%s</a>', $url('admin/analytics/default', ['action' => 'by-field'], true) . '?field=' . $field, $label), $result[$field], $result['hits'] * 100 / $totalHits);
                 }
                 $html .= '</li>';
             }

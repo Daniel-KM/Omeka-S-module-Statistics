@@ -35,9 +35,9 @@ $isYearPeriods = $byPeriodFilter === 'year';
 // $hasResults = !empty($results) && ($isAllPeriods ? !empty($results['all']) : true);
 ?>
 
-<?= $this->pageTitle($translate('By value'), 1, $isAdminRequest ? $translate('Statistics') : null) ?>
+<?= $this->pageTitle($translate('By value'), 1, $isAdminRequest ? $translate('Analytics') : null) ?>
 
-<?= $this->partial('common/statistics-nav') ?>
+<?= $this->partial('common/analytics-nav') ?>
 
 <form method="get">
 <div class="flex-container">
@@ -172,7 +172,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
         <h2><?= $translate('There is no hit yet.') ?></h2>
     <?php else: ?>
         <p><?= sprintf($translate('The query searched %s hits and returned no results.'), $totalHits) ?></p>
-        <p><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-item-set'], true) ?>"><?= $translate('See all statistics.') ?></a></p>
+        <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-item-set'], true) ?>"><?= $translate('See all statistics.') ?></a></p>
     <?php endif; ?>
 
 <?php endif; ?>

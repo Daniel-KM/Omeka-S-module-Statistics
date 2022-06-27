@@ -12,6 +12,7 @@
 
 $plugins = $this->getHelperPluginManager();
 $assetUrl = $plugins->get('assetUrl');
+$analytics = $plugins->get('analytics');
 $translate = $plugins->get('translate');
 $urlHelper = $plugins->get('url');
 
@@ -25,12 +26,12 @@ $totalResults = $this->pagination()->getPaginator()->getTotalCount();
 $currentUrl = $urlHelper(null, [], true);
 ?>
 
-<?= $this->pageTitle(sprintf($translate('Statistics (%s total)'), $totalResults), 1, $isAdminRequest ? $translate('Statistics') : null) ?>
+<?= $this->pageTitle(sprintf($translate('Analytics (%s total)'), $totalResults), 1, $isAdminRequest ? $translate('Analytics') : null) ?>
 
-<?= $this->partial('common/statistics-nav') ?>
+<?= $this->partial('common/analytics-nav') ?>
 
 <p>
-    <strong><?= sprintf($translate('By %s (%s)'), $labelField, $this->statistic()->humanUserStatus($userStatus)) ?></strong>
+    <strong><?= sprintf($translate('By %s (%s)'), $labelField, $analytics->humanUserStatus($userStatus)) ?></strong>
     <em><?= sprintf($translate('[%d filled values / %d total hits]'), $totalNotEmpty, $totalHits) ?></em>
 </p>
 
@@ -38,7 +39,7 @@ $currentUrl = $urlHelper(null, [], true);
 
 <div class="browse-controls">
     <?= $pagination = $this->pagination() ?>
-    <?= $this->partial('common/statistics-quick-filters') ?>
+    <?= $this->partial('common/analytics-quick-filters') ?>
     <?php //= $this->sortSelector($sortHeadings) ?>
 </div>
 <table class="tablesaw statistics-table" data-tablesaw-mode="stack">
@@ -70,7 +71,7 @@ $currentUrl = $urlHelper(null, [], true);
 <?php else: ?>
 
 <div class="browse-controls">
-    <?= $this->partial('common/statistics-quick-filters') ?>
+    <?= $this->partial('common/analytics-quick-filters') ?>
 </div>
 <br class="clear" />
 <div class="no-resources">
@@ -78,7 +79,7 @@ $currentUrl = $urlHelper(null, [], true);
     <p><?= $translate('There is no hit yet.') ?></p>
 <?php else: ?>
     <p><?= sprintf($translate('The query searched %s hits and returned no results.'), $totalHits) ?></p>
-    <p><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-' . $type], true) ?>"><?= $translate('See all statistics.') ?></a></p>
+    <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-' . $type], true) ?>"><?= $translate('See all statistics.') ?></a></p>
 <?php endif; ?>
 </div>
 

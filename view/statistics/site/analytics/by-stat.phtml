@@ -26,16 +26,16 @@ $currentUrl = $urlHelper(null, [], true);
 $basePath = $this->basePath();
 ?>
 
-<?= $this->pageTitle(sprintf($translate('Stats (%s total)'), $totalResults), 1, $isAdminRequest ? $translate('Statistics') : null) ?>
+<?= $this->pageTitle(sprintf($translate('Analytics (%s total)'), $totalResults), 1, $isAdminRequest ? $translate('Analytics') : null) ?>
 
-<?= $this->partial('common/statistics-nav') ?>
+<?= $this->partial('common/analytics-nav') ?>
 
 <?php if ($stats): ?>
 
 <div class="browse-controls">
     <?= $pagination = $this->pagination() ?>
     <?php //= $this->hyperlink($translate('Advanced search'), $urlHelper(null, ['action' => 'search'], ['query' => $this->params()->fromQuery()], true), ['class' => 'advanced-search']) ?>
-    <?= $this->partial('common/statistics-quick-filters') ?>
+    <?= $this->partial('common/analytics-quick-filters') ?>
     <?php //= $this->sortSelector($sortHeadings) ?>
 </div>
 <table class="tablesaw statistics-table" data-tablesaw-mode="stack">
@@ -105,7 +105,7 @@ $basePath = $this->basePath();
 <?php else: ?>
 
 <div class="browse-controls">
-    <?= $this->partial('common/statistics-quick-filters') ?>
+    <?= $this->partial('common/analytics-quick-filters') ?>
 </div>
 <?php $totalStats = $this->api()->search('stats')->getTotalResults(); ?>
 <div class="no-resources">
@@ -113,7 +113,7 @@ $basePath = $this->basePath();
     <p><?= $translate('Omeka could not find any statistics.') ?></p>
 <?php else: ?>
     <p><?= sprintf($translate('The query searched %s rows and returned no results.'), $totalStats) ?></p>
-    <p><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-' . $type], true) ?>"><?= $translate('See all statistics.') ?></a></p>
+    <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-' . $type], true) ?>"><?= $translate('See all statistics.') ?></a></p>
 <?php endif; ?>
 </div>
 

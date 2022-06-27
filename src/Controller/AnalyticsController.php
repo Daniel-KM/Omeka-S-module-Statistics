@@ -11,24 +11,94 @@ use Statistics\Entity\Stat;
 /**
  * Controller to browse Stats.
  */
-class BrowseController extends AbstractActionController
+class AnalyticsController extends AbstractActionController
 {
     /**
      * @var \Doctrine\DBAL\Connection
      */
     protected $connection;
 
+    /**
+     * @var string
+     */
+    protected $userStatus;
+
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
     }
 
-    /**
-     * Forward to the summary controller.
-     */
     public function indexAction()
     {
-        return $this->forward()->dispatch(SummaryController::class);
+        $isAdminRequest = $this->status()->isAdminRequest();
+        $settings = $this->settings();
+        $this->userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
+
+        $results = [];
+        $time = time();
+
+        $translate = $this->plugins->get('translate');
+
+        $results['all'] = $this->statsPeriod();
+
+        $results['today'] = $this->statsPeriod(strtotime('today'));
+
+        $results['history'][$translate('Last year')] = $this->statsPeriod( // @translate
+            strtotime('-1 year', strtotime(date('Y-1-1', $time))),
+            strtotime(date('Y-1-1', $time) . ' - 1 second')
+        );
+        $results['history'][$translate('Last month')] = $this->statsPeriod( // @translate
+            strtotime('-1 month', strtotime(date('Y-m-1', $time))),
+            strtotime(date('Y-m-1', $time) . ' - 1 second')
+        );
+        $results['history'][$translate('Last week')] = $this->statsPeriod( // @translate
+            strtotime("previous week"),
+            strtotime("previous week + 6 days")
+        );
+        $results['history'][$translate('Yesterday')] = $this->statsPeriod( // @translate
+            strtotime('-1 day', strtotime(date('Y-m-d', $time))),
+            strtotime('-1 day', strtotime(date('Y-m-d', $time)))
+        );
+
+        $results['current'][$translate('This year')] = // @translate
+        $this->statsPeriod(strtotime(date('Y-1-1', $time)));
+        $results['current'][$translate('This month')] =  // @translate
+        $this->statsPeriod(strtotime(date('Y-m-1', $time)));
+        $results['current'][$translate('This week')] = // @translate
+        $this->statsPeriod(strtotime('this week'));
+        $results['current'][$translate('This day')] = // @translate
+        $this->statsPeriod(strtotime('today'));
+
+        foreach ([365 => null, 30 => null, 7 => null, 1 => null] as $start => $endPeriod) {
+            $startPeriod = strtotime("- {$start} days");
+            $label = ($start == 1)
+                ? $translate('Last 24 hours') // @translate
+                : sprintf($translate('Last %s days'), $start); // @translate
+            $results['rolling'][$label] = $this->statsPeriod($startPeriod, $endPeriod);
+        }
+
+        if ($this->userIsAllowed('Statistics\Controller\Analytics', 'by-page')) {
+            /** @var \Statistics\View\Helper\Analytics $analytics */
+            $analytics = $this->viewHelpers()->get('analytics');
+            $results['most_viewed_pages'] = $analytics->mostViewedPages(null, $this->userStatus, 1, 10);
+            $results['most_viewed_resources'] = $analytics->mostViewedResources(null, $this->userStatus, 1, 10);
+            $results['most_viewed_item_sets'] = $analytics->mostViewedResources('item_sets', $this->userStatus, 1, 10);
+            $results['most_viewed_downloads'] = $analytics->mostViewedDownloads($this->userStatus, 1, 10);
+            $results['most_frequent_fields']['referrer'] = $analytics->mostFrequents('referrer', $this->userStatus, 1, 10);
+            $results['most_frequent_fields']['query'] = $analytics->mostFrequents('query', $this->userStatus, 1, 10);
+            $results['most_frequent_fields']['user_agent'] = $analytics->mostFrequents('user_agent', $this->userStatus, 1, 10);
+            $results['most_frequent_fields']['accept_language'] = $analytics->mostFrequents('accept_language', $this->userStatus, 1, 10);
+        }
+
+        $view = new ViewModel([
+            'results' => $results,
+            'userStatus' => $this->userStatus,
+        ]);
+
+        return $view
+            ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/index' : 'statistics/site/analytics/index');
     }
 
     /**
@@ -39,7 +109,7 @@ class BrowseController extends AbstractActionController
         $query = $this->params()->fromRoute();
         $query['action'] = 'by-page';
         $isSiteRequest = $this->status()->isSiteRequest();
-        return $this->redirect()->toRoute($isSiteRequest ? 'site/statistics/default' : 'admin/statistics/default', $query);
+        return $this->redirect()->toRoute($isSiteRequest ? 'site/analytics/default' : 'admin/analytics/default', $query);
     }
 
     public function bySiteAction()
@@ -47,7 +117,7 @@ class BrowseController extends AbstractActionController
         // FIXME Stats by site has not been fully checked.
         // TODO Add a column "site_id" in table "stat".
         // TODO Factorize with byItemSetAction?
-        // TODO Move the process into view helper Statistic.
+        // TODO Move the process into view helper Analytics.
         // TODO Enlarge byItemSet to byResource (since anything is resource).
 
         $isAdminRequest = $this->status()->isAdminRequest();
@@ -130,7 +200,7 @@ SQL;
             'monthFilter' => $month,
         ]);
         return $view
-            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-site' : 'statistics/site/browse/by-site');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-site' : 'statistics/site/analytics/by-site');
     }
 
     /**
@@ -164,7 +234,7 @@ SQL;
             'type' => Stat::TYPE_PAGE,
         ]);
         return $view
-            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-stat' : 'statistics/site/browse/by-stat');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-stat' : 'statistics/site/analytics/by-stat');
     }
 
     /**
@@ -198,7 +268,7 @@ SQL;
             'type' => Stat::TYPE_RESOURCE,
         ]);
         return $view
-            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-stat' : 'statistics/site/browse/by-stat');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-stat' : 'statistics/site/analytics/by-stat');
     }
 
     /**
@@ -232,7 +302,7 @@ SQL;
             'type' => Stat::TYPE_DOWNLOAD,
         ]);
         return $view
-            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-stat' : 'statistics/site/browse/by-stat');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-stat' : 'statistics/site/analytics/by-stat');
     }
 
     /**
@@ -263,10 +333,10 @@ SQL;
             : (int) $this->siteSettings()->get('pagination_per_page', 25);
 
         // Don't use api, because this is a synthesis, not a list of resources.
-        /** @var \Statistics\View\Helper\Statistic $statistic */
-        $statistic = $this->viewHelpers()->get('statistic');
-        $results = $statistic->frequents($query, $currentPage, $resourcesPerPage);
-        $totalResults = $statistic->countFrequents($query);
+        /** @var \Statistics\View\Helper\Analytics $analytics */
+        $analytics = $this->viewHelpers()->get('analytics');
+        $results = $analytics->frequents($query, $currentPage, $resourcesPerPage);
+        $totalResults = $analytics->countFrequents($query);
         $totalHits = $this->api()->search('hits', ['user_status' => $userStatus])->getTotalResults();
         $totalNotEmpty = $this->api()->search('hits', ['field' => $field, 'user_status' => $userStatus, 'not_empty' => $field])->getTotalResults();
         $this->paginator($totalResults);
@@ -297,13 +367,13 @@ SQL;
             'userStatus' => $userStatus,
         ]);
         return $view
-            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-field' : 'statistics/site/browse/by-field');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-field' : 'statistics/site/analytics/by-field');
     }
 
     public function byItemSetAction()
     {
         // FIXME Stats by item set has not been fully checked.
-        // TODO Move the process into view helper Statistic.
+        // TODO Move the process into view helper Analytics.
         // TODO Enlarge byItemSet to byResource (since anything is resource).
 
         $isAdminRequest = $this->status()->isAdminRequest();
@@ -407,13 +477,13 @@ SQL;
             'monthFilter' => $month,
         ]);
         return $view
-            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-item-set' : 'statistics/site/browse/by-item-set');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-item-set' : 'statistics/site/analytics/by-item-set');
     }
 
     public function byValueAction()
     {
         // FIXME Stats by value has not been fully checked.
-        // TODO Move the process into view helper Statistic.
+        // TODO Move the process into view helper Analytics.
         // TODO Enlarge byItemSet to byResource (since anything is resource).
 
         $isAdminRequest = $this->status()->isAdminRequest();
@@ -504,7 +574,7 @@ SQL;
                         'byPeriodFilter' => $byPeriodFilter,
                     ]);
                     return $view
-                        ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-value' : 'statistics/site/browse/by-value');
+                        ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-value' : 'statistics/site/analytics/by-value');
                 } else {
                     $periods = $this->listYearMonths(null, null, true);
                 }
@@ -630,7 +700,46 @@ SQL;
         ]);
 
         return $view
-            ->setTemplate($isAdminRequest ? 'statistics/admin/browse/by-value' : 'statistics/site/browse/by-value');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-value' : 'statistics/site/analytics/by-value');
+    }
+
+    /**
+     * Helper to get all stats of a period.
+     *
+     * @todo Move the view helper Analytics.
+     *
+     * @param int $startPeriod Number of days before today (default is all).
+     * @param int $endPeriod Number of days before today (default is now).
+     * @return array
+     */
+    protected function statsPeriod(?int $startPeriod = null, ?int $endPeriod = null): array
+    {
+        $query = [];
+        if ($startPeriod) {
+            $query['since'] = date('Y-m-d 00:00:00', $startPeriod);
+        }
+        if ($endPeriod) {
+            $query['until'] = date('Y-m-d 23:59:59', $endPeriod);
+        }
+
+        $api = $this->api();
+        if ($this->status()->isAdminRequest()) {
+            // TODO Use a single query (see version for Omeka Classic).
+            $query['user_status'] = 'anonymous';
+            $anonymous = $api->search('hits', $query)->getTotalResults();
+            $query['user_status'] = 'identified';
+            $identified = $api->search('hits', $query)->getTotalResults();
+            return [
+                'anonymous' => $anonymous,
+                'identified' => $identified,
+                'total' => $anonymous + $identified,
+            ];
+        }
+
+        $query['user_status'] = $this->userStatus ?: 'hits';
+        return [
+            'total' => $api->search('hits', $query)->getTotalResults(),
+        ];
     }
 
     /**

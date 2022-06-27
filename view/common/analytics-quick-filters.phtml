@@ -8,7 +8,7 @@ $plugins = $this->getHelperPluginManager();
 $url = $plugins->get('url');
 $translate = $plugins->get('translate');
 
-$routeStatistics = $this->status()->isAdminRequest() ? 'admin/statistics/default' : 'site/statistics/default';
+$routeStatistics = $this->status()->isAdminRequest() ? 'admin/analytics/default' : 'site/analytics/default';
 ?>
 
 <ul class="quick-filter-wrapper state-filter">

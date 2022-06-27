@@ -103,7 +103,7 @@ class SettingsFieldset extends Fieldset
                 'name' => 'statistics_public_allow_summary',
                 'type' => Element\Checkbox::class,
                 'options' => [
-                    'label' => 'Allow public to access statistics summary', // @translate
+                    'label' => 'Allow public to access analytics summary', // @translate
                 ],
                 'attributes' => [
                     'id' => 'statistics_public_allow_summary',
@@ -113,7 +113,7 @@ class SettingsFieldset extends Fieldset
                 'name' => 'statistics_public_allow_browse',
                 'type' => Element\Checkbox::class,
                 'options' => [
-                    'label' => 'Allow public to access detailled statistics', // @translate
+                    'label' => 'Allow public to access detailled analytics', // @translate
                 ],
                 'attributes' => [
                     'id' => 'statistics_public_allow_browse',

@@ -40,23 +40,23 @@ class Stat extends AbstractShortcode
             ? $args['id'] ?? $args['resource_id'] ?? $args['record_id'] ?? $args['entity_id'] ?? null
             : null;
 
-        /** @var \Statistics\View\Helper\Statistic $statistic */
-        $statistic = $this->view->statistic();
+        /** @var \Statistics\View\Helper\Analytics $analytics */
+        $analytics = $this->view->analytics();
 
         // Search by resource.
         if ($resourceId) {
             $result = $type === 'download'
-                ? $statistic->totalDownload($resourceId)
-                : $statistic->totalResource((string) $resourceName, (int) $resourceId);
+                ? $analytics->totalDownload($resourceId)
+                : $analytics->totalResource((string) $resourceName, (int) $resourceId);
         }
         // Search by resource type.
         elseif ($resourceName) {
-            $result = $statistic->totalResourceType($resourceName);
+            $result = $analytics->totalResourceType($resourceName);
         }
         // Search by url.
         else {
             $url = $args['url'] ?? null;
-            $result = $statistic->totalPage($url);
+            $result = $analytics->totalPage($url);
         }
 
         // Don't return null.
@@ -82,19 +82,19 @@ class Stat extends AbstractShortcode
             ? $args['id'] ?? $args['resource_id'] ?? $args['record_id'] ?? null
             : null;
 
-        /** @var \Statistics\View\Helper\Statistic $statistic */
-        $statistic = $this->view->statistic();
+        /** @var \Statistics\View\Helper\Analytics $analytics */
+            $analytics = $this->view->analytics();
 
         // Search by resource.
         if ($resourceId) {
             $result = $type === 'download'
-                ? $statistic->positionDownload($resourceId)
-                : $statistic->positionResource((string) $resourceName, (int) $resourceId);
+                ? $analytics->positionDownload($resourceId)
+                : $analytics->positionResource((string) $resourceName, (int) $resourceId);
         }
         // Search by url.
         else {
             $url = $args['url'] ?? null;
-            $result = $statistic->positionPage($url);
+            $result = $analytics->positionPage($url);
         }
 
         // Don't return null.
@@ -113,18 +113,18 @@ class Stat extends AbstractShortcode
         $page = isset($args['page']) ? (int) $args['page'] : null;
         $limit = isset($args['number']) ? (int) $args['number'] : 10;
 
-        /** @var \Statistics\View\Helper\Statistic $statistic */
-        $statistic = $this->view->statistic();
+        /** @var \Statistics\View\Helper\Analytics $analytics */
+        $analytics = $this->view->analytics();
 
         if ($type === 'download') {
             // Search in all downloads.
-            return $statistic->viewedDownloads($sort, null, $page, $limit, true);
+            return $analytics->viewedDownloads($sort, null, $page, $limit, true);
         } elseif (!$type || $type === 'page') {
             // Search in all pages.
-            return $statistic->viewedPages(null, $sort, null, $page, $limit, true);
+            return $analytics->viewedPages(null, $sort, null, $page, $limit, true);
         } else {
             // Search by resource type.
-            return $statistic->viewedResources($type, $sort, null, $page, $limit, true);
+            return $analytics->viewedResources($type, $sort, null, $page, $limit, true);
         }
     }
 }

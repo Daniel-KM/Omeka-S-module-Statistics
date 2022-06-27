@@ -17,7 +17,7 @@ use Statistics\Entity\Stat;
  * url is unique, but there are differences between positions and viewed pages
  * and downloaded files lists.
  */
-class Statistic extends AbstractHelper
+class Analytics extends AbstractHelper
 {
     /**
      * @var \Statistics\Api\Adapter\HitAdapter
@@ -790,7 +790,7 @@ class Statistic extends AbstractHelper
         }
         if (isset($query['sort_by'])) {
             if (in_array($query['sort_by'], ['hits', $field])) {
-                $query['sort_order'] = isset($query['sort_order']) && strtolower((string) $sortOrder) === 'asc' ? 'asc' : 'desc';
+                $query['sort_order'] = isset($query['sort_order']) && strtolower((string) $query['sort_order']) === 'asc' ? 'asc' : 'desc';
             } else {
                 $query['sort_by'] = null;
             }
@@ -1003,7 +1003,7 @@ class Statistic extends AbstractHelper
         }
         $userStatus = $this->normalizeUserStatus($userStatus);
         $stat = $this->view->api()->searchOne('stats', ['url' => $url, 'type' => Stat::TYPE_PAGE])->getContent();
-        return $this->view->partial('common/statistics-value', [
+        return $this->view->partial('common/analytics-value', [
             'type' => Stat::TYPE_PAGE,
             'stat' => $stat,
             'userStatus' => $userStatus,
@@ -1026,7 +1026,7 @@ class Statistic extends AbstractHelper
         }
         $stat = $this->view->api()->searchOne('stats', ['entity_name' => $resource['type'], 'entity_id' => $resource['id'], 'type' => Stat::TYPE_RESOURCE])->getContent();
         $userStatus = $this->normalizeUserStatus($userStatus);
-        return $this->view->partial('common/statistics-value', [
+        return $this->view->partial('common/analytics-value', [
             'type' => Stat::TYPE_RESOURCE,
             'stat' => $stat,
             'userStatus' => $userStatus,
@@ -1049,7 +1049,7 @@ class Statistic extends AbstractHelper
                 ? ['entity_name' => 'media', 'entity_id' => $downloadId, 'type' => Stat::TYPE_DOWNLOAD]
                 : ['url' => $downloadId, 'type' => Stat::TYPE_DOWNLOAD]
         )->getContent();
-        return $this->view->partial('common/statistics-value', [
+        return $this->view->partial('common/analytics-value', [
             'type' => Stat::TYPE_DOWNLOAD,
             'stat' => $stat,
             'userStatus' => $userStatus,
@@ -1419,7 +1419,7 @@ class Statistic extends AbstractHelper
                 'userStatus' => $userStatus,
                 'position' => $key + 1,
             ];
-            $html .= $partial('common/statistics-single', $params);
+            $html .= $partial('common/analytics-single', $params);
         }
         return $html;
     }

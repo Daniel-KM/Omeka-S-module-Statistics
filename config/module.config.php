@@ -24,7 +24,7 @@ return [
     ],
     'view_helpers' => [
         'factories' => [
-            'statistic' => Service\ViewHelper\StatisticFactory::class,
+            'analytics' => Service\ViewHelper\AnalyticsFactory::class,
         ],
     ],
     'form_elements' => [
@@ -33,11 +33,8 @@ return [
         ],
     ],
     'controllers' => [
-        'invokables' => [
-            'Statistics\Controller\Summary' => Controller\SummaryController::class,
-        ],
         'factories' => [
-            'Statistics\Controller\Browse' => Service\Controller\BrowseControllerFactory::class ,
+            'Statistics\Controller\Analytics' => Service\Controller\AnalyticsControllerFactory::class ,
             'Statistics\Controller\Download' => Service\Controller\DownloadControllerFactory::class,
         ],
     ],
@@ -46,29 +43,19 @@ return [
             'logCurrentUrl' => Service\ControllerPlugin\LogCurrentUrlFactory::class,
         ],
     ],
-    // TODO Merge bulk navigation and route with module BulkImport (require a main page?).
     'navigation' => [
         'AdminModule' => [
-            'statistics' => [
-                'label' => 'Statistics', // @translate
-                'route' => 'admin/statistics',
-                'controller' => 'summary',
+            'analytics' => [
+                'label' => 'Analytics', // @translate
+                'route' => 'admin/analytics',
+                'controller' => 'Analytics',
                 'action' => 'index',
-                'resource' => 'Statistics\Controller\Summary',
+                'resource' => 'Statistics\Controller\Analytics',
                 'class' => 'o-icon- fa-chart-line',
                 'pages' => [
                     [
-                        'label' => 'Summary', // @translate
-                        'route' => 'admin/statistics/default',
-                        'controller' => 'summary',
-                        'action' => 'index',
-                        'resource' => 'Statistics\Controller\Summary',
-                        'pages' => [
-                            [
-                                'route' => 'admin/stat',
-                                'visible' => false,
-                            ],
-                        ],
+                        'route' => 'admin/analytics/default',
+                        'visible' => false,
                     ],
                 ],
             ],
@@ -78,14 +65,14 @@ return [
         'routes' => [
             'site' => [
                 'child_routes' => [
-                    'statistics' => [
+                    'analytics' => [
                         'type' => \Laminas\Router\Http\Literal::class,
                         'options' => [
-                            'route' => '/statistics',
+                            'route' => '/analytics',
                             'defaults' => [
                                 '__NAMESPACE__' => 'Statistics\Controller',
                                 '__SITE__' => true,
-                                'controller' => 'Summary',
+                                'controller' => 'Analytics',
                                 'action' => 'index',
                             ],
                         ],
@@ -97,9 +84,6 @@ return [
                                     'route' => '/:action',
                                     'constraints' => [
                                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
-                                    ],
-                                    'defaults' => [
-                                        'controller' => 'Browse',
                                     ],
                                 ],
                             ],
@@ -109,14 +93,14 @@ return [
             ],
             'admin' => [
                 'child_routes' => [
-                    'statistics' => [
+                    'analytics' => [
                         'type' => \Laminas\Router\Http\Literal::class,
                         'options' => [
-                            'route' => '/statistics',
+                            'route' => '/analytics',
                             'defaults' => [
                                 '__NAMESPACE__' => 'Statistics\Controller',
                                 '__ADMIN__' => true,
-                                'controller' => 'Summary',
+                                'controller' => 'Analytics',
                                 'action' => 'index',
                             ],
                         ],
@@ -128,23 +112,6 @@ return [
                                     'route' => '/:action',
                                     'constraints' => [
                                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
-                                    ],
-                                    'defaults' => [
-                                        'controller' => 'Browse',
-                                    ],
-                                ],
-                            ],
-                            'id' => [
-                                'type' => \Laminas\Router\Http\Segment::class,
-                                'options' => [
-                                    'route' => '/:id[/:action]',
-                                    'constraints' => [
-                                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
-                                        'id' => '\d+',
-                                    ],
-                                    'defaults' => [
-                                        'controller' => 'Browse',
-                                        'action' => 'show',
                                     ],
                                 ],
                             ],

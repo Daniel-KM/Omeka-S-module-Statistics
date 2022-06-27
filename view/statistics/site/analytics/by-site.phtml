@@ -23,9 +23,9 @@ $isAdminRequest = $this->status()->isAdminRequest();
 $currentUrl = $urlHelper(null, [], true);
 ?>
 
-<?= $this->pageTitle($translate('By site'), 1, $isAdminRequest ? $translate('Statistics') : null) ?>
+<?= $this->pageTitle($translate('By site'), 1, $isAdminRequest ? $translate('Analytics') : null) ?>
 
-<?= $this->partial('common/statistics-nav') ?>
+<?= $this->partial('common/analytics-nav') ?>
 
 <form method="get">
     <select name="year">
@@ -86,6 +86,6 @@ $currentUrl = $urlHelper(null, [], true);
         <h2><?= $translate('There is no hit yet.') ?></h2>
     <?php else: ?>
         <p><?= sprintf($translate('The query searched %s hits and returned no results.'), $totalHits) ?></p>
-        <p><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-site'], true) ?>"><?= $translate('See all statistics.') ?></a></p>
+        <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-site'], true) ?>"><?= $translate('See all statistics.') ?></a></p>
     <?php endif; ?>
 <?php endif; ?>
