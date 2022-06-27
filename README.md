@@ -1,17 +1,20 @@
-Statistics (module for Omeka S)
-===============================
+Statistics and Analytics (module for Omeka S)
+=============================================
 
 > __New versions of this module and support for Omeka S version 3.0 and above
 > are available on [GitLab], which seems to respect users and privacy better
 > than the previous repository.__
 
-[Statistics] is a module for [Omeka S] that counts views of pages in order to
-know the least popular resource and the most viewed pages. It provides useful
-infos on visitors too (language, referrer...). So this is an analytics tool like
-[Matomo] (open source), [Google Analytics] (proprietary, no privacy) and other
-hundreds of such [web loggers].
+[Statistics] is a module for [Omeka S] that computes statistics about resources
+ant that counts views of pages by visitors. It allows to get data about items,
+item sets, media, properties, etc., and it allows to know the least popular
+resource and the most viewed pages. It provides useful infos on visitors too
+(language, referrer...). So this is a statistics tools and an analytics tool
+like [Matomo] (open source), [Google Analytics] (proprietary, no privacy) and
+other hundreds of such [web loggers].
 
 It has some advantages over them:
+- internal statistics about resources;
 - simple to manage (a normal module, with same interface);
 - adapted (statistics can be done by resource and not only by page);
 - integrated, so statistics can be displayed on any page easily;
@@ -25,12 +28,14 @@ On the other hand, some advanced features are not implemented, especially
 a detailled board with advanced filters. Furthermore, many analytics on the
 users are not available. So the two tools may be needed according to your needs.
 
-Logs and data can be exported via mysql to a spreadsheet like [LibreOffice] or
-another specialized statistic tool, where many statistics can be calculated.
+Logs and data can be exported as a spreadsheet. All the viewers hits are stored
+in the database and can be exported via sql to a spreadsheet like [LibreOffice]
+or another specialized statistic tool, where many statistics can be calculated.
 
 Of course, you must respect privacy of users and visitors.
 
-This module is a direct upgrade of the plugin [Statistics for Omeka Classic].
+This module is a direct upgrade of the plugin [Statistics for Omeka Classic],
+with many improvments.
 
 
 Installation
@@ -38,7 +43,16 @@ Installation
 
 ### Module
 
+See general end user documentation for [installing a module].
+
+To get statistics and not only analytics, the module [Advanced Search] is
+required in order to do advanced queries, in particular to get results by
+period.
+
 This module can use the optional module [Generic].
+
+The module uses an external library, so use the release zip to install it, or
+use and init the source.
 
 * From the zip
 
@@ -48,11 +62,11 @@ uncompress it in the `modules` directory.
 * From the source and for development
 
 If the module was installed from the source, rename the name of the folder of
-the module to `Statistics`.
+the module to `Statistics`, go to the root module, and run:
 
-Then install it like any other Omeka module and follow the config instructions.
-
-See general end user documentation for [installing a module].
+```sh
+composer install --no-dev
+```
 
 ### Count downloads of files
 
@@ -106,9 +120,9 @@ Nevertheless, it may be required when you control access with module [Access Res
 Usage
 -----
 
-### Browse statistics
+### Browse analytics
 
-A summary of statistics is displayed at `/statistics/summary`.
+A summary of statistics is displayed at `/statistics/analytics`.
 
 Lists of statistics by page, by resource or by field are available too. They can
 be ordered and filtered by anonymous / identified users, resource types, etc.
@@ -117,7 +131,7 @@ These pages can be made available to authorized users only or to all public.
 
 **Warning:** On the public side, this page will be replaced by a block.
 
-### Displaying some statistics in the theme
+### Displaying some analytics in the theme
 
 Statistics of a page or resource can be displayed on any page via three mechanisms.
 
@@ -225,6 +239,7 @@ TODO
 - [ ] Add tests.
 - [ ] Add stored generated index (year, month, day, hour) (doctrine 2.11, so Omeka 4).
 - [ ] Add a table to store search (q, fulltext_search, others?).
+- [ ] Include the right sidebar search form (the one used in site resources and pages) in by-value statistics.
 
 
 Warning
@@ -286,7 +301,8 @@ Copyright
 [LibreOffice]: https://www.documentfoundation.org
 [Statistics for Omeka Classic]: https://gitlab.com/Daniel-KM/Omeka-plugin-Stats
 [Generic]: https://gitlab.com/Daniel-KM/Omeka-S-module-Generic
-[Shortcode]: https://gitlab.com/Daniel-KM/Omeka-S-module-Shortocode
+[Advanced Search]: https://gitlab.com/Daniel-KM/Omeka-S-module-AdvancedSearch
+[Shortcode]: https://gitlab.com/Daniel-KM/Omeka-S-module-Shortcode
 [Archive Repertory]: https://gitlab.com/Daniel-KM/Omeka-S-module-ArchiveRepertory
 [Access Resource]: https://gitlab.com/Daniel-KM/Omeka-S-module-AccessResource
 [Installing a module]: https://omeka.org/s/docs/user-manual/modules/
