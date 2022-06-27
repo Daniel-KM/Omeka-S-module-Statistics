@@ -234,7 +234,7 @@ class StatisticsController extends AbstractActionController
         $property = $query['property'] ?? null;
         $typeFilter = $query['value_type'] ?? null;
         $byPeriodFilter = isset($query['by_period']) && in_array($query['by_period'], ['year', 'month']) ? $query['by_period'] : 'all';
-        $compute = isset($query['compute']) && in_array($query['compute'], ['percent', 'growth']) ? $query['compute'] : 'count';
+        $compute = isset($query['compute']) && in_array($query['compute'], ['percent', 'evolution', 'growth']) ? $query['compute'] : 'count';
         $sortBy = isset($query['sort_by']) && in_array($query['sort_by'], ['value', 'resources', 'item_sets', 'items', 'media']) ? $query['sort_by'] : 'total';
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
@@ -574,6 +574,9 @@ class StatisticsController extends AbstractActionController
         if ($compute === 'percent') {
             $results = $this->resultsPercentByValue($results, $totals, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
             $totals = $this->totalsPercentByValue($totals);
+        } elseif ($compute === 'evolution') {
+            $results = $this->resultsEvolutionByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
+            $totals = $this->totalsEvolutionByValue($totals, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
         } elseif ($compute === 'growth') {
             $results = $this->resultsGrowthByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
             $totals = $this->totalsGrowthByValue($totals, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
@@ -732,6 +735,65 @@ class StatisticsController extends AbstractActionController
         }
         unset($totalsByResourceType);
         return $totals;
+    }
+
+    protected function resultsEvolutionByValue(array $results, array $resourceTypes, $periods): array
+    {
+        // Periods may be missing, so use original periods and resource types.
+        $output = [];
+        $originalResults = $results;
+        foreach ($results as $value => $result) {
+            $prevPeriod = null;
+            foreach (array_keys($periods) as $period) {
+                foreach ($resourceTypes as $resourceType) {
+                    $total = $result['t'][$period][$resourceType] ?? 0;
+                    $prevTotal = $prevPeriod ? $originalResults[$value]['t'][$prevPeriod][$resourceType] ?? 0 : 0;
+                    if (isset($result['l'])) {
+                        $output[$value]['l'] = $result['l'];
+                    }
+                    if (empty($total) && empty($prevTotal)) {
+                        $output[$value]['t'][$period][$resourceType] = '';
+                    } elseif ($total === $prevTotal) {
+                        $output[$value]['t'][$period][$resourceType] = '+0';
+                    } elseif (empty($prevTotal)) {
+                        $output[$value]['t'][$period][$resourceType] = '+' . $total;
+                    } elseif (empty($total)) {
+                        $output[$value]['t'][$period][$resourceType] = '-' . $prevTotal;
+                    } else {
+                        $output[$value]['t'][$period][$resourceType] = sprintf('%+d', $total - $prevTotal);
+                    }
+                }
+                $prevPeriod = $period;
+            }
+        }
+        return $output;
+    }
+
+    protected function totalsEvolutionByValue(array $totals, array $resourceTypes, array $periods): array
+    {
+        // Periods may be missing, so use original periods and resource types.
+        $results = [];
+        $prevPeriod = null;
+        $originalTotals = $totals;
+        foreach (array_keys($periods) as $period) {
+            foreach ($resourceTypes as $resourceType) {
+                $total = $totals[$period][$resourceType] ?? 0;
+                $prevTotal = $prevPeriod ? $originalTotals[$prevPeriod][$resourceType] ?? 0 : 0;
+                if (empty($total) && empty($prevTotal)) {
+                    $results[$period][$resourceType] = '';
+                } elseif ($total === $prevTotal) {
+                    $results[$period][$resourceType] = '+0';
+                } elseif (empty($prevTotal)) {
+                    $results[$period][$resourceType] = '+' . $total;
+                } elseif (empty($total)) {
+                    $results[$period][$resourceType] = '-' . $prevTotal;
+                } else {
+                    $results[$period][$resourceType] = sprintf('%+d', $total - $prevTotal);
+                }
+            }
+            $prevPeriod = $period;
+        }
+        return $results;
     }
 
     protected function resultsGrowthByValue(array $results, array $resourceTypes, $periods): array
