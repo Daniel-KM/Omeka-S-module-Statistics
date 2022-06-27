@@ -125,6 +125,18 @@ return [
                                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
                                     ],
                                 ],
+                                'may_terminate' => true,
+                                'child_routes' => [
+                                    'output' => [
+                                        'type' => \Laminas\Router\Http\Segment::class,
+                                        'options' => [
+                                            'route' => '.:output',
+                                            'constraints' => [
+                                                'output' => 'csv|tsv|ods',
+                                            ],
+                                        ],
+                                    ],
+                                ],
                             ],
                         ],
                     ],
@@ -175,6 +187,18 @@ return [
                                     'route' => '/:action',
                                     'constraints' => [
                                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                    ],
+                                ],
+                                'may_terminate' => true,
+                                'child_routes' => [
+                                    'output' => [
+                                        'type' => \Laminas\Router\Http\Segment::class,
+                                        'options' => [
+                                            'route' => '.:output',
+                                            'constraints' => [
+                                                'output' => 'csv|tsv|ods',
+                                            ],
+                                        ],
                                     ],
                                 ],
                             ],

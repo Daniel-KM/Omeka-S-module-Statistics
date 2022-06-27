@@ -47,4 +47,8 @@
     .statistics .flex-container {
         width: fit-content;
     }
+
+    .statistics .browse-controls {
+        justify-content: flex-end;
+    }
 }

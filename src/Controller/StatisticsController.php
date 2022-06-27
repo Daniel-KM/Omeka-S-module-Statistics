@@ -2,6 +2,9 @@
 
 namespace Statistics\Controller;
 
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Doctrine\DBAL\Connection;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
@@ -200,8 +203,15 @@ class StatisticsController extends AbstractActionController
             'monthFilter' => $month,
             'hasAdvancedSearch' => $this->hasAdvancedSearch,
         ]);
-        return $view
+        $view
             ->setTemplate($isAdminRequest ? 'statistics/admin/statistics/by-site' : 'statistics/site/statistics/by-site');
+
+        $output = $this->params()->fromRoute('output');
+        if ($output) {
+            return $this->exportResults($view->getVariables(), $output) ?: $view;
+        }
+
+        return $view;
     }
 
     public function byValueAction()
@@ -638,5 +648,103 @@ class StatisticsController extends AbstractActionController
         asort($valuesMaxCounts);
         $valuesMaxCounts = array_reverse($valuesMaxCounts, true);
         return array_replace($valuesMaxCounts, $valuesByPeriod);
+    }
+
+    /**
+     * @todo Factorize with view templates.
+     * @todo Factorize for all output (normalize output first as a spreadsheet).
+     */
+    protected function exportResults($variables, $output)
+    {
+        /**
+         * @var array $results
+         * @var string $type "site"
+         * @var string[] $resourceTypes
+         * @var int[] $years
+         * @var int $yearFilter
+         * @var int $monthFilter
+         * @var bool $hasAdvancedSearch
+         */
+        extract($variables);
+
+        if (!count($results)) {
+            $this->messenger()->addError(new Message('There is no results.')); // @translate
+            return null;
+        }
+
+        switch ($output) {
+            case 'csv':
+                $writer = WriterEntityFactory::createCSVWriter();
+                $writer
+                    ->setFieldDelimiter(',')
+                    ->setFieldEnclosure('"')
+                    // The escape character cannot be set with this writer.
+                    // ->setFieldEscape($this->getParam('escape', '\\'))
+                    // The end of line cannot be set with csv writer (reader only).
+                    // ->setEndOfLineCharacter("\n")
+                    ->setShouldAddBOM(true);
+                break;
+            case 'tsv':
+                $writer = WriterEntityFactory::createCSVWriter();
+                $writer
+                    ->setFieldDelimiter("\t")
+                    // Unlike import, chr(0) cannot be used, because it's output.
+                    // Anyway, enclosure and escape are used only when there is a tabulation
+                    // inside the value, but this is forbidden by the format and normally
+                    // never exist.
+                    // TODO Check if the value contains a tabulation before export.
+                    // TODO Do not use an enclosure for tsv export.
+                    ->setFieldEnclosure('"')
+                    // The escape character cannot be set with this writer.
+                    // ->setFieldEscape($this->getParam('escape', '\\'))
+                    // The end of line cannot be set with csv writer (reader only).
+                    // ->setEndOfLineCharacter("\n")
+                    ->setShouldAddBOM(true);
+                break;
+            case 'ods':
+                $writer = WriterEntityFactory::createODSWriter();
+                break;
+            case 'xlsx':
+                /*
+                $writer = WriterEntityFactory::createXLSXWriter();
+                break;
+                */
+            default:
+                $this->messenger()->addError(new Message('The format "%s" is not supported to export statistics.', $output)); // @translate
+                return null;
+        }
+
+        $filename = $this->getFilename($type, $output);
+        // $writer->openToFile($filePath);
+        $writer->openToBrowser($filename);
+
+        $translate = $this->plugin('translate');
+
+        $headers = [
+            $translate('Site'),
+            implode(' / ', $resourceTypes),
+        ];
+        $rowFromValues = WriterEntityFactory::createRowFromArray($headers);
+        $writer->addRow($rowFromValues);
+
+        foreach ($results as $result) {
+            $cells = [
+                $result['label'],
+                implode(' / ', $result['count']),
+            ];
+            $rowFromValues = WriterEntityFactory::createRowFromArray($cells);
+            $writer->addRow($rowFromValues);
+        }
+
+        $writer->close();
+        exit();
+    }
+
+    protected function getFilename($type, $extension): string
+    {
+        return ($_SERVER['SERVER_NAME'] ?? 'omeka')
+            . '-' . $type
+            . '-' . date('Ymd-His')
+            . '.' . $extension;
     }
 }

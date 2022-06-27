@@ -1,0 +1,20 @@
+{
+    "name": "daniel-km/omeka-s-module-statistics",
+    "description": "Module for Omeka S that adds statistics about resources and analytics about viewed pages.",
+    "type": "library",
+    "license": "CECILL-2.1",
+    "authors": [
+        {
+            "name": "Daniel Berthereau",
+            "email": "Daniel.git@Berthereau.net"
+        }
+    ],
+    "require": {
+        "box/spout": "^3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Statistics\\": "src/"
+        }
+    }
+}

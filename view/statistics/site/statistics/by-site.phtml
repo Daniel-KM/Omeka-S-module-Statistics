@@ -13,6 +13,7 @@
 $plugins = $this->getHelperPluginManager();
 $assetUrl = $plugins->get('assetUrl');
 $translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
 $urlHelper = $plugins->get('url');
 
 $this->headLink()->prependStylesheet($assetUrl('css/statistics.css', 'Statistics'));
@@ -20,6 +21,7 @@ $this->headLink()->prependStylesheet($assetUrl('css/statistics.css', 'Statistics
 $this->htmlElement('body')->appendAttribute('class', 'statistics browse');
 
 $isAdminRequest = $this->status()->isAdminRequest();
+$query = $this->params()->fromQuery();
 
 $currentUrl = $urlHelper(null, [], true);
 ?>
@@ -64,6 +66,15 @@ $currentUrl = $urlHelper(null, [], true);
 </form>
 
 <?php if (count($results)): ?>
+
+<div class="browse-controls">
+    <?php //= $this->pagination(); ?>
+    <div>
+        <?= $hyperlink($translate('ODS'), $this->url('admin/statistics/default/output', ['output' => 'ods'], ['query' => $query], true)) ?>
+        <?= $hyperlink($translate('TSV'), $this->url('admin/statistics/default/output', ['output' => 'tsv'], ['query' => $query], true)) ?>
+        <?= $hyperlink($translate('CSV'), $this->url('admin/statistics/default/output', ['output' => 'csv'], ['query' => $query], true)) ?>
+    </div>
+</div>
 
 <table class="tablesaw statistics-table" data-tablesaw-mode="stack">
     <thead>
