@@ -17,6 +17,8 @@ use Statistics\Entity\Stat;
  *
  * Statistics are mainly standard search requests with date interval.
  * To search a date interval requires module AdvancedSearch.
+ *
+ * @todo Many processes can be improved or moved to sql.
  */
 class StatisticsController extends AbstractActionController
 {
@@ -232,6 +234,7 @@ class StatisticsController extends AbstractActionController
         $property = $query['property'] ?? null;
         $typeFilter = $query['value_type'] ?? null;
         $byPeriodFilter = isset($query['by_period']) && in_array($query['by_period'], ['year', 'month']) ? $query['by_period'] : 'all';
+        $compute = isset($query['compute']) && in_array($query['compute'], ['percent', 'growth']) ? $query['compute'] : 'count';
         $sortBy = isset($query['sort_by']) && in_array($query['sort_by'], ['value', 'resources', 'item_sets', 'items', 'media']) ? $query['sort_by'] : 'total';
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
@@ -282,6 +285,7 @@ class StatisticsController extends AbstractActionController
             'propertyFilter' => $property,
             'valueTypeFilter' => $typeFilter,
             'byPeriodFilter' => $byPeriodFilter,
+            'compute' => $compute,
             'hasAdvancedSearch' => $this->hasAdvancedSearch,
         ]);
         $view
@@ -567,6 +571,14 @@ class StatisticsController extends AbstractActionController
         $results = $this->mergeResultsByValue($results, $hasValueLabel);
         $totals = $this->totalsByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
 
+        if ($compute === 'percent') {
+            $results = $this->resultsPercentByValue($results, $totals, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
+            $totals = $this->totalsPercentByValue($totals);
+        } elseif ($compute === 'growth') {
+            $results = $this->resultsGrowthByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
+            $totals = $this->totalsGrowthByValue($totals, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
+        }
+
         // TODO There is no pagination currently in stats by value.
         // TODO Manage the right paginator.
         $this->paginator(count($results));
@@ -694,6 +706,91 @@ class StatisticsController extends AbstractActionController
             }
         }
         return $totals;
+    }
+
+    protected function resultsPercentByValue(array $results, array $totals, array $resourceTypes, array $periods): array
+    {
+        foreach ($results as &$result) {
+            foreach (array_keys($periods) as $period) {
+                foreach ($resourceTypes as $resourceType) {
+                    if (empty($result['t'][$period][$resourceType])) {
+                        $result['t'][$period][$resourceType] = '';
+                    } else {
+                        $result['t'][$period][$resourceType] = sprintf('%1.2f%%', round($result['t'][$period][$resourceType] / $totals[$period][$resourceType] * 100, 2));
+                    }
+                }
+            }
+        }
+        unset($result);
+        return $results;
+    }
+
+    protected function totalsPercentByValue(array $totals): array
+    {
+        foreach ($totals as &$totalsByResourceType) {
+            $totalsByResourceType = array_fill_keys(array_keys($totalsByResourceType), '100%');
+        }
+        unset($totalsByResourceType);
+        return $totals;
+    }
+
+    protected function resultsGrowthByValue(array $results, array $resourceTypes, $periods): array
+    {
+        // Periods may be missing, so use original periods and resource types.
+        $output = [];
+        $originalResults = $results;
+        foreach ($results as $value => $result) {
+            $prevPeriod = null;
+            foreach (array_keys($periods) as $period) {
+                foreach ($resourceTypes as $resourceType) {
+                    $total = $result['t'][$period][$resourceType] ?? 0;
+                    $prevTotal = $prevPeriod ? $originalResults[$value]['t'][$prevPeriod][$resourceType] ?? 0 : 0;
+                    if (isset($result['l'])) {
+                        $output[$value]['l'] = $result['l'];
+                    }
+                    if (empty($total) && empty($prevTotal)) {
+                        $output[$value]['t'][$period][$resourceType] = '';
+                    } elseif ($total === $prevTotal) {
+                        $output[$value]['t'][$period][$resourceType] = '=';
+                    } elseif (empty($prevTotal)) {
+                        $output[$value]['t'][$period][$resourceType] = '+';
+                    } elseif (empty($total)) {
+                        $output[$value]['t'][$period][$resourceType] = '-';
+                    } else {
+                        $output[$value]['t'][$period][$resourceType] = sprintf('%+1.2f%%', round($total / $prevTotal * 100 - 100, 2));
+                    }
+                }
+                $prevPeriod = $period;
+            }
+        }
+        return $output;
+    }
+
+    protected function totalsGrowthByValue(array $totals, array $resourceTypes, array $periods): array
+    {
+        // Periods may be missing, so use original periods and resource types.
+        $results = [];
+        $prevPeriod = null;
+        $originalTotals = $totals;
+        foreach (array_keys($periods) as $period) {
+            foreach ($resourceTypes as $resourceType) {
+                $total = $totals[$period][$resourceType] ?? 0;
+                $prevTotal = $prevPeriod ? $originalTotals[$prevPeriod][$resourceType] ?? 0 : 0;
+                if (empty($total) && empty($prevTotal)) {
+                    $results[$period][$resourceType] = '';
+                } elseif ($total === $prevTotal) {
+                    $results[$period][$resourceType] = '=';
+                } elseif (empty($prevTotal)) {
+                    $results[$period][$resourceType] = '+';
+                } elseif (empty($total)) {
+                    $results[$period][$resourceType] = '-';
+                } else {
+                    $results[$period][$resourceType] = sprintf('%+1.2f%%', round($total / $prevTotal * 100 - 100, 2));
+                }
+            }
+            $prevPeriod = $period;
+        }
+        return $results;
     }
 
     /**

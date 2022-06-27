@@ -12,6 +12,7 @@
  * @var string $propertyFilter
  * @var string $valueTypeFilter
  * @var string $byPeriodFilter
+ * @var string $compute
  * @var bool $hasAdvancedSearch
  */
 
@@ -36,6 +37,7 @@ $isSimpleValue = !in_array($valueTypeFilter, ['resource', 'uri']);
 $isResource = $valueTypeFilter === 'resource';
 $isUri = $valueTypeFilter === 'uri';
 $isByAll = !in_array($byPeriodFilter, ['year', 'month']);
+$isByCount = !in_array($compute, ['percent', 'growth']);
 
 $isAllPeriods = $byPeriodFilter === 'all';
 $isYearPeriods = $byPeriodFilter === 'year';
@@ -107,6 +109,13 @@ $isYearPeriods = $byPeriodFilter === 'year';
             <option value="<?= $numberMonth ?>"<?= $monthFilter == $numberMonth ? ' selected="selected"' : '' ?>><?= $month ?></option>
         <?php endforeach; ?>
     </select>
+
+    <div>
+        <label><input type="radio" name="compute" value="count"<?= $isByCount ? ' checked="checked"' : '' ?>><?= $translate('Counts') ?></label>
+        <label><input type="radio" name="compute" value="percent"<?= $compute === 'percent' ? ' checked="checked"' : '' ?>><?= $translate('Repartition') ?></label>
+        <label><input type="radio" name="compute" value="growth"<?= $compute === 'growth' ? ' checked="checked"' : '' ?>><?= $translate('Evolution') ?></label>
+    </div>
+
     <button type="submit"><?= $translate('Filter') ?></button>
 </div>
 </form>
