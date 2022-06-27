@@ -9,7 +9,7 @@ use Omeka\Stdlib\Message;
 use Statistics\Entity\Stat;
 
 /**
- * Controller to browse Stats.
+ * Controller to browse Analytics.
  */
 class AnalyticsController extends AbstractActionController
 {
@@ -180,10 +180,7 @@ SQL;
         if (empty($sortBy) || !in_array($sortBy, ['site', 'hits', 'hitsInclusive'])) {
             $sortBy = 'hitsInclusive';
         }
-        $sortOrder = $query['sort_order'] ?? null;
-        if (empty($sortOrder) || $sortOrder !== 'asc') {
-            $sortOrder = 'desc';
-        }
+        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
             $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
@@ -457,10 +454,7 @@ SQL;
         if (empty($sortBy) || !in_array($sortBy, ['itemSet', 'hits', 'hitsInclusive'])) {
             $sortBy = 'hitsInclusive';
         }
-        $sortOrder = $query['sort_order'] ?? null;
-        if (empty($sortOrder) || $sortOrder !== 'asc') {
-            $sortOrder = 'desc';
-        }
+        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
             $cmp = strnatcasecmp($a[$sortBy], $b[$sortBy]);
@@ -592,10 +586,7 @@ SQL;
         if (empty($sortBy) || !in_array($sortBy, ['value', 'hits', 'hitsInclusive'])) {
             $sortBy = 'hitsInclusive';
         }
-        $sortOrder = $query['sort_order'] ?? null;
-        if (empty($sortOrder) || $sortOrder !== 'asc') {
-            $sortOrder = 'desc';
-        }
+        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         // FIXME The results are doubled when the property has duplicate values for a resource, so fix it or warn about deduplicating values regularly (module BulkEdit).
 

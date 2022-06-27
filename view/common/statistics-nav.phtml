@@ -22,6 +22,7 @@ $isAdminRequest = $this->status()->isAdminRequest();
 
 $sectionNavs = [];
 $sectionNavs[$urlHelper(dirname($route), [], true)] = $translate('Summary');
+$sectionNavs[$urlHelper($route, ['action' => 'by-site'], true)] = $translate('By site');
 
 $currentUrl = $urlHelper(null, [], true);
 ?>

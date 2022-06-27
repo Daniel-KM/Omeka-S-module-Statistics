@@ -113,7 +113,7 @@ $basePath = $this->basePath();
     <p><?= $translate('Omeka could not find any statistics.') ?></p>
 <?php else: ?>
     <p><?= sprintf($translate('The query searched %s rows and returned no results.'), $totalStats) ?></p>
-    <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-' . $type], true) ?>"><?= $translate('See all statistics.') ?></a></p>
+    <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-' . $type], true) ?>"><?= $translate('See all analytics.') ?></a></p>
 <?php endif; ?>
 </div>
 

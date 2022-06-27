@@ -5,9 +5,14 @@ namespace Statistics\Controller;
 use Doctrine\DBAL\Connection;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
+use Omeka\Stdlib\Message;
+use Statistics\Entity\Stat;
 
 /**
- * Controller to browse Stats.
+ * Controller to browse Statistics.
+ *
+ * Statistics are mainly standard search requests with date interval.
+ * To search a date interval requires module AdvancedSearch.
  */
 class StatisticsController extends AbstractActionController
 {
@@ -93,6 +98,89 @@ class StatisticsController extends AbstractActionController
     }
 
     /**
+     * Redirect to the "index" action.
+     */
+    protected function redirectToIndex()
+    {
+        $query = $this->params()->fromRoute();
+        $query['action'] = 'index';
+        $isSiteRequest = $this->status()->isSiteRequest();
+        return $this->redirect()->toRoute($isSiteRequest ? 'site/statistics/default' : 'admin/statistics/default', $query);
+    }
+
+    public function browseAction()
+    {
+        return $this->redirectToIndex();
+    }
+
+    public function bySiteAction()
+    {
+        if (!$this->hasAdvancedSearch) {
+            return $this->redirectToIndex();
+        }
+
+        $isAdminRequest = $this->status()->isAdminRequest();
+
+        /** @var \Omeka\Mvc\Controller\Plugin\Api $api */
+        $api = $this->api();
+
+        $sites = $api->search('sites', [], ['initialize' => false, 'finalize' => false, 'returnScalar' => 'title'])->getContent();
+
+        $query = $this->params()->fromQuery();
+
+        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
+        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
+
+        $baseQuery = $query;
+
+        $results = [];
+        foreach ($sites as $siteId => $title) {
+            $query = $baseQuery;
+            $query['site_id'] = $siteId;
+            $results[$siteId]['label'] = $title;
+            $results[$siteId]['count'] = $this->statisticsPeriod($year, $month, $query);
+        }
+
+        $this->paginator(count($results));
+
+        // TODO Manage special sort fields.
+        $sortBy = $query['sort_by'] ?? null;
+        if (empty($sortBy) || !in_array($sortBy, ['site', 'resources', 'item_sets', 'items', 'media'])) {
+            $sortBy = 'total';
+        }
+        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
+
+        if ($sortBy === 'site') {
+            $sortBy = 'label';
+            usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
+                $cmp = $a[$sortBy] <=> $b[$sortBy];
+                return $sortOrder === 'desc' ? -$cmp : $cmp;
+            });
+        } elseif (in_array($sortBy, ['total', 'resources', 'item_sets', 'items', 'media'])) {
+            if ($sortBy === 'total') {
+                $sortBy = 'resources';
+            }
+            usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
+                $cmp = $a['count'][$sortBy] <=> $b['count'][$sortBy];
+                return $sortOrder === 'desc' ? -$cmp : $cmp;
+            });
+        }
+
+        $years = $this->listYears(null, null, false);
+
+        $view = new ViewModel([
+            'type' => 'site',
+            'results' => $results,
+            'years' => $years,
+            'yearFilter' => $year,
+            'monthFilter' => $month,
+            'hasAdvancedSearch' => $this->hasAdvancedSearch,
+        ]);
+        return $view
+            ->setTemplate($isAdminRequest ? 'statistics/admin/statistics/by-site' : 'statistics/site/statistics/by-site');
+    }
+
+    /**
      * Helper to get all stats of a period.
      *
      * @todo Move the view helper Statistics.
@@ -102,7 +190,7 @@ class StatisticsController extends AbstractActionController
      * @param string $field "created" or "modified".
      * @return array
      */
-    protected function statisticsPeriod(?int $startPeriod = null, ?int $endPeriod = null, string $field = 'created'): array
+    protected function statisticsPeriod(?int $startPeriod = null, ?int $endPeriod = null, array $query = [], string $field = 'created'): array
     {
         $query = [];
         if ($startPeriod) {
@@ -136,6 +224,42 @@ class StatisticsController extends AbstractActionController
             $results[$resourceType] = $api->search($resourceType, $query, ['initialize' => false, 'finalize' => false])->getTotalResults();
         }
 
-        return ['total' => array_sum($results)] + $results;
+        return ['resources' => array_sum($results)] + $results;
+    }
+
+    /**
+     * List years as key and value.
+     *
+     * When the option to include dates without value is set, value may be null.
+     */
+    protected function listYears(?int $fromYear = null, ?int $toYear = null, bool $includeEmpty = false, string $field = 'created'): array
+    {
+        $qb = $this->connection->createQueryBuilder();
+        $expr = $qb->expr();
+        $qb
+            ->select("DISTINCT EXTRACT(YEAR FROM resource.$field) AS 'period'")
+            ->from('resource', 'resource')
+            ->orderBy('period', 'asc');
+        // Don't use function YEAR() in where for speed. Extract() is useless here.
+        // TODO Add a generated index (doctrine 2.11, so Omeka 4).
+        if ($fromYear) {
+            $qb
+                ->andWhere($expr->gte('resource.' . $field, ':from_date'))
+                ->setParameter('from_date', $fromYear . '-01-01 00:00:00', \Doctrine\DBAL\ParameterType::STRING);
+        }
+        if ($toYear) {
+            $qb
+                ->andWhere($expr->lte('resource.' . $field, ':to_date'))
+                ->setParameter('to_date', $toYear . '-12-31 23:59:59', \Doctrine\DBAL\ParameterType::STRING);
+        }
+        $result = $this->connection->executeQuery($qb, $qb->getParameters(), $qb->getParameterTypes())->fetchFirstColumn();
+
+        $result = array_combine($result, $result);
+        if (!$includeEmpty || count($result) <= 1) {
+            return $result;
+        }
+
+        $range = array_fill_keys(range(min($result), max($result)), null);
+        return array_replace($range, $result);
     }
 }

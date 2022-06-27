@@ -2,11 +2,11 @@
 /**
  * @var \Laminas\View\Renderer\PhpRenderer $this
  * @var array $results
- * @var string $type "item-set"
- * @var array $hits
+ * @var string $type "site"
  * @var int[] $years
  * @var int $yearFilter
  * @var int $monthFilter
+ * @var bool $hasAdvancedSearch
  */
 
 $plugins = $this->getHelperPluginManager();
@@ -23,9 +23,9 @@ $isAdminRequest = $this->status()->isAdminRequest();
 $currentUrl = $urlHelper(null, [], true);
 ?>
 
-<?= $this->pageTitle($translate('By item set'), 1, $isAdminRequest ? $translate('Analytics') : null) ?>
+<?= $this->pageTitle($translate('By site'), 1, $isAdminRequest ? $translate('Statistics') : null) ?>
 
-<?= $this->partial('common/analytics-nav') ?>
+<?= $this->partial('common/statistics-nav') ?>
 
 <form method="get">
     <select name="year">
@@ -64,18 +64,18 @@ $currentUrl = $urlHelper(null, [], true);
     <thead>
         <tr>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=item-set' ?>"><?= $translate('Item set') ?></a>
+                <a href="<?= $currentUrl . '?sort_by=site' ?>"><?= $translate('Site') ?></a>
             </th>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=hits' ?>"><?= $translate('Hits') ?></a>
+                <a href="<?= $currentUrl . '?sort_by=resources' ?>"><?= $translate('Resources') ?></a>
             </th>
         </tr>
     </thead>
     <tbody>
 <?php foreach ($results as $position => $result): ?>
         <tr class="statistics-stat">
-            <td class="statistics-field"><?= $result['item-set'] ?></td>
-            <td class="statistics-hits"><?= $result['hits'] ?></td>
+            <td class="statistics-field"><?= $result['label'] ?></td>
+            <td class="statistics-hits"><?= implode(' / ', $result['count']) ?></td>
         </tr>
 <?php endforeach; ?>
     </tbody>
@@ -89,7 +89,7 @@ $currentUrl = $urlHelper(null, [], true);
         <h2><?= $translate('There is no hit yet.') ?></h2>
     <?php else: ?>
         <p><?= sprintf($translate('The query searched %s hits and returned no results.'), $totalHits) ?></p>
-        <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-item-set'], true) ?>"><?= $translate('See all analytics.') ?></a></p>
+        <p><a href="<?= $urlHelper('admin/statistics/default', ['action' => 'by-site'], true) ?>"><?= $translate('See all statistics.') ?></a></p>
     <?php endif; ?>
 
 <?php endif; ?>

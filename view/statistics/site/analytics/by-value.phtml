@@ -172,7 +172,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
         <h2><?= $translate('There is no hit yet.') ?></h2>
     <?php else: ?>
         <p><?= sprintf($translate('The query searched %s hits and returned no results.'), $totalHits) ?></p>
-        <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-item-set'], true) ?>"><?= $translate('See all statistics.') ?></a></p>
+        <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-item-set'], true) ?>"><?= $translate('See all analytics.') ?></a></p>
     <?php endif; ?>
 
 <?php endif; ?>

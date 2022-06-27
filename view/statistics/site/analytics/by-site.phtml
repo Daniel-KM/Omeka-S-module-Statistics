@@ -59,6 +59,7 @@ $currentUrl = $urlHelper(null, [], true);
 </form>
 
 <?php if (count($results)): ?>
+
 <table class="tablesaw statistics-table" data-tablesaw-mode="stack">
     <thead>
         <tr>
@@ -79,13 +80,16 @@ $currentUrl = $urlHelper(null, [], true);
 <?php endforeach; ?>
     </tbody>
 </table>
+
 <?php else: ?>
+
     <br class="clear" />
     <?php $totalHits = $this->api()->search('hits')->getTotalResults(); ?>
     <?php if (!$totalHits): ?>
         <h2><?= $translate('There is no hit yet.') ?></h2>
     <?php else: ?>
         <p><?= sprintf($translate('The query searched %s hits and returned no results.'), $totalHits) ?></p>
-        <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-site'], true) ?>"><?= $translate('See all statistics.') ?></a></p>
+        <p><a href="<?= $urlHelper('admin/analytics/default', ['action' => 'by-site'], true) ?>"><?= $translate('See all analytics.') ?></a></p>
     <?php endif; ?>
+
 <?php endif; ?>
