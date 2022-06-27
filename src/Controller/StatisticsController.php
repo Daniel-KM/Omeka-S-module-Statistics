@@ -39,7 +39,9 @@ class StatisticsController extends AbstractActionController
         $results = [];
         $time = time();
 
-        $results['all'] = $this->statisticsPeriod();
+        $resourceTypes = ['resources', 'item_sets', 'items', 'media'];
+
+        $results['all'] = $this->statisticsPeriod(null, null, [], 'created', $resourceTypes);
 
         if (!$this->hasAdvancedSearch) {
             $view = new ViewModel([
@@ -52,40 +54,52 @@ class StatisticsController extends AbstractActionController
 
         $translate = $this->plugins->get('translate');
 
-        $results['today'] = $this->statisticsPeriod(strtotime('today'));
+        $results['today'] = $this->statisticsPeriod(strtotime('today'), null, [], 'created', $resourceTypes);
 
         $results['history'][$translate('Last year')] = $this->statisticsPeriod( // @translate
             strtotime('-1 year', strtotime(date('Y-1-1', $time))),
-            strtotime(date('Y-1-1', $time) . ' - 1 second')
+            strtotime(date('Y-1-1', $time) . ' - 1 second'),
+            [],
+            'created',
+            $resourceTypes
         );
         $results['history'][$translate('Last month')] = $this->statisticsPeriod( // @translate
             strtotime('-1 month', strtotime(date('Y-m-1', $time))),
-            strtotime(date('Y-m-1', $time) . ' - 1 second')
+            strtotime(date('Y-m-1', $time) . ' - 1 second'),
+            [],
+            'created',
+            $resourceTypes
         );
         $results['history'][$translate('Last week')] = $this->statisticsPeriod( // @translate
             strtotime("previous week"),
-            strtotime("previous week + 6 days")
+            strtotime("previous week + 6 days"),
+            [],
+            'created',
+            $resourceTypes
         );
         $results['history'][$translate('Yesterday')] = $this->statisticsPeriod( // @translate
             strtotime('-1 day', strtotime(date('Y-m-d', $time))),
-            strtotime('-1 day', strtotime(date('Y-m-d', $time)))
+            strtotime('-1 day', strtotime(date('Y-m-d', $time))),
+            [],
+            'created',
+            $resourceTypes
         );
 
         $results['current'][$translate('This year')] = // @translate
-        $this->statisticsPeriod(strtotime(date('Y-1-1', $time)));
+        $this->statisticsPeriod(strtotime(date('Y-1-1', $time)), null, [], 'created', $resourceTypes);
         $results['current'][$translate('This month')] =  // @translate
-        $this->statisticsPeriod(strtotime(date('Y-m-1', $time)));
+        $this->statisticsPeriod(strtotime(date('Y-m-1', $time)), null, [], 'created', $resourceTypes);
         $results['current'][$translate('This week')] = // @translate
-        $this->statisticsPeriod(strtotime('this week'));
+        $this->statisticsPeriod(strtotime('this week'), null, [], 'created', $resourceTypes);
         $results['current'][$translate('This day')] = // @translate
-        $this->statisticsPeriod(strtotime('today'));
+        $this->statisticsPeriod(strtotime('today'), null, [], 'created', $resourceTypes);
 
         foreach ([365 => null, 30 => null, 7 => null, 1 => null] as $start => $endPeriod) {
             $startPeriod = strtotime("- {$start} days");
             $label = ($start == 1)
                 ? $translate('Last 24 hours') // @translate
                 : sprintf($translate('Last %s days'), $start); // @translate
-            $results['rolling'][$label] = $this->statisticsPeriod($startPeriod, $endPeriod);
+            $results['rolling'][$label] = $this->statisticsPeriod($startPeriod, $endPeriod, [], 'created', $resourceTypes);
         }
 
         $view = new ViewModel([
@@ -128,6 +142,8 @@ class StatisticsController extends AbstractActionController
 
         $query = $this->params()->fromQuery();
 
+        $resourceTypes = empty($query['resource_type']) ? ['items'] : (is_array($query['resource_type']) ? $query['resource_type'] : [$query['resource_type']]);
+        $resourceTypes = array_intersect(['resources', 'item_sets', 'items', 'media'], $resourceTypes) ?: ['items'];
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
 
@@ -138,7 +154,7 @@ class StatisticsController extends AbstractActionController
             $query = $baseQuery;
             $query['site_id'] = $siteId;
             $results[$siteId]['label'] = $title;
-            $results[$siteId]['count'] = $this->statisticsPeriod($year, $month, $query);
+            $results[$siteId]['count'] = $this->statisticsPeriod($year, $month, $query, 'created', $resourceTypes);
         }
 
         $this->paginator(count($results));
@@ -171,6 +187,7 @@ class StatisticsController extends AbstractActionController
         $view = new ViewModel([
             'type' => 'site',
             'results' => $results,
+            'resourceTypes' => $resourceTypes,
             'years' => $years,
             'yearFilter' => $year,
             'monthFilter' => $month,
@@ -187,12 +204,27 @@ class StatisticsController extends AbstractActionController
      *
      * @param int $startPeriod Number of days before today (default is all).
      * @param int $endPeriod Number of days before today (default is now).
+     * @param array $query
      * @param string $field "created" or "modified".
+     * @param array $resourceTypes
      * @return array
      */
-    protected function statisticsPeriod(?int $startPeriod = null, ?int $endPeriod = null, array $query = [], string $field = 'created'): array
-    {
-        $query = [];
+    protected function statisticsPeriod(
+        ?int $startPeriod = null,
+        ?int $endPeriod = null,
+        array $query = [],
+        string $field = 'created',
+        array $resourceTypes = []
+    ): array {
+        $isOnlyResources = array_values($resourceTypes) === ['resources'];
+        $hasResources = array_search('resources', $resourceTypes);
+        if ($isOnlyResources) {
+            $resourceTypes = ['item_sets', 'items', 'media'];
+        } elseif ($hasResources !== false) {
+            unset($resourceTypes[$hasResources]);
+            $hasResources = true;
+        }
+
         if ($startPeriod) {
             $query['datetime'][] = [
                 'joiner' => 'and',
@@ -213,18 +245,19 @@ class StatisticsController extends AbstractActionController
         /** @var \Omeka\Mvc\Controller\Plugin\Api $api */
         $api = $this->api();
 
-        $results = [
-            'item_sets' => 0,
-            'items' => 0,
-            'media' => 0,
-        ];
-
+        $results = [];
         // TODO A search by resources will allow only one query, but it is not yet merged by Omeka.
-        foreach (array_keys($results) as $resourceType) {
+        foreach ($resourceTypes as $resourceType) {
             $results[$resourceType] = $api->search($resourceType, $query, ['initialize' => false, 'finalize' => false])->getTotalResults();
         }
 
-        return ['resources' => array_sum($results)] + $results;
+        if ($isOnlyResources) {
+            return ['resources' => array_sum($results)];
+        }
+
+        return $hasResources
+            ? ['resources' => array_sum($results)] + $results
+            : $results;
     }
 
     /**

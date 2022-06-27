@@ -3,6 +3,7 @@
  * @var \Laminas\View\Renderer\PhpRenderer $this
  * @var array $results
  * @var string $type "site"
+ * @var string[] $resourceTypes
  * @var int[] $years
  * @var int $yearFilter
  * @var int $monthFilter
@@ -28,6 +29,10 @@ $currentUrl = $urlHelper(null, [], true);
 <?= $this->partial('common/statistics-nav') ?>
 
 <form method="get">
+    <?php foreach (['resources' => $translate('Resources'), 'item_sets' => $translate('Item sets'), 'items' => $translate('Items'), 'media' => $translate('Medias')] as $resourceType => $label): ?>
+    <label><input type="checkbox" name="resource_type[]" id="resource_type_resources" value="<?= $resourceType ?>"<?= in_array($resourceType, $resourceTypes) ? ' checked="checked"' : '' ?>><?= $label ?></label>
+    <?php endforeach; ?>
+
     <select name="year">
         <option value=""><?= $translate('All years') ?></option>
         <?php foreach ($years as $year): ?>
