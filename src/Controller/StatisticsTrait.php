@@ -175,9 +175,7 @@ trait StatisticsTrait
         }
 
         if (is_scalar($termsOrIds)) {
-            return isset($propertiesByTermsAndIds[$termsOrIds])
-                ? $propertiesByTermsAndIds[$termsOrIds]
-                : [];
+            return $propertiesByTermsAndIds[$termsOrIds] ?? null;
         }
 
         return array_intersect_key($propertiesByTermsAndIds, array_flip($termsOrIds));
