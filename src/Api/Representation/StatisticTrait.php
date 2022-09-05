@@ -131,7 +131,7 @@ trait StatisticTrait
             : null;
     }
 
-    protected function getStatistic(): Statistic
+    protected function getStatistic(): Analytics
     {
         static $analytics;
         return $analytics
