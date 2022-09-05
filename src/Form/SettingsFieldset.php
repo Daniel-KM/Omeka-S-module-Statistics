@@ -15,6 +15,7 @@ class SettingsFieldset extends Fieldset
     public function init(): void
     {
         $this
+            ->setAttribute('id', 'statistics')
             ->add([
                 'name' => 'statistics_privacy',
                 'type' => Element\Radio::class,
