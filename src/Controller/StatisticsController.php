@@ -234,7 +234,7 @@ class StatisticsController extends AbstractActionController
         $property = $query['property'] ?? null;
         $typeFilter = $query['value_type'] ?? null;
         $byPeriodFilter = isset($query['by_period']) && in_array($query['by_period'], ['year', 'month']) ? $query['by_period'] : 'all';
-        $compute = isset($query['compute']) && in_array($query['compute'], ['percent', 'evolution', 'growth']) ? $query['compute'] : 'count';
+        $compute = isset($query['compute']) && in_array($query['compute'], ['percent', 'evolution', 'variation']) ? $query['compute'] : 'count';
         $sortBy = isset($query['sort_by']) && in_array($query['sort_by'], ['value', 'resources', 'item_sets', 'items', 'media']) ? $query['sort_by'] : 'total';
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
@@ -586,9 +586,9 @@ class StatisticsController extends AbstractActionController
         } elseif ($compute === 'evolution') {
             $results = $this->resultsEvolutionByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
             $totals = $this->totalsEvolutionByValue($totals, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
-        } elseif ($compute === 'growth') {
-            $results = $this->resultsGrowthByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
-            $totals = $this->totalsGrowthByValue($totals, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
+        } elseif ($compute === 'variation') {
+            $results = $this->resultsVariationByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
+            $totals = $this->totalsVariationByValue($totals, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
         }
 
         // TODO There is no pagination currently in stats by value.
@@ -809,7 +809,7 @@ class StatisticsController extends AbstractActionController
         return $results;
     }
 
-    protected function resultsGrowthByValue(array $results, array $resourceTypes, $periods): array
+    protected function resultsVariationByValue(array $results, array $resourceTypes, $periods): array
     {
         // Periods may be missing, so use original periods and resource types.
         $output = [];
@@ -841,7 +841,7 @@ class StatisticsController extends AbstractActionController
         return $output;
     }
 
-    protected function totalsGrowthByValue(array $totals, array $resourceTypes, array $periods): array
+    protected function totalsVariationByValue(array $totals, array $resourceTypes, array $periods): array
     {
         // Periods may be missing, so use original periods and resource types.
         $results = [];

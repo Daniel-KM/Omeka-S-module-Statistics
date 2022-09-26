@@ -37,7 +37,7 @@ $isSimpleValue = !in_array($valueTypeFilter, ['resource', 'uri']);
 $isResource = $valueTypeFilter === 'resource';
 $isUri = $valueTypeFilter === 'uri';
 $isByAll = !in_array($byPeriodFilter, ['year', 'month']);
-$isByCount = !in_array($compute, ['percent', 'evolution', 'growth']);
+$isByCount = !in_array($compute, ['percent', 'evolution', 'variation']);
 
 $isAllPeriods = $byPeriodFilter === 'all';
 $isYearPeriods = $byPeriodFilter === 'year';
@@ -114,7 +114,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
         <label><input type="radio" name="compute" value="count"<?= $isByCount ? ' checked="checked"' : '' ?>><?= $translate('Counts') ?></label>
         <label><input type="radio" name="compute" value="percent"<?= $compute === 'percent' ? ' checked="checked"' : '' ?>><?= $translate('Repartition') ?></label>
         <label><input type="radio" name="compute" value="evolution"<?= $compute === 'evolution' ? ' checked="checked"' : '' ?>><?= $translate('Evolution') ?></label>
-        <label><input type="radio" name="compute" value="growth"<?= $compute === 'growth' ? ' checked="checked"' : '' ?>><?= $translate('Growth') ?></label>
+        <label><input type="radio" name="compute" value="variation"<?= $compute === 'variation' ? ' checked="checked"' : '' ?>><?= $translate('Variation') ?></label>
     </div>
 
     <button type="submit"><?= $translate('Filter') ?></button>
