@@ -433,12 +433,14 @@ class StatisticsController extends AbstractActionController
                             ;
                         } elseif ($yearPeriod) {
                             $qb
+                                // ORM doesn't support Extract.
                                 // ->andWhere($expr->eq('EXTRACT(YEAR FROM omeka_root.created)', ':year'))
                                 ->andWhere($expr->eq('SUBSTRING(omeka_root.created, 1, 4)', ':year'))
                                 ->setParameter('year', $yearPeriod, \Doctrine\DBAL\ParameterType::INTEGER)
                             ;
                         } elseif ($monthPeriod) {
                             $qb
+                                // ORM doesn't support Extract.
                                 // ->andWhere($expr->eq('EXTRACT(MONTH FROM omeka_root.created)', ':month'))
                                 ->andWhere($expr->eq('SUBSTRING(omeka_root.created, 6, 2)', ':month'))
                                 ->setParameter('month', $monthPeriod, \Doctrine\DBAL\ParameterType::INTEGER)
@@ -471,17 +473,23 @@ class StatisticsController extends AbstractActionController
                     // $force = ' FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
                     if ($year && $month) {
                         $qb
-                            ->andWhere($expr->eq('EXTRACT(YEAR_MONTH FROM omeka_root.created)', ':year_month'))
+                            // ORM doesn't support Extract.
+                            // ->andWhere($expr->eq('EXTRACT(YEAR_MONTH FROM omeka_root.created)', ':year_month'))
+                            ->andWhere($expr->eq('CONCAT(SUBSTRING(omeka_root.created, 1, 4), SUBSTRING(omeka_root.created, 6, 2))', ':year_month'))
                             ->setParameter('year_month', (int) sprintf('%04d%02d', $year, $month), \Doctrine\DBAL\ParameterType::INTEGER)
                         ;
                     } elseif ($year) {
                         $qb
-                            ->andWhere($expr->eq('EXTRACT(YEAR FROM omeka_root.created)', ':year'))
+                            // ORM doesn't support Extract.
+                            // ->andWhere($expr->eq('EXTRACT(YEAR FROM omeka_root.created)', ':year'))
+                            ->andWhere($expr->eq('SUBSTRING(omeka_root.created, 1, 4)', ':year'))
                             ->setParameter('year', $year, \Doctrine\DBAL\ParameterType::INTEGER)
                         ;
                     } elseif ($month) {
                         $qb
-                            ->andWhere($expr->eq('EXTRACT(MONTH FROM omeka_root.created)', ':month'))
+                            // ORM doesn't support Extract.
+                            // ->andWhere($expr->eq('EXTRACT(MONTH FROM omeka_root.created)', ':month'))
+                            ->andWhere($expr->eq('SUBSTRING(omeka_root.created, 6, 2)', ':month'))
                             ->setParameter('month', $month, \Doctrine\DBAL\ParameterType::INTEGER)
                         ;
                     }

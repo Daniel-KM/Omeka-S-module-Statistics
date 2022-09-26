@@ -770,6 +770,11 @@ SQL;
         return array_replace($valuesMaxCounts, $valuesByPeriod);
     }
 
+    /**
+     * Prepare a query to filter by date.
+     *
+     * Require doctrine DBAL, not ORM, that does no support "extract".
+     */
     protected function whereDate($year = null, $month = null, array $bind = [], array $types = []): array
     {
         if ($year || $month) {
