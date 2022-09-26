@@ -122,31 +122,31 @@ SQL;
             $bind = ['site_id' => $siteId, 'page_id' => $pageId, 'page_url' => "/s/$siteSlug/page/$pageSlug"];
             $types = ['site_id' => \Doctrine\DBAL\ParameterType::INTEGER, 'page_id' => \Doctrine\DBAL\ParameterType::INTEGER, 'page_url' => \Doctrine\DBAL\ParameterType::STRING];
             $sql = <<<'SQL'
-    UPDATE `hit`
-    SET
-        `hit`.`entity_name` = "site_pages",
-        `hit`.`entity_id` = :page_id
-    WHERE
-        `hit`.`url` = :page_url
-        AND `hit`.`site_id` = :site_id
-        AND `hit`.`entity_name` = ""
-        AND `hit`.`entity_id` = 0
-    ;
-    SQL;
+UPDATE `hit`
+SET
+    `hit`.`entity_name` = "site_pages",
+    `hit`.`entity_id` = :page_id
+WHERE
+    `hit`.`url` = :page_url
+    AND `hit`.`site_id` = :site_id
+    AND `hit`.`entity_name` = ""
+    AND `hit`.`entity_id` = 0
+;
+SQL;
             $connection->executeStatement($sql, $bind, $types);
 
             unset($bind['site_id'], $types['site_id']);
             $sql = <<<'SQL'
-    UPDATE `stat`
-    SET
-        `stat`.`entity_name` = "site_pages",
-        `stat`.`entity_id` = :page_id
-    WHERE
-        `stat`.`url` = :page_url
-        AND `stat`.`entity_name` = ""
-        AND `stat`.`entity_id` = 0
-    ;
-    SQL;
+UPDATE `stat`
+SET
+    `stat`.`entity_name` = "site_pages",
+    `stat`.`entity_id` = :page_id
+WHERE
+    `stat`.`url` = :page_url
+    AND `stat`.`entity_name` = ""
+    AND `stat`.`entity_id` = 0
+;
+SQL;
             $connection->executeStatement($sql, $bind, $types);
         }
     }

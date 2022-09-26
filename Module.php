@@ -99,7 +99,7 @@ class Module extends AbstractModule
             $acl
                 ->allow(
                     null,
-                    ['Statistics\Controller\Analytics'],
+                    ['Statistics\Controller\Analytics']
                 );
         }
     }

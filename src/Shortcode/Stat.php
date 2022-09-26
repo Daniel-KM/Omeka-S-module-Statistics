@@ -83,7 +83,7 @@ class Stat extends AbstractShortcode
             : null;
 
         /** @var \Statistics\View\Helper\Analytics $analytics */
-            $analytics = $this->view->analytics();
+        $analytics = $this->view->analytics();
 
         // Search by resource.
         if ($resourceId) {

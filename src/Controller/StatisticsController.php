@@ -10,7 +10,6 @@ use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 use Omeka\Api\Adapter\Manager as AdapterManager;
 use Omeka\Stdlib\Message;
-use Statistics\Entity\Stat;
 
 /**
  * Controller to browse Statistics.
@@ -100,13 +99,13 @@ class StatisticsController extends AbstractActionController
         );
 
         $results['current'][$translate('This year')] = // @translate
-        $this->statisticsPeriod(strtotime(date('Y-1-1', $time)), null, [], 'created', $resourceTypes);
-        $results['current'][$translate('This month')] =  // @translate
-        $this->statisticsPeriod(strtotime(date('Y-m-1', $time)), null, [], 'created', $resourceTypes);
+            $this->statisticsPeriod(strtotime(date('Y-1-1', $time)), null, [], 'created', $resourceTypes);
+        $results['current'][$translate('This month')] = // @translate
+            $this->statisticsPeriod(strtotime(date('Y-m-1', $time)), null, [], 'created', $resourceTypes);
         $results['current'][$translate('This week')] = // @translate
-        $this->statisticsPeriod(strtotime('this week'), null, [], 'created', $resourceTypes);
+            $this->statisticsPeriod(strtotime('this week'), null, [], 'created', $resourceTypes);
         $results['current'][$translate('This day')] = // @translate
-        $this->statisticsPeriod(strtotime('today'), null, [], 'created', $resourceTypes);
+            $this->statisticsPeriod(strtotime('today'), null, [], 'created', $resourceTypes);
 
         foreach ([365 => null, 30 => null, 7 => null, 1 => null] as $start => $endPeriod) {
             $startPeriod = strtotime("- {$start} days");
@@ -379,7 +378,7 @@ class StatisticsController extends AbstractActionController
                             $expr->isNotNull('value.valueResource'),
                             $expr->neq('value.valueResource', ':empty_int'),
                             $expr->orX($expr->isNull('value.value'), $expr->eq('value.value', ':empty_string')),
-                            $expr->orX($expr->isNull('value.uri'), $expr->eq('value.value', ':empty_string')),
+                            $expr->orX($expr->isNull('value.uri'), $expr->eq('value.value', ':empty_string'))
                         ))
                     ;
                     break;
@@ -994,7 +993,7 @@ class StatisticsController extends AbstractActionController
                         ? [$value, $result['l']]
                         : [$value];
                     foreach ($resourceTypes as $resourceType) {
-                        $cells[] = isset($result['t'][$period][$resourceType]) ? $result['t'][$period][$resourceType] : '';
+                        $cells[] = $result['t'][$period][$resourceType] ?? '';
                     }
                     $rowFromValues = WriterEntityFactory::createRowFromArray($cells);
                     $writer->addRow($rowFromValues);

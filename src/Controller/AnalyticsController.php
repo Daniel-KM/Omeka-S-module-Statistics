@@ -652,7 +652,7 @@ SQL;
             $whereYear = $appendDates['whereYear'];
             $whereMonth = $appendDates['whereMonth'];
 
-        $sql = <<<SQL
+            $sql = <<<SQL
 SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hitsInclusive
 FROM hit hit$force
 JOIN value ON hit.entity_id = value.resource_id$joinProperty$joinResource

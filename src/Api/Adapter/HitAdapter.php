@@ -294,7 +294,7 @@ class HitAdapter extends AbstractEntityAdapter
             } else {
                 $qb->andWhere($expr->neq(
                     'omeka_root.' . $field,
-                    $this->createNamedParameter($qb, '' )
+                    $this->createNamedParameter($qb, '')
                 ));
             }
             if ($field === 'referrer') {
