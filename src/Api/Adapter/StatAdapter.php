@@ -23,8 +23,8 @@ class StatAdapter extends AbstractEntityAdapter
         'id' => 'id',
         'type' => 'type',
         'url' => 'url',
-        'entity_name' => 'entityName',
         'entity_id' => 'entityId',
+        'entity_name' => 'entityName',
         // TODO Clarify query for sort (used in some other places).
         'hits' => 'totalHits',
         'anonymous' => 'totalHitsAnonymous',
@@ -39,6 +39,19 @@ class StatAdapter extends AbstractEntityAdapter
         'totalHits' => 'totalHits',
         'totalHitsAnonymous' => 'totalHitsAnonymous',
         'totalHitsIdentified' => 'totalHitsIdentified',
+        'created' => 'created',
+        'modified' => 'modified',
+    ];
+
+    protected $scalarFields = [
+        'id' => 'id',
+        'type' => 'type',
+        'url' => 'url',
+        'entity_id' => 'entityId',
+        'entity_name' => 'entityName',
+        'total_hits' => 'totalHits',
+        'total_hits_anonymous' => 'totalHitsAnonymous',
+        'total_hits_identified' => 'totalHitsIdentified',
         'created' => 'created',
         'modified' => 'modified',
     ];

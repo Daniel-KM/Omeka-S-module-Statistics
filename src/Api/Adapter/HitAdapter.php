@@ -23,9 +23,10 @@ class HitAdapter extends AbstractEntityAdapter
     protected $sortFields = [
         'id' => 'id',
         'url' => 'url',
-        'entity_name' => 'entityName',
         'entity_id' => 'entityId',
+        'entity_name' => 'entityName',
         'site_id' => 'siteId',
+        'user_id' => 'userId',
         'ip' => 'ip',
         // To sort query has no meaning.
         // 'query' => 'query',
@@ -37,6 +38,21 @@ class HitAdapter extends AbstractEntityAdapter
         'entityId' => 'entityId',
         'userAgent' => 'userAgent',
         'acceptLanguage' => 'acceptLanguage',
+        'created' => 'created',
+    ];
+
+    protected $scalarFields = [
+        'id' => 'id',
+        'url' => 'url',
+        'entity_id' => 'entityId',
+        'entity_name' => 'entityName',
+        'site' => 'siteId',
+        'user' => 'userId',
+        'ip' => 'ip',
+        'query' => 'query',
+        'referrer' => 'referrer',
+        'user_agent' => 'userAgent',
+        'accept_language' => 'acceptLanguage',
         'created' => 'created',
     ];
 
