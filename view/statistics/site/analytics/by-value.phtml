@@ -178,7 +178,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
 <?php else: ?>
 
     <br class="clear" />
-    <?php $totalHits = $this->api()->search('hits')->getTotalResults(); ?>
+    <?php $totalHits = $this->api()->search('hits', ['limit' => 0])->getTotalResults(); ?>
     <?php if (!$totalHits): ?>
         <h2><?= $translate('There is no hit yet.') ?></h2>
     <?php else: ?>

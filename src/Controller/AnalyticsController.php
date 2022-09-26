@@ -336,8 +336,8 @@ SQL;
         $analytics = $this->viewHelpers()->get('analytics');
         $results = $analytics->frequents($query, $currentPage, $resourcesPerPage);
         $totalResults = $analytics->countFrequents($query);
-        $totalHits = $this->api()->search('hits', ['user_status' => $userStatus])->getTotalResults();
-        $totalNotEmpty = $this->api()->search('hits', ['field' => $field, 'user_status' => $userStatus, 'not_empty' => $field])->getTotalResults();
+        $totalHits = $this->api()->search('hits', ['user_status' => $userStatus, 'limit' => 0])->getTotalResults();
+        $totalNotEmpty = $this->api()->search('hits', ['field' => $field, 'user_status' => $userStatus, 'not_empty' => $field, 'limit' => 0])->getTotalResults();
         $this->paginator($totalResults);
 
         switch ($field) {
@@ -698,6 +698,9 @@ SQL;
         if ($endPeriod) {
             $query['until'] = date('Y-m-d 23:59:59', $endPeriod);
         }
+
+        // Speed the computation for count via api.
+        $query['limit'] = 0;
 
         $api = $this->api();
         if ($this->status()->isAdminRequest()) {

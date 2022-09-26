@@ -654,6 +654,9 @@ class StatisticsController extends AbstractActionController
         /** @var \Omeka\Mvc\Controller\Plugin\Api $api */
         $api = $this->api();
 
+        // Speed the computation for count via api.
+        $query['limit'] = 0;
+
         $results = [];
         // TODO A search by resources will allow only one query, but it is not yet merged by Omeka (#1799).
         // Resource type "resources" is not included here for now.

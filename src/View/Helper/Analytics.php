@@ -245,8 +245,12 @@ class Analytics extends AbstractHelper
         $request = new Request(Request::SEARCH, $entityName);
         // Here, it's not possible to check identified user.
         if ($userStatus === 'anonymous') {
-            $request->setContent(['is_public' => 1]);
+            $request->setContent(['is_public' => 1, 'limit' => 0]);
+        } else {
+            // Speed the computation for count via api.
+            $request->setContent(['limit' => 0]);
         }
+
         return $this->statAdapter->getAdapter($entityName)
             ->search($request)
             ->getTotalResults();

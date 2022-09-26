@@ -107,7 +107,7 @@ $basePath = $this->basePath();
 <div class="browse-controls">
     <?= $this->partial('common/analytics-quick-filters') ?>
 </div>
-<?php $totalStats = $this->api()->search('stats')->getTotalResults(); ?>
+<?php $totalStats = $this->api()->search('stats', ['limit' => 0])->getTotalResults(); ?>
 <div class="no-resources">
 <?php if (!$totalStats): ?>
     <p><?= $translate('Omeka could not find any statistics.') ?></p>

@@ -261,7 +261,7 @@ HTML;
         $escapeAttr = $plugins->get('escapeHtmlAttr');
 
         $userStatus = $settings->get('statistics_default_user_status_admin');
-        $totalHits = $api->search('hits', ['user_status' => $userStatus])->getTotalResults();
+        $totalHits = $api->search('hits', ['user_status' => $userStatus, 'limit' => 0])->getTotalResults();
 
         $statsTitle = $translate('Statistics'); // @translate
         $html = <<<HTML
@@ -279,9 +279,9 @@ HTML;
                 1 => $translate('Last 24 hours'),
             ];
             $lastTotals = [
-                30 => $api->search('hits', ['since' => date('Y-m-d', strtotime('-30 days')), 'user_status' => $userStatus])->getTotalResults(),
-                7 => $api->search('hits', ['since' => date('Y-m-d', strtotime('-7 days')), 'user_status' => $userStatus])->getTotalResults(),
-                1 => $api->search('hits', ['since' => date('Y-m-d', strtotime('-1 days')), 'user_status' => $userStatus])->getTotalResults(),
+                30 => $api->search('hits', ['since' => date('Y-m-d', strtotime('-30 days')), 'user_status' => $userStatus, 'limit' => 0])->getTotalResults(),
+                7 => $api->search('hits', ['since' => date('Y-m-d', strtotime('-7 days')), 'user_status' => $userStatus, 'limit' => 0])->getTotalResults(),
+                1 => $api->search('hits', ['since' => date('Y-m-d', strtotime('-1 days')), 'user_status' => $userStatus, 'limit' => 0])->getTotalResults(),
             ];
             $html .= <<<HTML
     <h4><a href="$statsSummaryUrl">$statsSummaryText</a></h4>
