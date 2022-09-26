@@ -23,6 +23,9 @@ return [
         ],
     ],
     'view_helpers' => [
+        'invokables' => [
+            'apiResourcesTotalResults' => View\Helper\ApiResourcesTotalResults::class,
+        ],
         'factories' => [
             'analytics' => Service\ViewHelper\AnalyticsFactory::class,
         ],

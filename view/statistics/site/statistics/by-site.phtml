@@ -100,7 +100,7 @@ $currentUrl = $urlHelper(null, [], true);
 <?php else: ?>
 
     <br class="clear" />
-    <?php $totalResources = $this->api()->search('resources')->getTotalResults(); ?>
+    <?php $totalResources = $plugins->get('apiResourcesTotalResults')(); ?>
     <?php if (!$totalResources): ?>
         <h2><?= $translate('There is no resource yet.') ?></h2>
     <?php else: ?>

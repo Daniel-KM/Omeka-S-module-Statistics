@@ -320,6 +320,7 @@ class StatisticsController extends AbstractActionController
 
         $results = [];
 
+        // Resource type "resources" is not included here for now.
         foreach ($resourceTypes as $resourceType) {
             /** @var \Omeka\Api\Adapter\AbstractResourceEntityAdapter $adapter */
             $adapter = $this->adapterManager->get($resourceType);
@@ -647,6 +648,7 @@ class StatisticsController extends AbstractActionController
 
         $results = [];
         // TODO A search by resources will allow only one query, but it is not yet merged by Omeka (#1799).
+        // Resource type "resources" is not included here for now.
         foreach ($resourceTypes as $resourceType) {
             $results[$resourceType] = $api->search($resourceType, $query, ['initialize' => false, 'finalize' => false])->getTotalResults();
         }
