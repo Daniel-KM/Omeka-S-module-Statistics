@@ -71,7 +71,7 @@ class LogCurrentUrl extends AbstractPlugin
         // For performance, use the adapter directly, not the api.
         // TODO Use direct sql query to store hits?
 
-        /** @var \Statistics\Api\Adapter\HitAdapter $adapter */
+        /** @var \Statistics\Api\Adapter\HitAdapter $hitAdapter */
         $hitAdapter = $this->services->get('Omeka\ApiAdapterManager')->get('hits');
 
         $includeBots = (bool) $this->services->get('Omeka\Settings')->get('statistics_include_bots');
@@ -89,6 +89,15 @@ class LogCurrentUrl extends AbstractPlugin
             ->setOption('returnScalar', 'id')
         ;
         // The entity manager is automatically flushed by default.
-        return $hitAdapter->create($request)->getContent();
+        try {
+            return $hitAdapter->create($request)->getContent();
+        } catch (\Exception $e) {
+            $logger = $this->services->get('Omeka\Logger');
+            $logger->err(new \Omeka\Stdlib\Message(
+                'Exception when storiing hit/stat: %1$s', // @translate
+                $e->getMessage()
+            ));
+            return null;
+        }
     }
 }
