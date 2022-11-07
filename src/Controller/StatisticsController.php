@@ -240,6 +240,7 @@ class StatisticsController extends AbstractActionController
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         // A property is required to get stats, so get empty without a good one.
+        $propertyId = null;
         if ($property && $propertyId = $this->getPropertyId($property)) {
             if (is_numeric($property)) {
                 $property = $this->getPropertyId([$propertyId]);
@@ -306,6 +307,8 @@ class StatisticsController extends AbstractActionController
             $hasResources = true;
         }
 
+        // $baseQuery = $query;
+
         /** @see \Omeka\Api\Adapter\AbstractEntityAdapter::search() */
         // Set default query parameters
         $defaultQuery = [
@@ -318,6 +321,13 @@ class StatisticsController extends AbstractActionController
         ];
         $query += $defaultQuery;
         $query['sort_order'] = $sortOrder;
+
+        if ($property) {
+            $query['property'] = [[
+                'property' => $query['property'],
+                'type' => 'ex',
+            ]];
+        }
 
         $results = [];
 
@@ -342,6 +352,12 @@ class StatisticsController extends AbstractActionController
             // $qb->groupBy('omeka_root.id');
             $adapter->limitQuery($qb, $query);
 
+            // The query should be overridden manually because event "api.search.pre"
+            // is not triggered.
+            /** @see \AdvancedSearch\Mvc\Controller\Plugin\SearchResources::startOverrideQuery() */
+            $this->searchResources()
+                ->startOverrideRequest($request);
+
             // Trigger the search.query event (required for Advanced Search).
             $event = new \Laminas\EventManager\Event('api.search.query', $adapter, [
                 'queryBuilder' => $qb,
@@ -350,12 +366,17 @@ class StatisticsController extends AbstractActionController
             $adapter->getEventManager()->triggerEvent($event);
 
             $expr = $qb->expr();
+
             // Set custom parameters.
-            $qb
-                // Use class, it is orm qb.
-                ->join(\Omeka\Entity\Value::class, 'value', Join::WITH, 'value.resource = omeka_root AND value.property = ' . $propertyId);
+            if ($propertyId) {
+                // TODO Probably useless now, since property is included cleanly in the query.
+                $qb
+                    // Use class, it is orm qb.
+                    ->join(\Omeka\Entity\Value::class, 'value', Join::WITH, 'value.resource = omeka_root AND value.property = ' . $propertyId);
+            }
 
             // TODO Add a type filter for all, or no type filter.
+            $hasEmpty = false;
             switch ($typeFilter) {
                 default:
                 case 'value':
@@ -370,6 +391,7 @@ class StatisticsController extends AbstractActionController
                             $expr->orX($expr->isNull('value.valueResource'), $expr->eq('value.valueResource', ':empty_int'))
                         ))
                     ;
+                    $hasEmpty = true;
                     break;
 
                 case 'resource':
@@ -384,6 +406,7 @@ class StatisticsController extends AbstractActionController
                             $expr->orX($expr->isNull('value.uri'), $expr->eq('value.value', ':empty_string'))
                         ))
                     ;
+                    $hasEmpty = true;
                     break;
 
                 case 'uri':
@@ -396,11 +419,22 @@ class StatisticsController extends AbstractActionController
                             $expr->orX($expr->isNull('value.valueResource'), $expr->eq('value.valueResource', ':empty_int'))
                         ))
                     ;
+                    $hasEmpty = true;
+                    break;
+
+                case 'owner':
+                    $qb
+                        ->select('IDENTITY(omeka_root.owner) AS v', 'user.name AS l', 'COUNT(omeka_root.id) AS t')
+                        ->leftJoin(\Omeka\Entity\User::class, 'user', Join::WITH, 'omeka_root.owner = user')
+                        ->groupBy('omeka_root.owner')
+                    ;
                     break;
             }
-            $qb
-                ->setParameter('empty_int', 0, ParameterType::INTEGER)
-                ->setParameter('empty_string', '', ParameterType::STRING);
+            if ($hasEmpty) {
+                $qb
+                    ->setParameter('empty_int', 0, ParameterType::INTEGER)
+                    ->setParameter('empty_string', '', ParameterType::STRING);
+            }
 
             // FIXME The results are doubled when the property has duplicate values for a resource, so fix it or warn about deduplicating values regularly (module BulkEdit).
 
@@ -579,7 +613,8 @@ class StatisticsController extends AbstractActionController
         }
 
         // Make the table simpler to manage in the view, nearly like a spreadsheet.
-        $hasValueLabel = in_array($typeFilter, ['resource', 'uri']);
+        $hasValueLabel = in_array($typeFilter, ['resource', 'uri', 'owner']);
+
         $results = $this->mergeResultsByValue($results, $hasValueLabel);
         $totals = $this->totalsByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);
 
