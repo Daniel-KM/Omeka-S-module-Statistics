@@ -6,6 +6,8 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ParameterType;
+use Doctrine\ORM\Query\Expr\Join;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 use Omeka\Api\Adapter\Manager as AdapterManager;
@@ -351,7 +353,7 @@ class StatisticsController extends AbstractActionController
             // Set custom parameters.
             $qb
                 // Use class, it is orm qb.
-                ->join(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, 'value.resource = omeka_root AND value.property = ' . $propertyId);
+                ->join(\Omeka\Entity\Value::class, 'value', Join::WITH, 'value.resource = omeka_root AND value.property = ' . $propertyId);
 
             // TODO Add a type filter for all, or no type filter.
             switch ($typeFilter) {
@@ -369,10 +371,11 @@ class StatisticsController extends AbstractActionController
                         ))
                     ;
                     break;
+
                 case 'resource':
                     $qb
                         ->select('IDENTITY(value.valueResource) AS v', 'res.title AS l', 'COUNT(omeka_root.id) AS t')
-                        ->leftJoin(\Omeka\Entity\Resource::class, 'res', \Doctrine\ORM\Query\Expr\Join::WITH, 'res = value.valueResource')
+                        ->leftJoin(\Omeka\Entity\Resource::class, 'res', Join::WITH, 'res = value.valueResource')
                         ->groupBy('value.valueResource')
                         ->where($expr->andX(
                             $expr->isNotNull('value.valueResource'),
@@ -382,6 +385,7 @@ class StatisticsController extends AbstractActionController
                         ))
                     ;
                     break;
+
                 case 'uri':
                     $qb
                         ->select('value.uri AS v', 'value.label AS l', 'COUNT(omeka_root.id) AS t')
@@ -395,8 +399,8 @@ class StatisticsController extends AbstractActionController
                     break;
             }
             $qb
-                ->setParameter('empty_int', 0, \Doctrine\DBAL\ParameterType::INTEGER)
-                ->setParameter('empty_string', '', \Doctrine\DBAL\ParameterType::STRING);
+                ->setParameter('empty_int', 0, ParameterType::INTEGER)
+                ->setParameter('empty_string', '', ParameterType::STRING);
 
             // FIXME The results are doubled when the property has duplicate values for a resource, so fix it or warn about deduplicating values regularly (module BulkEdit).
 
@@ -428,21 +432,21 @@ class StatisticsController extends AbstractActionController
                                 // ORM doesn't support Extract.
                                 // ->andWhere($expr->eq('EXTRACT(YEAR_MONTH FROM omeka_root.created)', ':year_month'))
                                 ->andWhere($expr->eq('CONCAT(SUBSTRING(omeka_root.created, 1, 4), SUBSTRING(omeka_root.created, 6, 2))', ':year_month'))
-                                ->setParameter('year_month', (int) sprintf('%04d%02d', $yearPeriod, $monthPeriod), \Doctrine\DBAL\ParameterType::INTEGER)
+                                ->setParameter('year_month', (int) sprintf('%04d%02d', $yearPeriod, $monthPeriod), ParameterType::INTEGER)
                             ;
                         } elseif ($yearPeriod) {
                             $qb
                                 // ORM doesn't support Extract.
                                 // ->andWhere($expr->eq('EXTRACT(YEAR FROM omeka_root.created)', ':year'))
                                 ->andWhere($expr->eq('SUBSTRING(omeka_root.created, 1, 4)', ':year'))
-                                ->setParameter('year', $yearPeriod, \Doctrine\DBAL\ParameterType::INTEGER)
+                                ->setParameter('year', $yearPeriod, ParameterType::INTEGER)
                             ;
                         } elseif ($monthPeriod) {
                             $qb
                                 // ORM doesn't support Extract.
                                 // ->andWhere($expr->eq('EXTRACT(MONTH FROM omeka_root.created)', ':month'))
                                 ->andWhere($expr->eq('SUBSTRING(omeka_root.created, 6, 2)', ':month'))
-                                ->setParameter('month', $monthPeriod, \Doctrine\DBAL\ParameterType::INTEGER)
+                                ->setParameter('month', $monthPeriod, ParameterType::INTEGER)
                             ;
                         }
                     } else {
@@ -475,21 +479,21 @@ class StatisticsController extends AbstractActionController
                             // ORM doesn't support Extract.
                             // ->andWhere($expr->eq('EXTRACT(YEAR_MONTH FROM omeka_root.created)', ':year_month'))
                             ->andWhere($expr->eq('CONCAT(SUBSTRING(omeka_root.created, 1, 4), SUBSTRING(omeka_root.created, 6, 2))', ':year_month'))
-                            ->setParameter('year_month', (int) sprintf('%04d%02d', $year, $month), \Doctrine\DBAL\ParameterType::INTEGER)
+                            ->setParameter('year_month', (int) sprintf('%04d%02d', $year, $month), ParameterType::INTEGER)
                         ;
                     } elseif ($year) {
                         $qb
                             // ORM doesn't support Extract.
                             // ->andWhere($expr->eq('EXTRACT(YEAR FROM omeka_root.created)', ':year'))
                             ->andWhere($expr->eq('SUBSTRING(omeka_root.created, 1, 4)', ':year'))
-                            ->setParameter('year', $year, \Doctrine\DBAL\ParameterType::INTEGER)
+                            ->setParameter('year', $year, ParameterType::INTEGER)
                         ;
                     } elseif ($month) {
                         $qb
                             // ORM doesn't support Extract.
                             // ->andWhere($expr->eq('EXTRACT(MONTH FROM omeka_root.created)', ':month'))
                             ->andWhere($expr->eq('SUBSTRING(omeka_root.created, 6, 2)', ':month'))
-                            ->setParameter('month', $month, \Doctrine\DBAL\ParameterType::INTEGER)
+                            ->setParameter('month', $month, ParameterType::INTEGER)
                         ;
                     }
                 } else {
@@ -594,8 +598,9 @@ class StatisticsController extends AbstractActionController
         // TODO Manage the right paginator.
         $this->paginator(count($results));
 
-        $view->setVariable('results', $results);
-        $view->setVariable('totals', $totals);
+        $view
+            ->setVariable('results', $results)
+            ->setVariable('totals', $totals);
 
         $output = $this->params()->fromRoute('output');
         if ($output) {

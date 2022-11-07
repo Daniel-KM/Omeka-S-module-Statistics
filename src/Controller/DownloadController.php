@@ -82,6 +82,8 @@ class DownloadController extends AbstractActionController
             return null;
         }
 
+        $filename = pathinfo($filepath, PATHINFO_BASENAME);
+
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mediaType = $finfo->file($filepath);
         $mediaType = \Omeka\File\TempFile::MEDIA_TYPE_ALIASES[$mediaType] ?? $mediaType;
@@ -94,7 +96,7 @@ class DownloadController extends AbstractActionController
         // Write headers.
         $response->getHeaders()
             ->addHeaderLine(sprintf('Content-Type: %s', $mediaType))
-            ->addHeaderLine(sprintf('Content-Disposition: %s; filename="%s"', $dispositionMode, pathinfo($filepath, PATHINFO_BASENAME)))
+            ->addHeaderLine(sprintf('Content-Disposition: %s; filename="%s"', $dispositionMode, $filename))
             ->addHeaderLine(sprintf('Content-Length: %s', $fileSize))
             ->addHeaderLine('Content-Transfer-Encoding: binary')
             // Use this to open files directly.

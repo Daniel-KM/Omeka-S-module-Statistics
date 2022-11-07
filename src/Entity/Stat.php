@@ -50,6 +50,7 @@ class Stat extends AbstractEntity
 
     /**
      * @var int
+     *
      * @Id
      * @Column(
      *     type="integer"

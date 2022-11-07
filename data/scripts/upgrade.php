@@ -22,6 +22,7 @@ $connection = $services->get('Omeka\Connection');
 // $entityManager = $services->get('Omeka\EntityManager');
 $plugins = $services->get('ControllerPluginManager');
 $api = $plugins->get('api');
+$messenger = $services->get('ControllerPluginManager')->get('messenger');
 
 if (version_compare($oldVersion, '3.3.4.2', '<')) {
     $settings->set('statistics_public_allow_browse', $settings->get('statistics_public_allow_browse_pages', false));
@@ -30,7 +31,6 @@ if (version_compare($oldVersion, '3.3.4.2', '<')) {
     $settings->delete('statistics_public_allow_browse_downloads');
     $settings->delete('statistics_public_allow_browse_fields');
 
-    $messenger = new Messenger;
     $message = new Message(
         'To control access to files, you must add a rule in file .htaccess at the root of Omeka. See %sreadme%s.', // @translate
         '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-AccessResource" target="_blank">', '</a>'
@@ -151,7 +151,6 @@ SQL;
         }
     }
 
-    $messenger = new Messenger;
     $message = new Message(
         'There are now analytics by period for properties.' // @translate
     );
@@ -159,7 +158,6 @@ SQL;
 }
 
 if (version_compare($oldVersion, '3.3.5', '<')) {
-    $messenger = new Messenger;
     $message = new Message(
         'There are now statistics about resources and values.' // @translate
     );

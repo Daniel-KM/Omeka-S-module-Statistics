@@ -37,7 +37,7 @@ class Module extends AbstractModule
             '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics" target="_blank">', '</a>'
         );
         $message->setEscapeHtml(false);
-        $messenger = new \Omeka\Mvc\Controller\Plugin\Messenger;
+        $messenger = $services->get('ControllerPluginManager')->get('messenger');
         $messenger->addWarning($message);
     }
 
