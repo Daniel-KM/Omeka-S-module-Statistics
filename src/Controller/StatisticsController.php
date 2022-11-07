@@ -239,6 +239,8 @@ class StatisticsController extends AbstractActionController
         $sortBy = isset($query['sort_by']) && in_array($query['sort_by'], ['value', 'resources', 'item_sets', 'items', 'media']) ? $query['sort_by'] : 'total';
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
+        $isMetadata = in_array($typeFilter, ['resource_class', 'resource_template', 'owner']);
+
         // A property is required to get stats, so get empty without a good one.
         $propertyId = null;
         if ($property && $propertyId = $this->getPropertyId($property)) {
@@ -246,7 +248,7 @@ class StatisticsController extends AbstractActionController
                 $property = $this->getPropertyId([$propertyId]);
                 $property = key($property);
             }
-        } else {
+        } elseif (!$isMetadata) {
             $property = null;
             if ($query) {
                 $this->messenger()->addError(new Message('A property is required to get statistics.')); // @translate
@@ -293,7 +295,9 @@ class StatisticsController extends AbstractActionController
         $view
             ->setTemplate($isAdminRequest ? 'statistics/admin/statistics/by-value' : 'statistics/site/statistics/by-value');
 
-        if (is_null($periods) || !$property) {
+        if (is_null($periods)
+            || (!$property && !$isMetadata)
+        ) {
             return $view;
         }
 
@@ -420,6 +424,22 @@ class StatisticsController extends AbstractActionController
                         ))
                     ;
                     $hasEmpty = true;
+                    break;
+
+                case 'resource_class':
+                    $qb
+                        ->select('IDENTITY(omeka_root.resourceClass) AS v', 'resource_class.localName AS l', 'COUNT(omeka_root.id) AS t')
+                        ->leftJoin(\Omeka\Entity\ResourceClass::class, 'resource_class', Join::WITH, 'omeka_root.resourceClass = resource_class')
+                        ->groupBy('omeka_root.resourceClass')
+                    ;
+                    break;
+
+                case 'resource_template':
+                    $qb
+                        ->select('IDENTITY(omeka_root.resourceTemplate) AS v', 'resource_template.label AS l', 'COUNT(omeka_root.id) AS t')
+                        ->leftJoin(\Omeka\Entity\ResourceTemplate::class, 'resource_template', Join::WITH, 'omeka_root.resourceTemplate = resource_template')
+                        ->groupBy('omeka_root.resourceTemplate')
+                    ;
                     break;
 
                 case 'owner':
@@ -613,7 +633,7 @@ class StatisticsController extends AbstractActionController
         }
 
         // Make the table simpler to manage in the view, nearly like a spreadsheet.
-        $hasValueLabel = in_array($typeFilter, ['resource', 'uri', 'owner']);
+        $hasValueLabel = in_array($typeFilter, ['resource', 'uri', 'resource_class', 'resource_template' , 'owner']);
 
         $results = $this->mergeResultsByValue($results, $hasValueLabel);
         $totals = $this->totalsByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);

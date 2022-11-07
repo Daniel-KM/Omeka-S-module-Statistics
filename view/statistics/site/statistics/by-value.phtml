@@ -33,10 +33,14 @@ $query = $this->params()->fromQuery();
 
 $currentUrl = $urlHelper(null, [], true);
 
-$isSimpleValue = !in_array($valueTypeFilter, ['resource', 'uri' , 'owner']);
+$isMetadata = in_array($valueTypeFilter, ['resource_class', 'resource_template', 'owner']);
+$isSimpleValue = !in_array($valueTypeFilter, ['resource', 'uri' , 'resource_class', 'resource_template', 'owner']);
 $isResource = $valueTypeFilter === 'resource';
 $isUri = $valueTypeFilter === 'uri';
+$isResourceClass = $valueTypeFilter === 'resource_class';
+$isResourceTemplate = $valueTypeFilter === 'resource_template';
 $isOwner = $valueTypeFilter === 'owner';
+$isLinked = $isResource || $isResourceClass || $isResourceTemplate || $isOwner;
 $isByAll = !in_array($byPeriodFilter, ['year', 'month']);
 $isByCount = !in_array($compute, ['percent', 'evolution', 'variation']);
 
@@ -66,7 +70,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
         ],
         'attributes' => [
             'class' => 'chosen-select',
-            'required' => true,
+            'required' => false,
             'value' => $propertyFilter,
         ],
     ]) ?>
@@ -75,6 +79,8 @@ $isYearPeriods = $byPeriodFilter === 'year';
         <label><input type="radio" name="value_type" value="value"<?= $isSimpleValue ? ' checked="checked"' : '' ?>><?= $translate('Value') ?></label>
         <label><input type="radio" name="value_type" value="resource"<?= $valueTypeFilter === 'resource' ? ' checked="checked"' : '' ?>><?= $translate('Resource') ?></label>
         <label><input type="radio" name="value_type" value="uri"<?= $valueTypeFilter === 'uri' ? ' checked="checked"' : '' ?>><?= $translate('Uri') ?></label>
+        <label><input type="radio" name="value_type" value="resource_class"<?= $valueTypeFilter === 'resource_class' ? ' checked="checked"' : '' ?>><?= $translate('Resource class') ?></label>
+        <label><input type="radio" name="value_type" value="resource_template"<?= $valueTypeFilter === 'resource_template' ? ' checked="checked"' : '' ?>><?= $translate('Resource template') ?></label>
         <label><input type="radio" name="value_type" value="owner"<?= $valueTypeFilter === 'owner' ? ' checked="checked"' : '' ?>><?= $translate('Owner') ?></label>
     </div>
 
@@ -123,7 +129,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
 </div>
 </form>
 
-<?php if (count($results) && $propertyFilter && !is_null($periods)): ?>
+<?php if (count($results) && ($propertyFilter || $isMetadata) && !is_null($periods)): ?>
 
 <div class="browse-controls">
     <?php //= $this->pagination(); ?>
@@ -136,9 +142,9 @@ $isYearPeriods = $byPeriodFilter === 'year';
 
 <?php endif; ?>
 
-<?php if (!$propertyFilter): ?>
+<?php if (!$propertyFilter && !$isMetadata): ?>
 
-<p><?= $translate('Select a property to get statistics on it.') ?></p>
+<p><?= $translate('Select a metadata to get statistics on it.') ?></p>
 
 <?php elseif (is_null($periods)): ?>
 
@@ -153,7 +159,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
             <th>
                 <a href="<?= $currentUrl . '?sort_by=value' ?>"><?= $translate('Value') ?></a>
             </th>
-            <?php if ($isResource || $isOwner): ?>
+            <?php if ($isLinked): ?>
             <th>
                 <span><?= $translate('Label') ?></span>
             </th>
@@ -168,7 +174,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
     <tbody>
         <tr class="statistics-stat">
             <td class="statistics-field statistics-totals"><?= $translate('Totals') ?></td>
-            <?php if ($isResource || $isOwner): ?>
+            <?php if ($isLinked): ?>
             <td class="statistics-label statistics-totals"></td>
             <?php endif; ?>
             <?php foreach ($resourceTypes as $resourceType): ?>
@@ -178,7 +184,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
 <?php foreach ($results as $value => $result): ?>
         <tr class="statistics-stat">
             <td class="statistics-field"><?= $isUri ? '<a href="' . $escapeAttr($value) . '" target="_blank">' . $escape($result['l']) . '</a>' : $escape($value) ?></td>
-            <?php if ($isResource || $isOwner): ?>
+            <?php if ($isLinked): ?>
             <td class="statistics-label"><?= $escape($result['l']) ?></td>
             <?php endif; ?>
             <?php foreach ($resourceTypes as $resourceType): ?>
@@ -197,7 +203,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
             <th>
                 <a href="<?= $currentUrl . '?sort_by=value' ?>"><?= $translate('Value') ?></a>
             </th>
-            <?php if ($isResource || $isOwner): ?>
+            <?php if ($isLinked): ?>
             <th>
                 <span><?= $translate('Label') ?></span>
             </th>
@@ -212,7 +218,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
     <tbody>
         <tr class="statistics-stat">
             <td class="statistics-field statistics-totals"><?= $translate('Totals') ?></td>
-            <?php if ($isResource || $isOwner): ?>
+            <?php if ($isLinked): ?>
             <td class="statistics-label statistics-totals"></td>
             <?php endif; ?>
             <?php foreach (array_keys($periods) as $period): ?>
@@ -226,7 +232,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
 <?php foreach ($results as $value => $result): ?>
         <tr class="statistics-stat">
             <td class="statistics-field"><?= $isUri ? '<a href="' . $escapeAttr($value) . '" target="_blank">' . $escape($result['l']) . '</a>' : $escape($value) ?></td>
-            <?php if ($isResource || $isOwner): ?>
+            <?php if ($isLinked): ?>
             <td class="statistics-label"><?= $escape($result['l']) ?></td>
             <?php endif; ?>
             <?php foreach (array_keys($periods) as $period): ?>
