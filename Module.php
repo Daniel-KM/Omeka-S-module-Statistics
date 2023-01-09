@@ -21,7 +21,7 @@ use Omeka\Api\Representation\AbstractResourceRepresentation;
  * Logger that counts views of pages and resources and makes stats about usage
  * and users of the site.
  *
- * @copyright Daniel Berthereau, 2014-2022
+ * @copyright Daniel Berthereau, 2014-2023
  * @license http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.txt
  */
 class Module extends AbstractModule
