@@ -4,7 +4,6 @@ namespace Statistics\Controller;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\Query\Expr\Join;
@@ -12,6 +11,7 @@ use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 use Omeka\Api\Adapter\Manager as AdapterManager;
 use Omeka\Stdlib\Message;
+use OpenSpout\Writer\Common\Creator\WriterEntityFactory;
 
 /**
  * Controller to browse Statistics.
