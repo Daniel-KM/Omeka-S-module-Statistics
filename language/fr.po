@@ -733,7 +733,7 @@ msgstr "Il n’y a aucune ressource."
 #: view/statistics/site/statistics/index.phtml:24
 #, php-format
 msgid "Total ressources: %d [%d item sets / %d items / %d medias]"
-msgstr "Total des ressources: %d [%d collections / %d contenux / %d médias]"
+msgstr "Total des ressources: %d [%d collections / %d contenus / %d médias]"
 
 #: view/statistics/site/statistics/index.phtml:33
 #, php-format
