@@ -92,6 +92,11 @@ class AnalyticsController extends AbstractActionController
             $results['most_frequent_fields']['query'] = $analytics->mostFrequents('query', $this->userStatus, 1, 10);
             $results['most_frequent_fields']['user_agent'] = $analytics->mostFrequents('user_agent', $this->userStatus, 1, 10);
             $results['most_frequent_fields']['accept_language'] = $analytics->mostFrequents('accept_language', $this->userStatus, 1, 10);
+            // Make json results utf-8.
+            foreach ($results['most_frequent_fields']['query'] as &$val) {
+                $val['query'] = json_encode(json_decode($val['query'], true), 320);
+            }
+            unset($val);
         }
 
         $view = new ViewModel([
