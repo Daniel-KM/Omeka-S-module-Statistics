@@ -150,6 +150,12 @@ class HitRepresentation extends AbstractEntityRepresentation
         return $this->resource->acceptLanguage() ?: null;
     }
 
+    public function acceptLanguageShort(): ?string
+    {
+        $value = $this->resource->acceptLanguage();
+        return $value ? substr($value, 0, 2) : null;
+    }
+
     /**
      * The date this resource was added.
      */

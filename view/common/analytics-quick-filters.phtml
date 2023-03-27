@@ -43,7 +43,8 @@ switch ($type):
     case 'field': ?>
         <li><a href="<?= $url($routeStatistics, ['action' => 'by-field'], ['query' => ['field' => 'referrer']], true) ?>"><?= $translate('Referrers') ?></a></li>
         <li><a href="<?= $url($routeStatistics, ['action' => 'by-field'], ['query' => ['field' => 'query']], true)  ?>"><?= $translate('Queries') ?></a></li>
-        <li><a href="<?= $url($routeStatistics, ['action' => 'by-field'], ['query' => ['field' => 'accept_language']], true)  ?>"><?= $translate('Languages') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-field'], ['query' => ['field' => 'language']], true)  ?>"><?= $translate('Languages') ?></a></li>
+        <li><a href="<?= $url($routeStatistics, ['action' => 'by-field'], ['query' => ['field' => 'accept_language']], true)  ?>"><?= $translate('Full Languages') ?></a></li>
         <li><a href="<?= $url($routeStatistics, ['action' => 'by-field'], ['query' => ['field' => 'user_agent']], true) ?>"><?= $translate('Browsers') ?></a></li>
         <?php break;
 endswitch; ?>

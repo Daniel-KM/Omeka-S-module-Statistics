@@ -373,7 +373,8 @@ HTML;
                 'referrer' => $translate('Referrer'), // @translate
                 'query' => $translate('Query'), // @translate
                 'user_agent' => $translate('User Agent'), // @translate
-                'accept_language' => $translate('Accepted Language'), // @translate
+                // 'accept_language' => $translate('Full Accepted Language'), // @translate
+                'language' => $translate('Accepted Language'), // @translate
             ] as $field => $label) {
                 $results = $analytics->mostFrequents($field, $userStatus, 1, 1);
                 $html .= '<li>';

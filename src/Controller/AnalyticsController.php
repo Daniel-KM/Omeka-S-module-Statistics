@@ -91,7 +91,8 @@ class AnalyticsController extends AbstractActionController
             $results['most_frequent_fields']['referrer'] = $analytics->mostFrequents('referrer', $this->userStatus, 1, 10);
             $results['most_frequent_fields']['query'] = $analytics->mostFrequents('query', $this->userStatus, 1, 10);
             $results['most_frequent_fields']['user_agent'] = $analytics->mostFrequents('user_agent', $this->userStatus, 1, 10);
-            $results['most_frequent_fields']['accept_language'] = $analytics->mostFrequents('accept_language', $this->userStatus, 1, 10);
+            // $results['most_frequent_fields']['accept_language'] = $analytics->mostFrequents('accept_language', $this->userStatus, 1, 10);
+            $results['most_frequent_fields']['language'] = $analytics->mostFrequents('language', $this->userStatus, 1, 10);
             // Make json results utf-8.
             foreach ($results['most_frequent_fields']['query'] as &$val) {
                 $val['query'] = json_encode(json_decode($val['query'], true), 320);
@@ -323,8 +324,16 @@ SQL;
 
         $query = $this->params()->fromQuery();
 
+        $fields = [
+            'referrer',
+            'query',
+            'user_agent',
+            'accept_language',
+            'language',
+        ];
+
         $field = $query['field'] ?? null;
-        if (empty($field) || !in_array($field, ['referrer', 'query', 'user_agent', 'accept_language'])) {
+        if (empty($field) || !in_array($field, $fields)) {
             $field = 'referrer';
             $query['field'] = $field;
         }
@@ -357,6 +366,9 @@ SQL;
                 $labelField = $this->translate('Browsers'); // @translate
                 break;
             case 'accept_language':
+                $labelField = $this->translate('Full Accepted Languages'); // @translate
+                break;
+            case 'language':
                 $labelField = $this->translate('Accepted Languages'); // @translate
                 break;
         }

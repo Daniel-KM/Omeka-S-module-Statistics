@@ -736,6 +736,8 @@ class Analytics extends AbstractHelper
      */
     public function frequents(array $query = [], ?int $page = null, ?int $limit = null): array
     {
+        $queryField = $query['field'] ?? null;
+
         $field = $this->checkFieldForFrequency($query);
         if (!$field) {
             return [];
@@ -750,7 +752,7 @@ class Analytics extends AbstractHelper
             $query['limit'] = $limit;
         }
 
-        $fieldKey = $this->normalizeFieldForQueryKey($field);
+        $fieldKey = $this->normalizeFieldForQueryKey($queryField);
 
         $defaultQuery = [
             'page' => null,
@@ -811,6 +813,15 @@ class Analytics extends AbstractHelper
             }
         }
         $this->hitAdapter->sortQuery($qb, $query);
+
+        if ($queryField === 'language') {
+            $qb
+                ->select(
+                    "SUBSTRING(omeka_root.$field, 1, 2) AS $fieldKey",
+                    "COUNT(SUBSTRING(omeka_root.$field, 1, 2)) AS hits"
+                )
+                ->groupBy($fieldKey);
+        }
 
         // Return an array with two columns.
         return $qb->getQuery()->getScalarResult();
@@ -1387,6 +1398,7 @@ class Analytics extends AbstractHelper
             'userId' => 'userId',
             'userAgent' => 'userAgent',
             'acceptLanguage' => 'acceptLanguage',
+            'language' => 'acceptLanguage',
         ];
         return $fields[$params['field'] ?? null] ?? null;
     }
@@ -1402,6 +1414,7 @@ class Analytics extends AbstractHelper
             'userId' => 'user_id',
             'userAgent' => 'user_agent',
             'acceptLanguage' => 'accept_language',
+            'language' => 'language',
         ];
         return $fields[$field] ?? $field;
     }
