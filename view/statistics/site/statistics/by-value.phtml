@@ -54,79 +54,82 @@ $isYearPeriods = $byPeriodFilter === 'year';
 <?= $this->partial('common/statistics-nav') ?>
 
 <form method="get">
-<div class="flex-container">
-    <div>
-        <?php foreach (['resources' => $translate('Resources'), 'item_sets' => $translate('Item sets'), 'items' => $translate('Items'), 'media' => $translate('Medias')] as $resourceType => $label): ?>
-        <label><input type="checkbox" name="resource_type[]" id="resource_type_resources" value="<?= $resourceType ?>"<?= in_array($resourceType, $resourceTypes) ? ' checked="checked"' : '' ?>><?= $label ?></label>
-        <?php endforeach; ?>
+    <div class="flex-container form-fields">
+        <div class="form-field">
+            <?php foreach (['resources' => $translate('Resources'), 'item_sets' => $translate('Item sets'), 'items' => $translate('Items'), 'media' => $translate('Medias')] as $resourceType => $label): ?>
+            <label><input type="checkbox" name="resource_type[]" id="resource_type_resources" value="<?= $resourceType ?>"<?= in_array($resourceType, $resourceTypes) ? ' checked="checked"' : '' ?>><?= $label ?></label>
+            <?php endforeach; ?>
+        </div>
+
+        <?= $this->propertySelect([
+            'name' => 'property',
+            'options' => [
+                'empty_option' => $translate('Select a property'),
+                'term_as_value' => true,
+                'used_terms' => true,
+            ],
+            'attributes' => [
+                'class' => 'chosen-select form-field',
+                'required' => false,
+                'value' => $propertyFilter,
+            ],
+        ]) ?>
+
+        <div class="form-field">
+            <label><input type="radio" name="value_type" value="value"<?= $isSimpleValue ? ' checked="checked"' : '' ?>><?= $translate('Value') ?></label>
+            <label><input type="radio" name="value_type" value="resource"<?= $valueTypeFilter === 'resource' ? ' checked="checked"' : '' ?>><?= $translate('Resource') ?></label>
+            <label><input type="radio" name="value_type" value="uri"<?= $valueTypeFilter === 'uri' ? ' checked="checked"' : '' ?>><?= $translate('Uri') ?></label>
+        </div>
+
+        <div class="form-field">
+            <label><input type="radio" name="value_type" value="resource_class"<?= $valueTypeFilter === 'resource_class' ? ' checked="checked"' : '' ?>><?= $translate('Resource class') ?></label>
+            <label><input type="radio" name="value_type" value="resource_template"<?= $valueTypeFilter === 'resource_template' ? ' checked="checked"' : '' ?>><?= $translate('Resource template') ?></label>
+            <label><input type="radio" name="value_type" value="owner"<?= $valueTypeFilter === 'owner' ? ' checked="checked"' : '' ?>><?= $translate('Owner') ?></label>
+        </div>
+
+        <div class="form-field">
+            <label><input type="radio" name="by_period" value="all"<?= $isByAll ? ' checked="checked"' : '' ?>><?= $translate('All') ?></label>
+            <label><input type="radio" name="by_period" value="year"<?= $byPeriodFilter === 'year' ? ' checked="checked"' : '' ?>><?= $translate('By year') ?></label>
+            <label><input type="radio" name="by_period" value="month"<?= $byPeriodFilter === 'month' ? ' checked="checked"' : '' ?>><?= $translate('By month') ?></label>
+        </div>
+
+        <select name="year form-field">
+            <option value=""><?= $translate('All years') ?></option>
+            <?php foreach ($years as $year): ?>
+                <option value="<?= $year ?>"<?= $yearFilter == $year ? ' selected="selected"' : '' ?>><?= $year ?></option>
+            <?php endforeach; ?>
+        </select>
+
+        <?php $months = [
+            1 => $translate('January'),
+            2 => $translate('February'),
+            3 => $translate('March'),
+            4 => $translate('April'),
+            5 => $translate('May'),
+            6 => $translate('June'),
+            7 => $translate('July'),
+            8 => $translate('August'),
+            9 => $translate('September'),
+            10 => $translate('October'),
+            11 => $translate('November'),
+            12 => $translate('December'),
+        ]; ?>
+        <select name="month form-field">
+            <option value=""><?= $translate('All months') ?></option>
+            <?php foreach ($months as $numberMonth => $month): ?>
+                <option value="<?= $numberMonth ?>"<?= $monthFilter == $numberMonth ? ' selected="selected"' : '' ?>><?= $month ?></option>
+            <?php endforeach; ?>
+        </select>
+
+        <div class="form-field">
+            <label><input type="radio" name="compute" value="count"<?= $isByCount ? ' checked="checked"' : '' ?>><?= $translate('Counts') ?></label>
+            <label><input type="radio" name="compute" value="percent"<?= $compute === 'percent' ? ' checked="checked"' : '' ?>><?= $translate('Repartition') ?></label>
+            <label><input type="radio" name="compute" value="evolution"<?= $compute === 'evolution' ? ' checked="checked"' : '' ?>><?= $translate('Evolution') ?></label>
+            <label><input type="radio" name="compute" value="variation"<?= $compute === 'variation' ? ' checked="checked"' : '' ?>><?= $translate('Variation') ?></label>
+        </div>
+
+        <button type="submit"><?= $translate('Filter') ?></button>
     </div>
-
-    <?= $this->propertySelect([
-        'name' => 'property',
-        'options' => [
-            'empty_option' => $translate('Select a property'),
-            'term_as_value' => true,
-            'used_terms' => true,
-        ],
-        'attributes' => [
-            'class' => 'chosen-select',
-            'required' => false,
-            'value' => $propertyFilter,
-        ],
-    ]) ?>
-
-    <div>
-        <label><input type="radio" name="value_type" value="value"<?= $isSimpleValue ? ' checked="checked"' : '' ?>><?= $translate('Value') ?></label>
-        <label><input type="radio" name="value_type" value="resource"<?= $valueTypeFilter === 'resource' ? ' checked="checked"' : '' ?>><?= $translate('Resource') ?></label>
-        <label><input type="radio" name="value_type" value="uri"<?= $valueTypeFilter === 'uri' ? ' checked="checked"' : '' ?>><?= $translate('Uri') ?></label>
-        <label><input type="radio" name="value_type" value="resource_class"<?= $valueTypeFilter === 'resource_class' ? ' checked="checked"' : '' ?>><?= $translate('Resource class') ?></label>
-        <label><input type="radio" name="value_type" value="resource_template"<?= $valueTypeFilter === 'resource_template' ? ' checked="checked"' : '' ?>><?= $translate('Resource template') ?></label>
-        <label><input type="radio" name="value_type" value="owner"<?= $valueTypeFilter === 'owner' ? ' checked="checked"' : '' ?>><?= $translate('Owner') ?></label>
-    </div>
-
-    <div>
-        <label><input type="radio" name="by_period" value="all"<?= $isByAll ? ' checked="checked"' : '' ?>><?= $translate('All') ?></label>
-        <label><input type="radio" name="by_period" value="year"<?= $byPeriodFilter === 'year' ? ' checked="checked"' : '' ?>><?= $translate('By year') ?></label>
-        <label><input type="radio" name="by_period" value="month"<?= $byPeriodFilter === 'month' ? ' checked="checked"' : '' ?>><?= $translate('By month') ?></label>
-    </div>
-
-    <select name="year">
-        <option value=""><?= $translate('All years') ?></option>
-        <?php foreach ($years as $year): ?>
-            <option value="<?= $year ?>"<?= $yearFilter == $year ? ' selected="selected"' : '' ?>><?= $year ?></option>
-        <?php endforeach; ?>
-    </select>
-
-    <?php $months = [
-        1 => $translate('January'),
-        2 => $translate('February'),
-        3 => $translate('March'),
-        4 => $translate('April'),
-        5 => $translate('May'),
-        6 => $translate('June'),
-        7 => $translate('July'),
-        8 => $translate('August'),
-        9 => $translate('September'),
-        10 => $translate('October'),
-        11 => $translate('November'),
-        12 => $translate('December'),
-    ]; ?>
-    <select name="month">
-        <option value=""><?= $translate('All months') ?></option>
-        <?php foreach ($months as $numberMonth => $month): ?>
-            <option value="<?= $numberMonth ?>"<?= $monthFilter == $numberMonth ? ' selected="selected"' : '' ?>><?= $month ?></option>
-        <?php endforeach; ?>
-    </select>
-
-    <div>
-        <label><input type="radio" name="compute" value="count"<?= $isByCount ? ' checked="checked"' : '' ?>><?= $translate('Counts') ?></label>
-        <label><input type="radio" name="compute" value="percent"<?= $compute === 'percent' ? ' checked="checked"' : '' ?>><?= $translate('Repartition') ?></label>
-        <label><input type="radio" name="compute" value="evolution"<?= $compute === 'evolution' ? ' checked="checked"' : '' ?>><?= $translate('Evolution') ?></label>
-        <label><input type="radio" name="compute" value="variation"<?= $compute === 'variation' ? ' checked="checked"' : '' ?>><?= $translate('Variation') ?></label>
-    </div>
-
-    <button type="submit"><?= $translate('Filter') ?></button>
-</div>
 </form>
 
 <?php if (count($results) && ($propertyFilter || $isMetadata) && !is_null($periods)): ?>
