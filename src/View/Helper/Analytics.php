@@ -714,6 +714,8 @@ class Analytics extends AbstractHelper
         // No group here.
         // $qb->groupBy('omeka_root.id');
 
+        // No limit or order: we get only total results.
+
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
@@ -737,6 +739,15 @@ class Analytics extends AbstractHelper
         $field = $this->checkFieldForFrequency($query);
         if (!$field) {
             return [];
+        }
+
+        if ($page) {
+            $query['page'] = $page;
+            if ($limit) {
+                $query['per_page'] = $limit;
+            }
+        } elseif ($limit) {
+            $query['limit'] = $limit;
         }
 
         $fieldKey = $this->normalizeFieldForQueryKey($field);
@@ -821,7 +832,7 @@ class Analytics extends AbstractHelper
         $query['user_status'] = $userStatus;
         $query['sort_field'] = [
             'hits' => 'DESC',
-            // This order is needed in order to manage ex-aequos.
+            // This sort is needed in order to manage ex-aequos.
             // TODO Fix in mysql (only_full_group_by).
             'created' => 'ASC',
         ];
