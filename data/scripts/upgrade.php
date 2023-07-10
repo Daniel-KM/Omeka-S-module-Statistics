@@ -53,7 +53,8 @@ CREATE UNIQUE INDEX `UNIQ_20B8FF218CDE5729F47645AE` ON `stat` (`type`, `url`);
 DROP INDEX `IDX_5AD22641C44967C5` ON `hit`;
 DROP INDEX `IDX_5AD22641ED646567` ON `hit`;
 ALTER TABLE `hit`
-    ADD `site_id` INT DEFAULT 0 NOT NULL AFTER `entity_name`,
+    ADD `site_id` INT DEFAULT 0 NOT NULL AFTER `entity_name`;
+ALTER TABLE `hit`
     CHANGE `url` `url` VARCHAR(1024) NOT NULL COLLATE `latin1_general_cs`,
     CHANGE `entity_id` `entity_id` INT DEFAULT 0 NOT NULL,
     CHANGE `entity_name` `entity_name` VARCHAR(190) DEFAULT '' NOT NULL,
@@ -67,7 +68,14 @@ CREATE INDEX `IDX_5AD22641F6BD1646` ON `hit` (`site_id`);
 CREATE INDEX `IDX_5AD22641C44967C5` ON `hit` (`user_agent`);
 CREATE INDEX `IDX_5AD22641ED646567` ON `hit` (`referrer`);
 SQL;
-    $connection->executeStatement($sql);
+    $sqls = array_filter(array_map('trim', explode(";\n", $sql)));
+    foreach ($sqls as $sql) {
+        try {
+            $connection->executeStatement($sql);
+        } catch (\Exception $e) {
+            $messenger->addError($e->getMessage());
+        }
+    }
 
     // Url decode queries and parse them. Paginate them, because query may be big.
     $requestGet = [];
