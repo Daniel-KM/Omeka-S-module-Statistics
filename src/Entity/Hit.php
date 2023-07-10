@@ -10,7 +10,8 @@ use Omeka\Entity\AbstractEntity;
  * but they are indexed. Furthermore, there can be multiple stats for each hit,
  * according to type (page, resource, download).
  *
- * Properties are not nullable to speed up requests.
+ * Columns are not nullable to speed up requests.
+ * @see \HistoryLog\Entity\Log
  *
  * @todo Check if full separation of the two tables is still needed with doctrine (performance). Check if indexes are needed too.
  *
@@ -35,6 +36,7 @@ class Hit extends AbstractEntity
 {
     /**
      * @var int
+     *
      * @Id
      * @Column(
      *     type="integer"

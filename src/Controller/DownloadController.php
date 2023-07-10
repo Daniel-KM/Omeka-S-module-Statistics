@@ -66,6 +66,10 @@ class DownloadController extends AbstractActionController
      * Send file as stream. The file should exist.
      *
      * @todo Use Laminas stream response.
+     *
+     * @see \AccessResource\Controller\AccessResourceController::sendFile()
+     * @see \DerivativeMedia\Controller\IndexController::sendFile()
+     * @see \Statistics\Controller\DownloadController::sendFile()
      */
     protected function sendFile(string $filepath): ?HttpResponse
     {

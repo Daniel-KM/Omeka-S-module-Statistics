@@ -24,7 +24,7 @@ trait StatisticsTrait
         if ($fromYear && $toYear) {
             method_exists($expr, 'between')
                 ? $qb->andWhere($expr->between($table . '.' . $field, ':from_date', ':to_date'))
-                : $qb->andWhere($expr->and($expr->gte($table . '.' . $field, ':from_date'), $expr->lte($table . '.' . $field, ':to_date')));
+                : $qb->andWhere($expr->andX($expr->gte($table . '.' . $field, ':from_date'), $expr->lte($table . '.' . $field, ':to_date')));
             $qb
                 ->setParameters([
                     'from_date' => $fromYear . '-01-01 00:00:00',
@@ -86,7 +86,7 @@ trait StatisticsTrait
         if ($fromYearMonth && $toYearMonth) {
             method_exists($expr, 'between')
                 ? $qb->andWhere($expr->between($table . '.' . $field, ':from_date', ':to_date'))
-                : $qb->andWhere($expr->and($expr->gte($table . '.' . $field, ':from_date'), $expr->lte($table . '.' . $field, ':to_date')));
+                : $qb->andWhere($expr->andX($expr->gte($table . '.' . $field, ':from_date'), $expr->lte($table . '.' . $field, ':to_date')));
         } elseif ($fromYearMonth) {
             $qb->andWhere($expr->gte($table . '.' . $field, ':from_date'));
         } elseif ($toYearMonth) {

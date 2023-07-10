@@ -91,6 +91,8 @@ class LogCurrentUrl extends AbstractPlugin
         // The entity manager is automatically flushed by default.
         try {
             return $hitAdapter->create($request)->getContent();
+        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+            // Skip.
         } catch (\Exception $e) {
             $logger = $this->services->get('Omeka\Logger');
             $logger->err(new \Omeka\Stdlib\Message(

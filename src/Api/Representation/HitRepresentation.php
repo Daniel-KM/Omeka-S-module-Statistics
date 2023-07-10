@@ -19,11 +19,6 @@ class HitRepresentation extends AbstractEntityRepresentation
 
     public function getJsonLd()
     {
-        $created = [
-            '@value' => $this->getDateTime($this->created()),
-            '@type' => 'http://www.w3.org/2001/XMLSchema#dateTime',
-        ];
-
         return [
             'o:id' => $this->id(),
             'o:url' => $this->hitUrl(),
@@ -36,7 +31,10 @@ class HitRepresentation extends AbstractEntityRepresentation
             'o:query' => $this->query(),
             'o:user_agent' => $this->userAgent(),
             'o:accept_language' => $this->acceptLanguage(),
-            'o:created' => $created,
+            'o:created' => [
+                '@value' => $this->getDateTime($this->created()),
+                '@type' => 'http://www.w3.org/2001/XMLSchema#dateTime',
+            ],
         ];
     }
 
