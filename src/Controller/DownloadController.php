@@ -10,7 +10,7 @@ use Laminas\Mvc\Controller\AbstractActionController;
  *
  * Count direct download of a file.
  *
- * @see \AccessResource\Controller\AccessResourceController
+ * @see \AccessResource\Controller\AccessFileController
  */
 class DownloadController extends AbstractActionController
 {
@@ -67,9 +67,11 @@ class DownloadController extends AbstractActionController
      *
      * @todo Use Laminas stream response.
      *
-     * @see \AccessResource\Controller\AccessResourceController::sendFile()
+     * @see \AccessResource\Controller\AccessFileController::sendFile()
      * @see \DerivativeMedia\Controller\IndexController::sendFile()
      * @see \Statistics\Controller\DownloadController::sendFile()
+     * and
+     * @see \ImageServer\Controller\ImageController::fetchAction()
      */
     protected function sendFile(string $filepath): ?HttpResponse
     {
@@ -108,8 +110,14 @@ class DownloadController extends AbstractActionController
             ->addHeaderLine('Cache-Control: private, max-age=2592000, post-check=2592000, pre-check=2592000')
             ->addHeaderLine(sprintf('Expires: %s', gmdate('D, d M Y H:i:s', time() + 2592000) . ' GMT'));
 
+        // Fix deprecated warning in \Laminas\Http\PhpEnvironment\Response::sendHeaders() (l. 113).
+        $errorReporting = error_reporting();
+        error_reporting($errorReporting & ~E_DEPRECATED);
+
         // Send headers separately to handle large files.
         $response->sendHeaders();
+
+        error_reporting($errorReporting);
 
         // Clears all active output buffers to avoid memory overflow.
         $response->setContent('');
