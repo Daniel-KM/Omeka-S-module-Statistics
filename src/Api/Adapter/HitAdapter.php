@@ -3,6 +3,9 @@
 namespace Statistics\Api\Adapter;
 
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\DBAL\ParameterType;
+use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder;
 use Omeka\Api\Adapter\AbstractEntityAdapter;
 use Omeka\Api\Request;
@@ -506,9 +509,9 @@ class HitAdapter extends AbstractEntityAdapter
     public function findStatForHit(Hit $hit, bool $statResource = false): ?Stat
     {
         $url = $hit->getUrl();
-        $bind = [
-            'url' => $url,
-        ];
+        $parameters = new ArrayCollection([
+            new Parameter('url', $url, ParameterType::STRING)
+        ]);
 
         $qb = $this->getEntityManager()->createQueryBuilder();
         $expr = $qb->expr();
@@ -529,9 +532,9 @@ class HitAdapter extends AbstractEntityAdapter
             $qb
                 ->andWhere($expr->eq('omeka_root.entityName', ':entity_name'))
                 ->andWhere($expr->eq('omeka_root.entityId', ':entity_id'));
-            $bind['type'] = Stat::TYPE_RESOURCE;
-            $bind['entity_name'] = $entityName;
-            $bind['entity_id'] = $entityId;
+            $parameters[] = new Parameter('type', Stat::TYPE_RESOURCE, ParameterType::STRING);
+            $parameters[] = new Parameter('entity_name', $entityName, ParameterType::STRING);
+            $parameters[] = new Parameter('entity_id', $entityId, ParameterType::INTEGER);
         }
 
         // Stat is created and filled via getStat() if not exists.
@@ -540,15 +543,15 @@ class HitAdapter extends AbstractEntityAdapter
             $qb
                 ->andWhere($expr->eq('omeka_root.entityName', ':entity_name'))
                 ->andWhere($expr->eq('omeka_root.entityId', ':entity_id'));
-            $bind['type'] = Stat::TYPE_DOWNLOAD;
-            $bind['entity_name'] = 'media';
-            $bind['entity_id'] = $hit->getEntityId();
+            $parameters[] = new Parameter('type', Stat::TYPE_DOWNLOAD, ParameterType::STRING);
+            $parameters[] = new Parameter('entity_name', 'media', ParameterType::STRING);
+            $parameters[] = new Parameter('entity_id', $hit->getEntityId(), ParameterType::INTEGER);
         } else {
-            $bind['type'] = Stat::TYPE_PAGE;
+            $parameters[] = new Parameter('type', Stat::TYPE_PAGE, ParameterType::STRING);
         }
 
         return $qb
-            ->setParameters($bind)
+            ->setParameters($parameters)
             ->getQuery()
             ->getOneOrNullResult();
     }
