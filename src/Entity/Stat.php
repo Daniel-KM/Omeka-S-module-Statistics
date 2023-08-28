@@ -23,7 +23,10 @@ use Omeka\Entity\AbstractEntity;
  * @Entity
  * @Table(
  *     uniqueConstraints={
- *         @UniqueConstraint(columns={"type", "url"})
+ *         @UniqueConstraint(
+ *             columns={"type", "url"},
+               options={"lengths": {null, 759}}
+           )
  *     },
  *     indexes={
  *         @Index(columns={"type"}),
