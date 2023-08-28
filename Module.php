@@ -34,7 +34,7 @@ class Module extends AbstractModule
         $translator = $services->get('MvcTranslator');
         $message = new \Omeka\Stdlib\Message(
             $translator->translate('To compute access to files, you must add a rule in file .htaccess at the root of Omeka. See %sreadme%s.'), // @translate
-            '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics" target="_blank">', '</a>'
+            '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics" target="_blank" rel="noopener">', '</a>'
         );
         $message->setEscapeHtml(false);
         $messenger = $services->get('ControllerPluginManager')->get('messenger');

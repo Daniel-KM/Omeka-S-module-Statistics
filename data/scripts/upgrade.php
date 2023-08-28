@@ -32,7 +32,7 @@ if (version_compare($oldVersion, '3.3.4.2', '<')) {
 
     $message = new Message(
         'To control access to files, you must add a rule in file .htaccess at the root of Omeka. See %sreadme%s.', // @translate
-        '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-AccessResource" target="_blank">', '</a>'
+        '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-Access" target="_blank" rel="noopener">', '</a>'
     );
     $message->setEscapeHtml(false);
     $messenger->addWarning($message);

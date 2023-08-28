@@ -186,7 +186,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
         </tr>
 <?php foreach ($results as $value => $result): ?>
         <tr class="statistics-stat">
-            <td class="statistics-field"><?= $isUri ? '<a href="' . $escapeAttr($value) . '" target="_blank">' . $escape($result['l']) . '</a>' : $escape($value) ?></td>
+            <td class="statistics-field"><?= $isUri ? '<a href="' . $escapeAttr($value) . '" target="_blank" rel="noopener">' . $escape($result['l']) . '</a>' : $escape($value) ?></td>
             <?php if ($isLinked): ?>
             <td class="statistics-label"><?= $escape($result['l']) ?></td>
             <?php endif; ?>
@@ -234,7 +234,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
         </tr>
 <?php foreach ($results as $value => $result): ?>
         <tr class="statistics-stat">
-            <td class="statistics-field"><?= $isUri ? '<a href="' . $escapeAttr($value) . '" target="_blank">' . $escape($result['l']) . '</a>' : $escape($value) ?></td>
+            <td class="statistics-field"><?= $isUri ? '<a href="' . $escapeAttr($value) . '" target="_blank" rel="noopener">' . $escape($result['l']) . '</a>' : $escape($value) ?></td>
             <?php if ($isLinked): ?>
             <td class="statistics-label"><?= $escape($result['l']) ?></td>
             <?php endif; ?>
