@@ -376,7 +376,7 @@ class StatisticsController extends AbstractActionController
                 // TODO Probably useless now, since property is included cleanly in the query.
                 $qb
                     // Use class, it is orm qb.
-                    ->join(\Omeka\Entity\Value::class, 'value', Join::WITH, 'value.resource = omeka_root AND value.property = ' . $propertyId);
+                    ->innerJoin(\Omeka\Entity\Value::class, 'value', Join::WITH, 'value.resource = omeka_root AND value.property = ' . $propertyId);
             }
 
             // TODO Add a type filter for all, or no type filter.
