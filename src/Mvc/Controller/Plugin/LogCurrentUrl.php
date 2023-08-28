@@ -88,11 +88,15 @@ class LogCurrentUrl extends AbstractPlugin
             ->setOption('finalize', false)
             ->setOption('returnScalar', 'id')
         ;
-        // The entity manager is automatically flushed by default.
         try {
+            // The entity manager is automatically flushed by default.
             return $hitAdapter->create($request)->getContent();
         } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
             // Skip.
+            // An issue may occur when the controller is not found for an image.
+            // An issue may occur when the same image is loaded multiple times
+            // on the same page.
+            return null;
         } catch (\Exception $e) {
             $logger = $this->services->get('Omeka\Logger');
             $logger->err(new \Omeka\Stdlib\Message(
