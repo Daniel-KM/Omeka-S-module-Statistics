@@ -53,7 +53,7 @@ SELECT DISTINCT
     MAX(`created`)
 FROM `hit`
 GROUP BY `url`
-ORDER BY `created`
+ORDER BY `created` ASC
 ;
 
 # Create stats for resource (page or download).
@@ -80,7 +80,7 @@ SELECT DISTINCT
     MAX(`created`)
 FROM `hit`
 GROUP BY `entity_name`, `entity_id`
-ORDER BY `created`
+ORDER BY `created` ASC
 ;
 SQL;
         $connection->executeStatement($sqls);

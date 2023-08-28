@@ -159,7 +159,7 @@ SELECT hit.site_id, COUNT(hit.id) AS total_hits
 FROM hit hit $force
 WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth
 GROUP BY hit.site_id
-ORDER BY total_hits
+ORDER BY total_hits ASC
 ;
 SQL;
         $hitsPerSite = $this->connection->executeQuery($sql, $bind, $types)->fetchAllKeyValue();
@@ -424,7 +424,7 @@ FROM hit hit $force
 JOIN item_item_set ON hit.entity_id = item_item_set.item_id
 WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth
 GROUP BY item_item_set.item_set_id
-ORDER BY total_hits
+ORDER BY total_hits ASC
 ;
 SQL;
         $hitsPerItemSet = $this->connection->executeQuery($sql, $bind, $types)->fetchAllKeyValue();
@@ -644,7 +644,7 @@ FROM hit hit $force
 JOIN value ON hit.entity_id = value.resource_id$joinProperty$joinResource
 WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth$whereFilterValue
 GROUP BY $typeFilterValue
-ORDER BY hits DESC
+ORDER BY hits DESC ASC
 ;
 SQL;
                 $result = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();
@@ -675,7 +675,7 @@ FROM hit hit$force
 JOIN value ON hit.entity_id = value.resource_id$joinProperty$joinResource
 WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth$whereFilterValue
 GROUP BY $typeFilterValue
-ORDER BY hits DESC
+ORDER BY hits DESC ASC
 ;
 SQL;
             $results = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();
