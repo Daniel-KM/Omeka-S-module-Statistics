@@ -614,7 +614,25 @@ class HitAdapter extends AbstractEntityAdapter
                         $value = $this->privacyIp();
                         break;
                     case 'o:query':
-                        $value = $currentRequest['query'];
+                        if (empty($currentRequest['query'])) {
+                            $value = null;
+                        } elseif (is_string($currentRequest['query'])) {
+                            parse_str($currentRequest['query'], $value);
+                            unset(
+                                $value['key_credential'],
+                                $value['key_identity'],
+                                $value['password']
+                            );
+                        } elseif (is_array($currentRequest['query'])) {
+                            $value = $currentRequest['query'];
+                            unset(
+                                $value['key_credential'],
+                                $value['key_identity'],
+                                $value['password']
+                            );
+                        } else {
+                            $value = null;
+                        }
                         break;
                     case 'o:referrer':
                         // Use substr: headings should be us-ascii.
@@ -674,13 +692,13 @@ class HitAdapter extends AbstractEntityAdapter
             $currentUrl = substr($currentUrl, 0, $pos);
         }
 
-        // Same query via laminas.
+        // Same query via laminas (as string).
         // $query = $request->getUri()->getQuery();
-        // $query = $_SERVER['QUERY_STRING'] ?? '';
+        $query = $_SERVER['QUERY_STRING'] ?? '';
         // $query = strlen($query) ? urldecode($query) : null;
         // Use "_get" instead of "_request" to avoid to store the password (the
         // login form is a post).
-        $query = $_SERVER['_GET'] ?? null;
+        // $query = $_SERVER['_GET'] ?? null;
         $referrer = $_SERVER['HTTP_REFERER'] ?? null;
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
         $acceptLanguage = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? null;
