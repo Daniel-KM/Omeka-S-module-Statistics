@@ -106,12 +106,6 @@ class Module extends AbstractModule
 
     public function attachListeners(SharedEventManagerInterface $sharedEventManager): void
     {
-        $sharedEventManager->attach(
-            '*',
-            'view.layout',
-            [$this, 'logCurrentUrl']
-        );
-
         // Events for the public front-end.
         $sharedEventManager->attach(
             'Omeka\Controller\Site\Item',
@@ -168,21 +162,6 @@ class Module extends AbstractModule
             'bulk.import.after',
             [$this, 'handleBulkImportAfter']
         );
-    }
-
-    /**
-     * Log the hit on the current url (page or downloaded file).
-     */
-    public function logCurrentUrl(): void
-    {
-        // Don't store server ping or internal redirect on root or some proxies.
-        if (empty($_SERVER['HTTP_HOST'])
-            // || ($_SERVER['REQUEST_URI'] === '/' && $_SERVER['QUERY'] === '' && $_SERVER['REQUEST_METHOD'] === 'GET' && $_SERVER['CONTENT_LENGTH'] === '0')
-        ) {
-            return;
-        }
-        $logCurrentUrl = $this->getServiceLocator()->get('ControllerPluginManager')->get('logCurrentUrl');
-        $logCurrentUrl();
     }
 
     public function displayPublic(Event $event): void

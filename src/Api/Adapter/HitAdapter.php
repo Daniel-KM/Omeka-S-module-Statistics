@@ -390,10 +390,12 @@ class HitAdapter extends AbstractEntityAdapter
                 }
             }
         }
+
         // Sort by "hits" is not a sort by field, but a sort by count.
         if (isset($query['sort_by']) && $query['sort_by'] === 'hits') {
             $qb->addOrderBy('hits', $query['sort_order'] ?? 'asc');
         }
+
         parent::sortQuery($qb, $query);
     }
 

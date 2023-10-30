@@ -1,53 +1,64 @@
 <?php declare(strict_types=1);
 
-namespace Statistics\Mvc\Controller\Plugin;
+namespace Statistics\Mvc;
 
-use Interop\Container\ContainerInterface;
-use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
+use Laminas\EventManager\AbstractListenerAggregate;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\Mvc\MvcEvent;
 use Omeka\Api\Request;
-use Statistics\Entity\Hit;
 
-/**
- * Adapted:
- * @see \Statistics\Mvc\MvcListeners
- * @see \Statistics\Mvc\Controller\Plugin\LogCurrentUrl
- */
-class LogCurrentUrl extends AbstractPlugin
+class MvcListeners extends AbstractListenerAggregate
 {
     /**
      * @var \Interop\Container\ContainerInterface
      */
     protected $services;
 
-    /**
-     * Constructor.
-     *
-     * Use services to avoid some load for admin side, because the event
-     * "view.layout" is triggered for any url.
-     */
-    public function __construct(ContainerInterface $services)
+    public function attach(EventManagerInterface $events, $priority = 1): void
     {
-        $this->services = $services;
+        // A ViewEvent allows to add a script easierly, but use MvcEvent Finish
+        // because this is the only one that is use in all cases, including xml
+        // output error for module oai-pmh and json api.
+        $events->attach(
+            MvcEvent::EVENT_FINISH,
+            [$this, 'processLogCurrentUrl'],
+            1000
+        );
     }
 
     /**
-     * Log the current public url.
+     * Adapted:
+     * @see \Statistics\Mvc\MvcListeners
+     * @see \Statistics\Mvc\Controller\Plugin\LogCurrentUrl
      */
-    public function __invoke(): ?Hit
+    public function processLogCurrentUrl(MvcEvent $mvcEvent): void
     {
+        // In case of error or a internal redirection, there may be two calls.
+        static $processed = false;
+
+        if ($processed) {
+            return;
+        }
+
+        // TODO Is check of http_host before logging url still useful?
         // Don't store server ping or internal redirect on root or some proxies.
         if (empty($_SERVER['HTTP_HOST'])
             // || ($_SERVER['REQUEST_URI'] === '/' && $_SERVER['QUERY'] === '' && $_SERVER['REQUEST_METHOD'] === 'GET' && $_SERVER['CONTENT_LENGTH'] === '0')
         ) {
-            return null;
+            return;
         }
+
+        $processed = true;
+
+        $this->services = $mvcEvent->getApplication()->getServiceManager();
 
         // Don't log admin pages.
 
         /** @var \Omeka\Mvc\Status $status */
         $status = $this->services->get('Omeka\Status');
+
         if ($status->isAdminRequest()) {
-            return null;
+            return;
         }
 
         // Don't log download request for admin users but non-admins and guests.
@@ -69,7 +80,7 @@ class LogCurrentUrl extends AbstractPlugin
         ) {
             $urlAdminTop = $this->services->get('ControllerPluginManager')->get('url')->fromRoute('admin', [], ['force_canonical' => true]) . '/';
             if (strpos($referrer, $urlAdminTop) === 0) {
-                return null;
+                return;
             }
         }
 
@@ -83,7 +94,7 @@ class LogCurrentUrl extends AbstractPlugin
         if (empty($includeBots)) {
             $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
             if ($userAgent && $hitAdapter->isBot($userAgent)) {
-                return null;
+                return;
             }
         }
 
@@ -94,19 +105,17 @@ class LogCurrentUrl extends AbstractPlugin
         ;
         try {
             // The entity manager is automatically flushed by default.
-            return $hitAdapter->create($request)->getContent();
+            $hitAdapter->create($request);
         } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
             // An issue may occur, so skip when:
             // - the controller is not found for an image;
             // - the same image is loaded multiple times on the same page.
-            return null;
         } catch (\Exception $e) {
             $logger = $this->services->get('Omeka\Logger');
             $logger->err(new \Omeka\Stdlib\Message(
                 'Exception when storing hit/stat: %1$s', // @translate
                 $e->getMessage()
             ));
-            return null;
         }
     }
 }
