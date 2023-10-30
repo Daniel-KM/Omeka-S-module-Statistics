@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-09 00:00+0000\n"
+"POT-Creation-Date: 2023-10-30 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,9 +43,9 @@ msgstr ""
 msgid "Position: %d (anonymous: %d / users: %d)"
 msgstr ""
 
-#: Module.php:266 view/statistics/site/statistics/by-site.phtml:29
-#: view/statistics/site/statistics/by-value.phtml:52
-#: view/statistics/site/statistics/index.phtml:20
+#: Module.php:266 view/statistics/site/statistics/by-site.phtml:30
+#: view/statistics/site/statistics/by-value.phtml:53
+#: view/statistics/site/statistics/index.phtml:21
 msgid "Statistics"
 msgstr ""
 
@@ -63,7 +63,7 @@ msgid "Last 7 days"
 msgstr ""
 
 #: Module.php:279 src/Controller/AnalyticsController.php:79
-#: src/Controller/StatisticsController.php:115
+#: src/Controller/StatisticsController.php:126
 msgid "Last 24 hours"
 msgstr ""
 
@@ -110,11 +110,11 @@ msgstr ""
 msgid "User Agent"
 msgstr ""
 
-#: Module.php:376
+#: Module.php:377
 msgid "Accepted Language"
 msgstr ""
 
-#: Module.php:381
+#: Module.php:382
 #, php-format
 msgid "%s: None"
 msgstr ""
@@ -124,81 +124,85 @@ msgid "[untitled]"
 msgstr ""
 
 #: src/Controller/AnalyticsController.php:50
-#: src/Controller/StatisticsController.php:74
+#: src/Controller/StatisticsController.php:85
 msgid "Last year"
 msgstr ""
 
 #: src/Controller/AnalyticsController.php:54
-#: src/Controller/StatisticsController.php:81
+#: src/Controller/StatisticsController.php:92
 msgid "Last month"
 msgstr ""
 
 #: src/Controller/AnalyticsController.php:58
-#: src/Controller/StatisticsController.php:88
+#: src/Controller/StatisticsController.php:99
 msgid "Last week"
 msgstr ""
 
 #: src/Controller/AnalyticsController.php:62
-#: src/Controller/StatisticsController.php:95
+#: src/Controller/StatisticsController.php:106
 msgid "Yesterday"
 msgstr ""
 
 #: src/Controller/AnalyticsController.php:67
-#: src/Controller/StatisticsController.php:103
+#: src/Controller/StatisticsController.php:114
 msgid "This year"
 msgstr ""
 
 #: src/Controller/AnalyticsController.php:69
-#: src/Controller/StatisticsController.php:105
+#: src/Controller/StatisticsController.php:116
 msgid "This month"
 msgstr ""
 
 #: src/Controller/AnalyticsController.php:71
-#: src/Controller/StatisticsController.php:107
+#: src/Controller/StatisticsController.php:118
 msgid "This week"
 msgstr ""
 
 #: src/Controller/AnalyticsController.php:73
-#: src/Controller/StatisticsController.php:109
+#: src/Controller/StatisticsController.php:120
 msgid "This day"
 msgstr ""
 
 #: src/Controller/AnalyticsController.php:80
-#: src/Controller/StatisticsController.php:116
+#: src/Controller/StatisticsController.php:127
 #, php-format
 msgid "Last %s days"
 msgstr ""
 
-#: src/Controller/AnalyticsController.php:161
+#: src/Controller/AnalyticsController.php:167
 #, php-format
 msgid "[Removed site #%d]"
 msgstr ""
 
-#: src/Controller/AnalyticsController.php:346
+#: src/Controller/AnalyticsController.php:360
 msgid "External Referrers"
 msgstr ""
 
-#: src/Controller/AnalyticsController.php:349
+#: src/Controller/AnalyticsController.php:363
 #: view/common/analytics-quick-filters.phtml:45
 msgid "Queries"
 msgstr ""
 
-#: src/Controller/AnalyticsController.php:352
-#: view/common/analytics-quick-filters.phtml:47
+#: src/Controller/AnalyticsController.php:366
+#: view/common/analytics-quick-filters.phtml:48
 msgid "Browsers"
 msgstr ""
 
-#: src/Controller/AnalyticsController.php:355
+#: src/Controller/AnalyticsController.php:369
+msgid "Full Accepted Languages"
+msgstr ""
+
+#: src/Controller/AnalyticsController.php:372
 msgid "Accepted Languages"
 msgstr ""
 
-#: src/Controller/AnalyticsController.php:415
+#: src/Controller/AnalyticsController.php:432
 #, php-format
 msgid "[Removed item set #%d]"
 msgstr ""
 
 #: src/Generic/AbstractModule.php:80 src/Generic/AbstractModule.php:88
-#: src/Generic/AbstractModule.php:861
+#: src/Generic/AbstractModule.php:890
 #, php-format
 msgid "This module requires the module \"%s\"."
 msgstr ""
@@ -218,46 +222,46 @@ msgid ""
 "remove them first."
 msgstr ""
 
-#: src/Generic/AbstractModule.php:369
+#: src/Generic/AbstractModule.php:398
 #, php-format
 msgid "The module removed tables \"%s\" from a previous broken install."
 msgstr ""
 
-#: src/Generic/AbstractModule.php:856
+#: src/Generic/AbstractModule.php:885
 #, php-format
 msgid "This module requires the module \"%1$s\", version %2$s or above."
 msgstr ""
 
-#: src/Generic/AbstractModule.php:953
+#: src/Generic/AbstractModule.php:982
 #, php-format
 msgid ""
 "The module \"%s\" was automatically deactivated because the dependencies are "
 "unavailable."
 msgstr ""
 
-#: src/View/Helper/Analytics.php:1079
+#: src/View/Helper/Analytics.php:1101
 msgid "Annotation"
 msgstr ""
 
-#: src/View/Helper/Analytics.php:1108
+#: src/View/Helper/Analytics.php:1130
 msgid "anonymous users"
 msgstr ""
 
-#: src/View/Helper/Analytics.php:1110
+#: src/View/Helper/Analytics.php:1132
 msgid "identified users"
 msgstr ""
 
-#: src/View/Helper/Analytics.php:1113
+#: src/View/Helper/Analytics.php:1135
 msgid "all users"
 msgstr ""
 
-#: src/View/Helper/Analytics.php:1411
+#: src/View/Helper/Analytics.php:1435
 msgid "None."
 msgstr ""
 
 #: view/common/analytics-nav.phtml:23 view/common/statistics-nav.phtml:25
 #: view/statistics/site/analytics/by-site.phtml:26
-#: view/statistics/site/statistics/by-site.phtml:29
+#: view/statistics/site/statistics/by-site.phtml:30
 msgid "By site"
 msgstr ""
 
@@ -286,7 +290,7 @@ msgstr ""
 
 #: view/common/analytics-nav.phtml:29 view/common/statistics-nav.phtml:26
 #: view/statistics/site/analytics/by-value.phtml:41
-#: view/statistics/site/statistics/by-value.phtml:52
+#: view/statistics/site/statistics/by-value.phtml:53
 msgid "By value"
 msgstr ""
 
@@ -322,6 +326,10 @@ msgstr ""
 
 #: view/common/analytics-quick-filters.phtml:46
 msgid "Languages"
+msgstr ""
+
+#: view/common/analytics-quick-filters.phtml:47
+msgid "Full Languages"
 msgstr ""
 
 #: view/common/analytics-single.phtml:24
@@ -365,7 +373,7 @@ msgid "Position: %s (%s views)"
 msgstr ""
 
 #: view/statistics/admin/analytics/index.phtml:22
-#: view/statistics/site/statistics/index.phtml:20
+#: view/statistics/site/statistics/index.phtml:21
 #, php-format
 msgid "Summary (%s total)"
 msgstr ""
@@ -382,19 +390,19 @@ msgstr ""
 
 #: view/statistics/admin/analytics/index.phtml:40
 #: view/statistics/site/analytics/index.phtml:34
-#: view/statistics/site/statistics/index.phtml:48
+#: view/statistics/site/statistics/index.phtml:49
 msgid "History"
 msgstr ""
 
 #: view/statistics/admin/analytics/index.phtml:51
 #: view/statistics/site/analytics/index.phtml:43
-#: view/statistics/site/statistics/index.phtml:59
+#: view/statistics/site/statistics/index.phtml:60
 msgid "Current"
 msgstr ""
 
 #: view/statistics/admin/analytics/index.phtml:62
 #: view/statistics/site/analytics/index.phtml:52
-#: view/statistics/site/statistics/index.phtml:70
+#: view/statistics/site/statistics/index.phtml:71
 msgid "Rolling Period"
 msgstr ""
 
@@ -442,6 +450,11 @@ msgstr ""
 
 #: view/statistics/admin/analytics/index.phtml:159
 #: view/statistics/site/analytics/index.phtml:139
+msgid "Most frequent languages"
+msgstr ""
+
+#: view/statistics/admin/analytics/index.phtml:160
+#: view/statistics/site/analytics/index.phtml:140
 msgid "Most frequent browsers"
 msgstr ""
 
@@ -500,112 +513,112 @@ msgstr ""
 #: view/statistics/site/analytics/by-item-set.phtml:32
 #: view/statistics/site/analytics/by-site.phtml:32
 #: view/statistics/site/analytics/by-value.phtml:74
-#: view/statistics/site/statistics/by-site.phtml:39
-#: view/statistics/site/statistics/by-value.phtml:94
+#: view/statistics/site/statistics/by-site.phtml:40
+#: view/statistics/site/statistics/by-value.phtml:101
 msgid "All years"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:39
 #: view/statistics/site/analytics/by-site.phtml:39
 #: view/statistics/site/analytics/by-value.phtml:81
-#: view/statistics/site/statistics/by-site.phtml:46
-#: view/statistics/site/statistics/by-value.phtml:101
+#: view/statistics/site/statistics/by-site.phtml:47
+#: view/statistics/site/statistics/by-value.phtml:108
 msgid "January"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:40
 #: view/statistics/site/analytics/by-site.phtml:40
 #: view/statistics/site/analytics/by-value.phtml:82
-#: view/statistics/site/statistics/by-site.phtml:47
-#: view/statistics/site/statistics/by-value.phtml:102
+#: view/statistics/site/statistics/by-site.phtml:48
+#: view/statistics/site/statistics/by-value.phtml:109
 msgid "February"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:41
 #: view/statistics/site/analytics/by-site.phtml:41
 #: view/statistics/site/analytics/by-value.phtml:83
-#: view/statistics/site/statistics/by-site.phtml:48
-#: view/statistics/site/statistics/by-value.phtml:103
+#: view/statistics/site/statistics/by-site.phtml:49
+#: view/statistics/site/statistics/by-value.phtml:110
 msgid "March"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:42
 #: view/statistics/site/analytics/by-site.phtml:42
 #: view/statistics/site/analytics/by-value.phtml:84
-#: view/statistics/site/statistics/by-site.phtml:49
-#: view/statistics/site/statistics/by-value.phtml:104
+#: view/statistics/site/statistics/by-site.phtml:50
+#: view/statistics/site/statistics/by-value.phtml:111
 msgid "April"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:43
 #: view/statistics/site/analytics/by-site.phtml:43
 #: view/statistics/site/analytics/by-value.phtml:85
-#: view/statistics/site/statistics/by-site.phtml:50
-#: view/statistics/site/statistics/by-value.phtml:105
+#: view/statistics/site/statistics/by-site.phtml:51
+#: view/statistics/site/statistics/by-value.phtml:112
 msgid "May"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:44
 #: view/statistics/site/analytics/by-site.phtml:44
 #: view/statistics/site/analytics/by-value.phtml:86
-#: view/statistics/site/statistics/by-site.phtml:51
-#: view/statistics/site/statistics/by-value.phtml:106
+#: view/statistics/site/statistics/by-site.phtml:52
+#: view/statistics/site/statistics/by-value.phtml:113
 msgid "June"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:45
 #: view/statistics/site/analytics/by-site.phtml:45
 #: view/statistics/site/analytics/by-value.phtml:87
-#: view/statistics/site/statistics/by-site.phtml:52
-#: view/statistics/site/statistics/by-value.phtml:107
+#: view/statistics/site/statistics/by-site.phtml:53
+#: view/statistics/site/statistics/by-value.phtml:114
 msgid "July"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:46
 #: view/statistics/site/analytics/by-site.phtml:46
 #: view/statistics/site/analytics/by-value.phtml:88
-#: view/statistics/site/statistics/by-site.phtml:53
-#: view/statistics/site/statistics/by-value.phtml:108
+#: view/statistics/site/statistics/by-site.phtml:54
+#: view/statistics/site/statistics/by-value.phtml:115
 msgid "August"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:47
 #: view/statistics/site/analytics/by-site.phtml:47
 #: view/statistics/site/analytics/by-value.phtml:89
-#: view/statistics/site/statistics/by-site.phtml:54
-#: view/statistics/site/statistics/by-value.phtml:109
+#: view/statistics/site/statistics/by-site.phtml:55
+#: view/statistics/site/statistics/by-value.phtml:116
 msgid "September"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:48
 #: view/statistics/site/analytics/by-site.phtml:48
 #: view/statistics/site/analytics/by-value.phtml:90
-#: view/statistics/site/statistics/by-site.phtml:55
-#: view/statistics/site/statistics/by-value.phtml:110
+#: view/statistics/site/statistics/by-site.phtml:56
+#: view/statistics/site/statistics/by-value.phtml:117
 msgid "October"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:49
 #: view/statistics/site/analytics/by-site.phtml:49
 #: view/statistics/site/analytics/by-value.phtml:91
-#: view/statistics/site/statistics/by-site.phtml:56
-#: view/statistics/site/statistics/by-value.phtml:111
+#: view/statistics/site/statistics/by-site.phtml:57
+#: view/statistics/site/statistics/by-value.phtml:118
 msgid "November"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:50
 #: view/statistics/site/analytics/by-site.phtml:50
 #: view/statistics/site/analytics/by-value.phtml:92
-#: view/statistics/site/statistics/by-site.phtml:57
-#: view/statistics/site/statistics/by-value.phtml:112
+#: view/statistics/site/statistics/by-site.phtml:58
+#: view/statistics/site/statistics/by-value.phtml:119
 msgid "December"
 msgstr ""
 
 #: view/statistics/site/analytics/by-item-set.phtml:53
 #: view/statistics/site/analytics/by-site.phtml:53
 #: view/statistics/site/analytics/by-value.phtml:95
-#: view/statistics/site/statistics/by-site.phtml:60
-#: view/statistics/site/statistics/by-value.phtml:115
+#: view/statistics/site/statistics/by-site.phtml:61
+#: view/statistics/site/statistics/by-value.phtml:122
 msgid "All months"
 msgstr ""
 
@@ -631,17 +644,17 @@ msgid "The query searched %s rows and returned no results."
 msgstr ""
 
 #: view/statistics/site/analytics/by-value.phtml:64
-#: view/statistics/site/statistics/by-value.phtml:81
+#: view/statistics/site/statistics/by-value.phtml:82
 msgid "Uri"
 msgstr ""
 
 #: view/statistics/site/analytics/by-value.phtml:69
-#: view/statistics/site/statistics/by-value.phtml:89
+#: view/statistics/site/statistics/by-value.phtml:96
 msgid "By year"
 msgstr ""
 
 #: view/statistics/site/analytics/by-value.phtml:70
-#: view/statistics/site/statistics/by-value.phtml:90
+#: view/statistics/site/statistics/by-value.phtml:97
 msgid "By month"
 msgstr ""
 
@@ -650,7 +663,7 @@ msgid "Select a property to get analytics on it."
 msgstr ""
 
 #: view/statistics/site/analytics/by-value.phtml:110
-#: view/statistics/site/statistics/by-value.phtml:151
+#: view/statistics/site/statistics/by-value.phtml:158
 msgid "Check the form."
 msgstr ""
 
@@ -659,82 +672,86 @@ msgstr ""
 msgid "Today: %d"
 msgstr ""
 
-#: view/statistics/site/statistics/by-site.phtml:34
-#: view/statistics/site/statistics/by-value.phtml:59
+#: view/statistics/site/statistics/by-site.phtml:35
+#: view/statistics/site/statistics/by-value.phtml:60
 msgid "Medias"
 msgstr ""
 
-#: view/statistics/site/statistics/by-site.phtml:73
-#: view/statistics/site/statistics/by-value.phtml:137
+#: view/statistics/site/statistics/by-site.phtml:74
+#: view/statistics/site/statistics/by-value.phtml:144
 msgid "ODS"
 msgstr ""
 
-#: view/statistics/site/statistics/by-site.phtml:74
-#: view/statistics/site/statistics/by-value.phtml:138
+#: view/statistics/site/statistics/by-site.phtml:75
+#: view/statistics/site/statistics/by-value.phtml:145
 msgid "TSV"
 msgstr ""
 
-#: view/statistics/site/statistics/by-site.phtml:75
-#: view/statistics/site/statistics/by-value.phtml:139
+#: view/statistics/site/statistics/by-site.phtml:76
+#: view/statistics/site/statistics/by-value.phtml:146
 msgid "CSV"
 msgstr ""
 
-#: view/statistics/site/statistics/by-site.phtml:105
+#: view/statistics/site/statistics/by-site.phtml:106
 msgid "There is no resource yet."
 msgstr ""
 
-#: view/statistics/site/statistics/by-site.phtml:107
-#: view/statistics/site/statistics/by-value.phtml:257
+#: view/statistics/site/statistics/by-site.phtml:108
+#: view/statistics/site/statistics/by-value.phtml:264
 #, php-format
 msgid "The query searched %s resources and returned no results."
 msgstr ""
 
-#: view/statistics/site/statistics/by-site.phtml:108
-#: view/statistics/site/statistics/by-value.phtml:258
+#: view/statistics/site/statistics/by-site.phtml:109
+#: view/statistics/site/statistics/by-value.phtml:265
 msgid "See all statistics."
 msgstr ""
 
-#: view/statistics/site/statistics/by-value.phtml:122
+#: view/statistics/site/statistics/by-value.phtml:90
+msgid "Access resource"
+msgstr ""
+
+#: view/statistics/site/statistics/by-value.phtml:129
 msgid "Counts"
 msgstr ""
 
-#: view/statistics/site/statistics/by-value.phtml:123
+#: view/statistics/site/statistics/by-value.phtml:130
 msgid "Repartition"
 msgstr ""
 
-#: view/statistics/site/statistics/by-value.phtml:124
+#: view/statistics/site/statistics/by-value.phtml:131
 msgid "Evolution"
 msgstr ""
 
-#: view/statistics/site/statistics/by-value.phtml:125
+#: view/statistics/site/statistics/by-value.phtml:132
 msgid "Variation"
 msgstr ""
 
-#: view/statistics/site/statistics/by-value.phtml:147
+#: view/statistics/site/statistics/by-value.phtml:154
 msgid "Select a metadata to get statistics on it."
 msgstr ""
 
-#: view/statistics/site/statistics/by-value.phtml:176
-#: view/statistics/site/statistics/by-value.phtml:220
+#: view/statistics/site/statistics/by-value.phtml:183
+#: view/statistics/site/statistics/by-value.phtml:227
 msgid "Totals"
 msgstr ""
 
-#: view/statistics/site/statistics/by-value.phtml:255
+#: view/statistics/site/statistics/by-value.phtml:262
 msgid "There is no resources yet."
 msgstr ""
 
-#: view/statistics/site/statistics/index.phtml:24
+#: view/statistics/site/statistics/index.phtml:25
 #, php-format
 msgid "Total ressources: %d [%d item sets / %d items / %d medias]"
 msgstr ""
 
-#: view/statistics/site/statistics/index.phtml:33
+#: view/statistics/site/statistics/index.phtml:34
 #, php-format
 msgid ""
 "The module %1$sAdvanced Search%2$s is required to get many more statistics."
 msgstr ""
 
-#: view/statistics/site/statistics/index.phtml:38
+#: view/statistics/site/statistics/index.phtml:39
 #, php-format
 msgid "Today: %d [%d / %d / %d]"
 msgstr ""
@@ -746,94 +763,94 @@ msgid ""
 "root of Omeka. See %sreadme%s."
 msgstr ""
 
-#: data/scripts/upgrade.php:154
+#: data/scripts/upgrade.php:162
 msgid "There are now analytics by period for properties."
 msgstr ""
 
-#: data/scripts/upgrade.php:161
+#: data/scripts/upgrade.php:169
 msgid "There are now statistics about resources and values."
 msgstr ""
 
-#: Module.php:410
+#: Module.php:411
 msgid "Update of aggregated statistics: Start"
 msgstr ""
 
-#: Module.php:414
+#: Module.php:415
 msgid "Update of aggregated statistics: Ended."
 msgstr ""
 
-#: src/Mvc/Controller/Plugin/LogCurrentUrl.php:97
+#: src/Mvc/Controller/Plugin/LogCurrentUrl.php:103
 #, php-format
 msgid "Exception when storing hit/stat: %1$s"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:23
+#: src/Form/SettingsFieldset.php:29
 msgid "Level of privacy for new hits"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:26
+#: src/Form/SettingsFieldset.php:32
 msgid "Hashed IP"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:27
+#: src/Form/SettingsFieldset.php:33
 msgid "Partial IP (first hex)"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:28
+#: src/Form/SettingsFieldset.php:34
 msgid "Partial IP (first 2 hexs)"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:29
+#: src/Form/SettingsFieldset.php:35
 msgid "Partial IP (first 3 hexs)"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:30
+#: src/Form/SettingsFieldset.php:36
 msgid "Clear IP"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:42
+#: src/Form/SettingsFieldset.php:49
 msgid "Include crawlers/bots"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:43
+#: src/Form/SettingsFieldset.php:50
 msgid ""
 "By checking this box, all hits which user agent contains the term \"bot\", "
 "\"crawler\", \"spider\", etc. will be included."
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:54
+#: src/Form/SettingsFieldset.php:62
 msgid "User status for admin pages"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:56 src/Form/SettingsFieldset.php:71
+#: src/Form/SettingsFieldset.php:64 src/Form/SettingsFieldset.php:80
 msgid "Total hits"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:58 src/Form/SettingsFieldset.php:73
+#: src/Form/SettingsFieldset.php:66 src/Form/SettingsFieldset.php:82
 msgid "Identified users"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:69
+#: src/Form/SettingsFieldset.php:78
 msgid "User status for public pages"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:84
+#: src/Form/SettingsFieldset.php:94
 msgid "Results per page (admin)"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:95
+#: src/Form/SettingsFieldset.php:106
 msgid "Results per page (public)"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:107
+#: src/Form/SettingsFieldset.php:119
 msgid "Allow public to access statistics"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:118
+#: src/Form/SettingsFieldset.php:131
 msgid "Allow public to access analytics summary"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:128
+#: src/Form/SettingsFieldset.php:142
 msgid "Allow public to access detailled analytics"
 msgstr ""
 
@@ -861,29 +878,29 @@ msgstr ""
 msgid "The type should be unique for the url."
 msgstr ""
 
-#: src/Entity/Stat.php:47
+#: src/Entity/Stat.php:50
 msgid "resource"
 msgstr ""
 
-#: src/Entity/Stat.php:48
+#: src/Entity/Stat.php:51
 msgid "download"
 msgstr ""
 
-#: src/Controller/StatisticsController.php:254
-#: src/Controller/AnalyticsController.php:519
+#: src/Controller/StatisticsController.php:267
+#: src/Controller/AnalyticsController.php:536
 msgid "A property is required to get statistics."
 msgstr ""
 
-#: src/Controller/StatisticsController.php:269
-#: src/Controller/AnalyticsController.php:534
+#: src/Controller/StatisticsController.php:282
+#: src/Controller/AnalyticsController.php:551
 msgid "A year is required to get details by month."
 msgstr ""
 
-#: src/Controller/StatisticsController.php:965
+#: src/Controller/StatisticsController.php:999
 msgid "There is no results."
 msgstr ""
 
-#: src/Controller/StatisticsController.php:1012
+#: src/Controller/StatisticsController.php:1046
 #, php-format
 msgid "The format \"%s\" is not supported to export statistics."
 msgstr ""
