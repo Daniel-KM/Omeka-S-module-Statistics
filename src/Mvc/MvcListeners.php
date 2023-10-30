@@ -48,6 +48,14 @@ class MvcListeners extends AbstractListenerAggregate
             return;
         }
 
+        // Log the statistic for the url even if the file is missing or protected.
+        // Log file access only for the first request.
+        $hasRange = !empty($_SERVER['HTTP_RANGE'])
+            && $_SERVER['HTTP_RANGE'] !== 'bytes=0-';
+        if ($hasRange) {
+            return;
+        }
+
         $processed = true;
 
         $this->services = $mvcEvent->getApplication()->getServiceManager();

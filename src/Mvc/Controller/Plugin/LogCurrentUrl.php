@@ -42,10 +42,19 @@ class LogCurrentUrl extends AbstractPlugin
             return null;
         }
 
+        // Log the statistic for the url even if the file is missing or protected.
+        // Log file access only for the first request.
+        $hasRange = !empty($_SERVER['HTTP_RANGE'])
+            && $_SERVER['HTTP_RANGE'] !== 'bytes=0-';
+        if ($hasRange) {
+            return;
+        }
+
         // Don't log admin pages.
 
         /** @var \Omeka\Mvc\Status $status */
         $status = $this->services->get('Omeka\Status');
+
         if ($status->isAdminRequest()) {
             return null;
         }

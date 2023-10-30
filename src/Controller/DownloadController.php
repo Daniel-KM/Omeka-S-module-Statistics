@@ -52,8 +52,6 @@ class DownloadController extends AbstractActionController
         $filename = $params['filename'] ?? '';
         $filepath = sprintf('%s/%s/%s', $this->basePath, $storageType, $filename);
         $result = $this->sendFile($filepath);
-        // Log the url even if the file is missing.
-        $this->logCurrentUrl();
         if (empty($result)) {
             return $this->notFoundAction();
         }
