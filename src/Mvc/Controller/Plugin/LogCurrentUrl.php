@@ -42,6 +42,8 @@ class LogCurrentUrl extends AbstractPlugin
             return null;
         }
 
+        // TODO Log first access to a file in all cases, included when the user does not start at the beginning of a video.
+
         // Log the statistic for the url even if the file is missing or protected.
         // Log file access only for the first request.
         $hasRange = !empty($_SERVER['HTTP_RANGE'])
