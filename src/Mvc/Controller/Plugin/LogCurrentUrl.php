@@ -61,6 +61,24 @@ class LogCurrentUrl extends AbstractPlugin
             return null;
         }
 
+        $routeMatch = $status->getRouteMatch();
+        $routeName = $routeMatch->getMatchedRouteName();
+
+        // Don't log some routes.
+        if (in_array($routeName, [
+            // Omeka S.
+            'install',
+            'migrate',
+            'login',
+            'logout',
+            'create-password',
+            'forgot-password',
+            // Module CSS Editor.
+            'site/css-editor',
+        ])) {
+            return null;
+        }
+
         // Don't log download request for admin users but non-admins and guests.
         // It's not simple to determine from server if the request comes from a
         // visitor on the site or something else. So use referrer and identity.
@@ -68,7 +86,7 @@ class LogCurrentUrl extends AbstractPlugin
         if ($referrer
             // Guest user should not be logged.
             && strpos($referrer, '/admin/')
-            && in_array($status->getRouteMatch()->getMatchedRouteName(), ['access-file', 'access-resource-file', 'download'])
+            && in_array($routeName, ['access-file', 'access-resource-file', 'download'])
             // Only check if there is a user: no useless check for users who
             // can't go admin (guest), and checked below anyway.
             && $this->services->get('Omeka\AuthenticationService')->getIdentity()
