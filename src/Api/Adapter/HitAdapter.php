@@ -659,7 +659,7 @@ class HitAdapter extends AbstractEntityAdapter
         }
 
         // The restricted files are redirected from .htaccess, so it is useless
-        // to store the path "/access/" (module AccessResource).
+        // to store the path "/access/" (module Access).
         if (substr($currentUrl, 0, 8) === '/access/') {
             $currentUrl = substr($currentUrl, 7);
         }
@@ -736,7 +736,10 @@ class HitAdapter extends AbstractEntityAdapter
             return $result;
         }
 
-        if ($name === 'AccessResource'
+        if ($name === 'Access\Controller\AccessFileController'
+            || $name === 'AccessResource\Controller\AccessFileController'
+            || $name === 'Access'
+            || $name === 'AccessResource'
             || $name === 'Download'
         ) {
             $result['id'] = $this->currentMediaId($routeParams);

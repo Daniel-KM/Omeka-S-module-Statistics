@@ -38,12 +38,22 @@ class StatisticsController extends AbstractActionController
     /**
      * @var bool
      */
+    protected $hasAccess;
+
+    /**
+     * @var bool
+     */
     protected $hasAdvancedSearch;
 
-    public function __construct(Connection $connection, AdapterManager $adapterManager, bool $hasAdvancedSearch)
-    {
+    public function __construct(
+        Connection $connection,
+        AdapterManager $adapterManager,
+        bool $hasAccess,
+        bool $hasAdvancedSearch
+    ) {
         $this->connection = $connection;
         $this->adapterManager = $adapterManager;
+        $this->hasAccess = $hasAccess;
         $this->hasAdvancedSearch = $hasAdvancedSearch;
     }
 
@@ -61,6 +71,7 @@ class StatisticsController extends AbstractActionController
         if (!$this->hasAdvancedSearch) {
             $view = new ViewModel([
                 'results' => $results,
+                'hasAccess' => $this->hasAccess,
                 'hasAdvancedSearch' => $this->hasAdvancedSearch,
             ]);
             return $view
@@ -119,6 +130,7 @@ class StatisticsController extends AbstractActionController
 
         $view = new ViewModel([
             'results' => $results,
+            'hasAccess' => $this->hasAccess,
             'hasAdvancedSearch' => $this->hasAdvancedSearch,
         ]);
 
@@ -204,6 +216,7 @@ class StatisticsController extends AbstractActionController
             'years' => $this->listYears('resource', null, null, false),
             'yearFilter' => $year,
             'monthFilter' => $month,
+            'hasAccess' => $this->hasAccess,
             'hasAdvancedSearch' => $this->hasAdvancedSearch,
         ]);
         $view
@@ -290,6 +303,7 @@ class StatisticsController extends AbstractActionController
             'valueTypeFilter' => $typeFilter,
             'byPeriodFilter' => $byPeriodFilter,
             'compute' => $compute,
+            'hasAccess' => $this->hasAccess,
             'hasAdvancedSearch' => $this->hasAdvancedSearch,
         ]);
         $view
@@ -448,6 +462,24 @@ class StatisticsController extends AbstractActionController
                         ->leftJoin(\Omeka\Entity\User::class, 'user', Join::WITH, 'omeka_root.owner = user')
                         ->groupBy('omeka_root.owner')
                     ;
+                    break;
+
+                case 'access_resource':
+                    if  (!$this->hasAccess) {
+                        // Fake search without result.
+                        $qb
+                            ->select('value.value AS v')
+                            ->where($expr->eq('1', '0'));
+                    } else {
+                        $qb
+                            // TODO Finalize statistics with module Access.
+                            ->select(
+                                'IDENTITY(omeka_root.owner) AS v', 'user.name AS l', 'COUNT(omeka_root.id) AS t')
+// TODO
+                            ->leftJoin(\Access\Entity\AccessStatus::class, 'access', Join::WITH, 'omeka_root.owner = user')
+                            ->groupBy('omeka_root.owner')
+                        ;
+                    }
                     break;
             }
             if ($hasEmpty) {
@@ -943,6 +975,7 @@ class StatisticsController extends AbstractActionController
          * @var int[] $years
          * @var int $yearFilter
          * @var int $monthFilter
+         * @var bool $hasAccess
          * @var bool $hasAdvancedSearch
          *
          * Value
@@ -957,6 +990,7 @@ class StatisticsController extends AbstractActionController
          * @var string $propertyFilter
          * @var string $valueTypeFilter
          * @var string $byPeriodFilter
+         * @var bool $hasAccess
          * @var bool $hasAdvancedSearch
          */
         extract($variables);

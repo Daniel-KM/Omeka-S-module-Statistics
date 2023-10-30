@@ -12,6 +12,9 @@ class StatisticsControllerFactory implements FactoryInterface
     {
         /** @var \Omeka\Module\Manager $moduleManager */
         $moduleManager = $services->get('Omeka\ModuleManager');
+        $module = $moduleManager->getModule('Access');
+        $hasAccess = $module
+            && $module->getState() === \Omeka\Module\Manager::STATE_ACTIVE;
         $module = $moduleManager->getModule('AdvancedSearch');
         $hasAdvancedSearch = $module
             && $module->getState() === \Omeka\Module\Manager::STATE_ACTIVE;
@@ -19,6 +22,7 @@ class StatisticsControllerFactory implements FactoryInterface
         return new StatisticsController(
             $services->get('Omeka\Connection'),
             $services->get('Omeka\ApiAdapterManager'),
+            $hasAccess,
             $hasAdvancedSearch
         );
     }

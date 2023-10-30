@@ -13,6 +13,7 @@
  * @var string $valueTypeFilter
  * @var string $byPeriodFilter
  * @var string $compute
+ * @var bool $hasAccess
  * @var bool $hasAdvancedSearch
  */
 
@@ -85,6 +86,9 @@ $isYearPeriods = $byPeriodFilter === 'year';
             <label><input type="radio" name="value_type" value="resource_class"<?= $valueTypeFilter === 'resource_class' ? ' checked="checked"' : '' ?>><?= $translate('Resource class') ?></label>
             <label><input type="radio" name="value_type" value="resource_template"<?= $valueTypeFilter === 'resource_template' ? ' checked="checked"' : '' ?>><?= $translate('Resource template') ?></label>
             <label><input type="radio" name="value_type" value="owner"<?= $valueTypeFilter === 'owner' ? ' checked="checked"' : '' ?>><?= $translate('Owner') ?></label>
+            <?php if (!empty($hasAccess)): ?>
+            <label><input type="radio" name="value_type" value="access_resource"<?= $valueTypeFilter === 'access_resource' ? ' checked="checked"' : '' ?>><?= $translate('Access resource') ?></label>
+            <?php endif; ?>
         </div>
 
         <div class="form-field">

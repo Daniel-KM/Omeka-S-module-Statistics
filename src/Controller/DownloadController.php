@@ -10,7 +10,7 @@ use Laminas\Mvc\Controller\AbstractActionController;
  *
  * Count direct download of a file.
  *
- * @see \AccessResource\Controller\AccessFileController
+ * @see \Access\Controller\AccessFileController
  */
 class DownloadController extends AbstractActionController
 {
@@ -67,7 +67,7 @@ class DownloadController extends AbstractActionController
      *
      * @todo Use Laminas stream response.
      *
-     * @see \AccessResource\Controller\AccessFileController::sendFile()
+     * @see \Access\Controller\AccessFileController::sendFile()
      * @see \DerivativeMedia\Controller\IndexController::sendFile()
      * @see \Statistics\Controller\DownloadController::sendFile()
      * and
