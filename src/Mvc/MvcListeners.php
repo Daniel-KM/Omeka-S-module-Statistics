@@ -112,7 +112,11 @@ class MvcListeners extends AbstractListenerAggregate
             // and researcher.
             && $this->services->get('Omeka\Acl')->userIsAllowed(\Omeka\Entity\Resource::class, 'view-all')
         ) {
-            $urlAdminTop = $this->services->get('ControllerPluginManager')->get('url')->fromRoute('admin', [], ['force_canonical' => true]) . '/';
+            // Url is not available before Event dispatch, so rebuild admin top
+            // url with ServerUrl.
+            // $urlAdminTop = $this->services->get('ControllerPluginManager')->get('url')->fromRoute('admin', [], ['force_canonical' => true]) . '/';
+            $serverUrlHelper = $this->services->get('ViewHelperManager')->get('ServerUrl');
+            $urlAdminTop = $serverUrlHelper('/admin/');
             if (strpos($referrer, $urlAdminTop) === 0) {
                 return;
             }
