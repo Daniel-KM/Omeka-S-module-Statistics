@@ -52,7 +52,7 @@ class LogCurrentUrl extends AbstractPlugin
         if ($referrer
             // Guest user should not be logged.
             && strpos($referrer, '/admin/')
-            && in_array($status->getRouteMatch()->getMatchedRouteName(), ['access-resource-file', 'download'])
+            && in_array($status->getRouteMatch()->getMatchedRouteName(), ['access-file', 'access-resource-file', 'download'])
             // Only check if there is a user: no useless check for users who
             // can't go admin (guest), and checked below anyway.
             && $this->services->get('Omeka\AuthenticationService')->getIdentity()
