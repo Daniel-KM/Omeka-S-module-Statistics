@@ -46,6 +46,7 @@ class Stat extends AbstractEntity
      *
      * @todo Remove types and merge stats.
      */
+    const TYPE_API = 'api'; // @translate
     const TYPE_PAGE = 'page'; // @translate
     const TYPE_RESOURCE = 'resource'; // @translate
     const TYPE_DOWNLOAD = 'download'; // @translate

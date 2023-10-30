@@ -145,7 +145,7 @@ class MvcListeners extends AbstractListenerAggregate
             // The entity manager is automatically flushed by default.
             $hitAdapter->create($request);
         } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
-            // An issue may occur, so skip when:
+            // An issue may occur, so skip when the stat is not unique:
             // - the controller is not found for an image;
             // - the same image is loaded multiple times on the same page.
         } catch (\Exception $e) {

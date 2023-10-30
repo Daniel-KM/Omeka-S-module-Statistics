@@ -823,12 +823,21 @@ class HitAdapter extends AbstractEntityAdapter
         // } elseif (strpos($controllerName, '\\')) {
         //     // This is an unknown controller.
         //     return $result;
+        } elseif ($routeName === 'api/default'
+            // TODO Route "api-local/default" is normally used only in admin, so not stored for stats.
+            // || $routeName === 'api-local/default'
+        ) {
+            // Continue below.
+            $resourceName = $routeParams['resource'] ?? null;
         } else {
             return $result;
         }
 
         // Manage exception for item sets (the item set id is get below).
-        if ($resourceName === 'items' && ($routeParams['action'] ?? 'browse') === 'browse') {
+        if ($resourceName === 'items'
+            && $routeName !== 'api/default'
+            && ($routeParams['action'] ?? 'browse') === 'browse'
+        ) {
             $resourceName = 'item_sets';
         }
 
