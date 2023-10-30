@@ -730,7 +730,9 @@ class HitAdapter extends AbstractEntityAdapter
         $services = $this->getServiceLocator();
         $entityManager = $services->get('Omeka\EntityManager');
         $event = $services->get('Application')->getMvcEvent();
-        $routeParams = $event->getRouteMatch()->getParams();
+        $routeMatch = $event->getRouteMatch();
+        $routeName = $routeMatch->getMatchedRouteName();
+        $routeParams = $routeMatch->getParams();
 
         // Get site id first. The site id may be added by module CleanUrl.
         if (!empty($routeParams['site_id'])) {
@@ -751,16 +753,16 @@ class HitAdapter extends AbstractEntityAdapter
             'id' => null,
         ];
 
-        $name = $routeParams['__CONTROLLER__'] ?? $routeParams['controller'] ?? $routeParams['resource'] ?? null;
-        if (!$name) {
+        $controllerName = $routeParams['__CONTROLLER__'] ?? $routeParams['controller'] ?? $routeParams['resource'] ?? null;
+        if (!$controllerName) {
             return $result;
         }
 
-        if ($name === 'Access\Controller\AccessFileController'
-            || $name === 'AccessResource\Controller\AccessFileController'
-            || $name === 'Access'
-            || $name === 'AccessResource'
-            || $name === 'Download'
+        if ($controllerName === 'Access\Controller\AccessFileController'
+            || $controllerName === 'AccessResource\Controller\AccessFileController'
+            || $controllerName === 'Access'
+            || $controllerName === 'AccessResource'
+            || $controllerName === 'Download'
         ) {
             $result['id'] = $this->currentMediaId($routeParams);
             if ($result['id']) {
@@ -789,11 +791,36 @@ class HitAdapter extends AbstractEntityAdapter
             'contribution' => 'contributions',
         ];
 
-        if (isset($controllerToNames[$name])) {
-            $name = $controllerToNames[$name];
-        // } elseif ($name === 'GuestBoard') {
+        // Routes are used when the same controller is used for multiple
+        // resource names.
+        $routeToNames = [
+            // Module IIIF Server.
+            'iiifserver/id' => 'items',
+            'iiifserver/manifest' => 'items',
+            'iiifserver/collection' => 'item_sets',
+            'iiifserver/collection-manifest' => 'item_sets',
+            // Query in fact.
+            // 'iiifserver/set' => null,
+            'mediaserver/id' => 'media',
+            'mediaserver/info' => 'media',
+            'mediaserver/media' => 'media',
+            'mediaserver/media-bad' => 'media',
+            'mediaserver/placeholder' => 'media',
+            // Module Image Server.
+            'imageserver/id' => 'media',
+            'imageserver/info' => 'media',
+            'imageserver/media' => 'media',
+            'imageserver/media-bad' => 'media',
+            'imageserver/placeholder' => 'media',
+        ];
+
+        if (isset($controllerToNames[$controllerName])) {
+            $resourceName = $controllerToNames[$controllerName];
+        } elseif (isset($routeToNames[$routeName])) {
+            $resourceName = $routeToNames[$routeName];
+        // } elseif ($controllerName === 'GuestBoard') {
         //     return $result;
-        // } elseif (strpos($name, '\\')) {
+        // } elseif (strpos($controllerName, '\\')) {
         //     // This is an unknown controller.
         //     return $result;
         } else {
@@ -801,14 +828,19 @@ class HitAdapter extends AbstractEntityAdapter
         }
 
         // Manage exception for item sets (the item set id is get below).
-        if ($name === 'items' && ($routeParams['action'] ?? 'browse') === 'browse') {
-            $name = 'item_sets';
+        if ($resourceName === 'items' && ($routeParams['action'] ?? 'browse') === 'browse') {
+            $resourceName = 'item_sets';
         }
 
         // Check for a resource (item, item set, media).
-        $id = $routeParams['id'] ?? $routeParams['resource-id'] ?? $routeParams['media-id'] ?? $routeParams['item-id'] ?? $routeParams['item-set-id'] ?? null;
+        $id = $routeParams['id']
+            ?? $routeParams['resource-id']
+            ?? $routeParams['media-id']
+            ?? $routeParams['item-id']
+            ?? $routeParams['item-set-id']
+            ?? null;
         if ($id) {
-            $result['name'] = $name;
+            $result['name'] = $resourceName;
             $result['id'] = $id;
             return $result;
         }
