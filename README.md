@@ -87,21 +87,19 @@ of http is not unsecure, because the redirect is internal):
 RewriteRule ^files/original/(.*)$ http://%{HTTP_HOST}/download/files/original/$1 [NC,L]
 ```
 
-If you use the module [Access Resource] to allow access to some private files to
-some users, **you must use its redirection**, so **use `/access/`** instead of `/download/`
-in the redirect url of the rewrite rule. The module Access Resource records the
-url for Statistics too. If you keep the redirection with `download`, the check
-for restricted access won't be done, so **a private file will become public**,
-even if a user as a no restricted access to it.
+If you use the module [Access] to allow access to some private files to some
+users, **you must use its redirection**, so **use `/access/`** instead of `/download/`
+in the redirect url of the rewrite rule. The module Access records the url for
+Statistics too. If you keep the redirection with `download`, the check for
+restricted access won't be done, so **a private file will become public**, even
+if a user as a no restricted access to it.
 
 ```apache
-# Redirect direct access to files to the module Access Resource.
-RewriteRule ^files/original/(.*)$ http://%{HTTP_HOST}/access/files/original/$1 [P]
-RewriteRule ^files/large/(.*)$ http://%{HTTP_HOST}/access/files/large/$1 [P]
+# Redirect direct access to files to the module Access.
+RewriteRule "^files/(original|large)/(.*)$" "/access/files/$1/$2" [P]
 
-# Redirect direct download of files to the module Access Resource.
-RewriteRule ^download/files/original/(.*)$ http://%{HTTP_HOST}/access/files/original/$1 [P]
-RewriteRule ^download/files/large/(.*)$ http://%{HTTP_HOST}/access/files/large/$1 [P]
+# Redirect direct download of files to the module Access.
+RewriteRule "^download/files/(original|large)/(.*)$" "http://%{HTTP_HOST}/access/files/$1/$2" [P]
 ```
 
 In fact, if not redirected, it acts the same way than a direct access to a
@@ -115,6 +113,8 @@ be automatically added.
 You can count large files too, but this is not recommended, because in the
 majority of themes, hits may increase even when a simple page is opened.
 Nevertheless, it may be required when you control access with module [Access Resource].
+
+If you use module [Derivative Media], don't forget to add them to the htaccess file.
 
 
 Usage
@@ -304,7 +304,8 @@ Copyright
 [Advanced Search]: https://gitlab.com/Daniel-KM/Omeka-S-module-AdvancedSearch
 [Shortcode]: https://gitlab.com/Daniel-KM/Omeka-S-module-Shortcode
 [Archive Repertory]: https://gitlab.com/Daniel-KM/Omeka-S-module-ArchiveRepertory
-[Access Resource]: https://gitlab.com/Daniel-KM/Omeka-S-module-AccessResource
+[Access]: https://gitlab.com/Daniel-KM/Omeka-S-module-Access
+[Derivative Media]: https://gitlab.com/Daniel-KM/Omeka-S-module-DerivativeMedia
 [Installing a module]: https://omeka.org/s/docs/user-manual/modules/
 [module issues]: https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics/issues
 [CeCILL v2.1]: https://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html
