@@ -40,6 +40,7 @@ class MvcListeners extends AbstractListenerAggregate
     public function processLogCurrentUrl(MvcEvent $mvcEvent): void
     {
         // In case of error or a internal redirection, there may be two calls.
+        // TODO Is it still useful?
         static $processed = false;
 
         if ($processed) {

@@ -19,12 +19,6 @@ class LogCurrentUrl extends AbstractPlugin
      */
     protected $services;
 
-    /**
-     * Constructor.
-     *
-     * Use services to avoid some load for admin side, because the event
-     * "view.layout" is triggered for any url.
-     */
     public function __construct(ContainerInterface $services)
     {
         $this->services = $services;
@@ -32,6 +26,11 @@ class LogCurrentUrl extends AbstractPlugin
 
     /**
      * Log the current public url.
+     *
+     * Note: normally, this plugin should not be used because all requests are
+     * now managed via the MVC event "Finish", that is triggered in all cases.
+     *
+     * @see \Statistics\Mvc\MvcListeners
      */
     public function __invoke(): ?Hit
     {

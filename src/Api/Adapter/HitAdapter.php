@@ -20,6 +20,10 @@ use Statistics\Entity\Stat;
  * The Hit table.
  *
  * Get stats about hits. Generally, it's quicker to use the Stat table.
+ *
+ * Adapted:
+ * @see \AnalyticsSnippet\Tracker\HitData
+ * @see \Statistics\Api\Adapter\HitAdapter
  */
 class HitAdapter extends AbstractEntityAdapter
 {
@@ -512,7 +516,7 @@ class HitAdapter extends AbstractEntityAdapter
     {
         $url = $hit->getUrl();
         $parameters = new ArrayCollection([
-            new Parameter('url', $url, ParameterType::STRING)
+            new Parameter('url', $url, ParameterType::STRING),
         ]);
 
         $qb = $this->getEntityManager()->createQueryBuilder();
@@ -584,7 +588,6 @@ class HitAdapter extends AbstractEntityAdapter
 
         $currentDataFromRoute = $this->currentDataFromRoute();
         $currentRequest = $this->currentRequest();
-
         $result = array_fill_keys($keys, null);
         foreach ($keys as $key => $keyName) {
             if (isset($data[$keyName])) {
@@ -659,12 +662,19 @@ class HitAdapter extends AbstractEntityAdapter
         return $result;
     }
 
+    /**
+     * Adapted
+     * @see \AnalyticsSnippet\Tracker\HitData::getCurrentRequest()
+     * @see \Statistics\Api\Adapter\HitAdapter::currentRequest()
+     */
     protected function currentRequest(): array
     {
-        /** @var \Laminas\Mvc\MvcEvent $event */
+        /**
+         * @var \Laminas\Mvc\MvcEvent $event
+         * @var \Laminas\Http\PhpEnvironment\Request $request
+         */
         $services = $this->getServiceLocator();
         $event = $services->get('Application')->getMvcEvent();
-        /** @var \Laminas\Http\PhpEnvironment\Request $request */
         $request = $event->getRequest();
         $currentUrl = $request->getRequestUri();
 
@@ -903,8 +913,7 @@ class HitAdapter extends AbstractEntityAdapter
 
     protected function currentUser(): ?User
     {
-        return $this->getServiceLocator()->get('Omeka\AuthenticationService')
-            ->getIdentity();
+        return $this->getServiceLocator()->get('Omeka\AuthenticationService')->getIdentity();
     }
 
     /**
