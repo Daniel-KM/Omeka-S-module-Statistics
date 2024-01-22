@@ -43,6 +43,7 @@ return [
             Form\SettingsFieldset::class => Form\SettingsFieldset::class,
         ],
         'factories' => [
+            Form\StatisticsBySiteForm::class => Service\Form\FormFactory::class,
             Form\StatisticsByValueForm::class => Service\Form\FormFactory::class,
         ],
     ],

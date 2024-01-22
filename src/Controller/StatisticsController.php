@@ -160,20 +160,41 @@ class StatisticsController extends AbstractActionController
             return $this->redirectToIndex();
         }
 
+        $years  = $this->listYears('resource', null, null, true);
+
         $isAdminRequest = $this->status()->isAdminRequest();
+
+        $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
+        $query = [];
+
+        /** @var \Statistics\Form\StatisticsBySiteForm $form */
+        $form = $this->getForm(\Statistics\Form\StatisticsBySiteForm::class, [
+            'has_access' => $this->hasAccess,
+            'years' => $years,
+        ]);
+
+        if ($data) {
+            $form->setData($data);
+            if ($form->isValid()) {
+                $query = $form->getData();
+                unset($query['csrf'], $query['submit']);
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
+        }
 
         /** @var \Omeka\Mvc\Controller\Plugin\Api $api */
         $api = $this->api();
 
-        $sites = $api->search('sites', [], ['initialize' => false, 'finalize' => false, 'returnScalar' => 'title'])->getContent();
+        $sites = $api->search('sites', [], ['returnScalar' => 'title'])->getContent();
 
-        $query = $this->params()->fromQuery();
         $baseQuery = $query;
 
-        $resourceTypes = empty($query['resource_type']) ? ['items'] : (is_array($query['resource_type']) ? $query['resource_type'] : [$query['resource_type']]);
-        $resourceTypes = array_intersect(['resources', 'item_sets', 'items', 'media'], $resourceTypes) ?: ['items'];
-        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
-        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
+        $resourceTypes = $query['resource_type'] ?? ['items'];
+        $year = $query['year'] ?? null;
+        $month = $query['month'] ?? null;
+        $sortBy = $query['sort_by'] ?? 'total';
+        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $results = [];
         foreach ($sites as $siteId => $title) {
@@ -183,16 +204,10 @@ class StatisticsController extends AbstractActionController
             $results[$siteId]['count'] = $this->statisticsPeriod($year, $month, $query, 'created', $resourceTypes);
         }
 
-        // TODO There is no pagination currently in stats by value.
+        // TODO There is no pagination currently in stats by site.
         $this->paginator(count($results));
 
         // TODO Manage special sort fields.
-        $sortBy = $query['sort_by'] ?? null;
-        if (empty($sortBy) || !in_array($sortBy, ['site', 'resources', 'item_sets', 'items', 'media'])) {
-            $sortBy = 'total';
-        }
-        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
-
         if ($sortBy === 'site') {
             $sortBy = 'label';
             usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
@@ -210,6 +225,7 @@ class StatisticsController extends AbstractActionController
         }
 
         $view = new ViewModel([
+            'form' => $form,
             'type' => 'site',
             'results' => $results,
             'resourceTypes' => $resourceTypes,
@@ -224,7 +240,10 @@ class StatisticsController extends AbstractActionController
 
         $output = $this->params()->fromRoute('output');
         if ($output) {
-            return $this->exportResults($view->getVariables(), $output) ?: $view;
+            $result = $this->exportResults($view->getVariables(), $output);
+            if ($result) {
+                return $result;
+            }
         }
 
         return $view;
