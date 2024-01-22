@@ -45,11 +45,11 @@ Installation
 
 See general end user documentation for [installing a module].
 
+The module [Common] must be installed first.
+
 To get statistics and not only analytics, the module [Advanced Search] is
 required in order to do advanced queries, in particular to get results by
 period.
-
-This module can use the optional module [Generic].
 
 The module uses an external library, so use the release zip to install it, or
 use and init the source.
@@ -290,7 +290,7 @@ of the CeCILL license and that you accept its terms.
 Copyright
 ---------
 
-* Copyright Daniel Berthereau, 2014-2023 (see [Daniel-KM] on GitLab)
+* Copyright Daniel Berthereau, 2014-2024 (see [Daniel-KM] on GitLab)
 
 
 [Statistics]: https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics
@@ -300,7 +300,7 @@ Copyright
 [web loggers]: https://en.wikipedia.org/wiki/List_of_web_analytics_software
 [LibreOffice]: https://www.documentfoundation.org
 [Statistics for Omeka Classic]: https://gitlab.com/Daniel-KM/Omeka-plugin-Stats
-[Generic]: https://gitlab.com/Daniel-KM/Omeka-S-module-Generic
+[Common]: https://gitlab.com/Daniel-KM/Omeka-S-module-Common
 [Advanced Search]: https://gitlab.com/Daniel-KM/Omeka-S-module-AdvancedSearch
 [Shortcode]: https://gitlab.com/Daniel-KM/Omeka-S-module-Shortcode
 [Archive Repertory]: https://gitlab.com/Daniel-KM/Omeka-S-module-ArchiveRepertory
