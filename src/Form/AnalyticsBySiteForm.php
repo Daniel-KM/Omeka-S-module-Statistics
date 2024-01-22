@@ -32,7 +32,7 @@ class AnalyticsBySiteForm extends Form
             ->setAttribute('method', 'GET')
             ->remove('csrf')
             ->add([
-                'name' => 'resource_type',
+                'name' => 'entity_name',
                 'type' => CommonElement\OptionalRadio::class,
                 'options' => [
                     'label' => 'Filter pages with resources', // @ŧranslate
@@ -45,7 +45,7 @@ class AnalyticsBySiteForm extends Form
                     ],
                 ],
                 'attributes' => [
-                    'id' => 'resource_type',
+                    'id' => 'entity_name',
                     'value' => '',
                 ],
             ])

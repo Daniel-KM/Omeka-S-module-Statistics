@@ -30,7 +30,7 @@ class AnalyticsByResourceForm extends Form
             // A search form doesn't need a csrf.
             ->remove('csrf')
             ->add([
-                'name' => 'resource_type',
+                'name' => 'entity_name',
                 'type' => CommonElement\OptionalRadio::class,
                 'options' => [
                     'label' => 'Filter pages with resources', // @ŧranslate
@@ -45,7 +45,7 @@ class AnalyticsByResourceForm extends Form
                     ],
                 ],
                 'attributes' => [
-                    'id' => 'resource_type',
+                    'id' => 'entity_name',
                     'value' => '',
                 ],
             ])
@@ -145,9 +145,9 @@ class AnalyticsByResourceForm extends Form
                         'hits_anonymous' => 'Anonymous', // @translate
                         'hits_identified' => 'Identified', // @translate
                         'resource' => 'Resource', // @translate
-                        'resource_type' => 'Resource type', // @translate
-                        'resource_class' => 'Resource class', // @translate
-                        'resource_template' => 'Resource template', // @translate
+                        'entity_name' => 'Resource type', // @translate
+                        'resource_class_id' => 'Resource class', // @translate
+                        'resource_template_id' => 'Resource template', // @translate
                         'item_sets' => 'Item sets', // @translate
                         'media_type' => 'Media type', // @translate
                         'date' => 'Last date', // @translate
@@ -159,8 +159,9 @@ class AnalyticsByResourceForm extends Form
                         'url',
                         'hits',
                         'resource',
-                        'resource_type',
-                        'resource_template',
+                        'entity_name',
+                        'resource_class_id',
+                        'resource_template_id',
                     ],
                 ],
             ])

@@ -158,7 +158,7 @@ class AnalyticsController extends AbstractActionController
         $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
-        $resourceType = $query['resource_type'] ?? null;
+        $resourceType = $query['entity_name'] ?? null;
         $queryQuery = $query['query'] ?? null;
         if (is_string($queryQuery)) {
             parse_str($query['query'], $queryQuery);
@@ -280,7 +280,7 @@ SQL;
     /**
      * Browse rows by page action.
      *
-     * @todo Factorize page, resource and download.
+     * @todo Factorize page, resource and download and keep one tab.
      */
     public function byPageAction()
     {
@@ -324,7 +324,7 @@ SQL;
         $query['type'] = Stat::TYPE_PAGE;
         $query['user_status'] = $userStatus;
         $query['has_resource'] ??= '';
-        $query['resource_type'] ??= '';
+        $query['entity_name'] ??= '';
 
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
@@ -343,7 +343,7 @@ SQL;
         }
 
         $columns = empty($query['columns'])
-            /** @see \Statistics\Form\AnalyticsByResourceForm */
+            /** @see \Statistics\Form\AnalyticsByPageForm */
             ? ['url', 'hits', 'resource', 'date']
             : $query['columns'];
         unset($query['columns']);
@@ -371,11 +371,7 @@ SQL;
                 ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-stat' : 'statistics/site/analytics/by-stat');
         }
 
-        $query['type'] = $query['resource_type'] === 'site_pages' ? 'site_pages' : '';
-
-        // This is a array with flat sub-arrays.
-        $table = $this->analytics()->viewedHitsFull($query, $query['page'], empty($query['per_page']) ? 100: (int) $query['per_page']);
-        $this->paginator(count($table));
+        $query['type'] = $query['entity_name'] === 'site_pages' ? 'site_pages' : '';
 
         // Same as \Statisctics\Form\AnalyticsByPageForm columns.
         $headers = [
@@ -387,6 +383,24 @@ SQL;
             'date' => 'Last date', // @translate
         ];
         $headers = $columns ? array_intersect_key($headers, array_flip($columns)) : $headers;
+
+        $columns = array_combine(array_keys($headers), array_keys($headers));
+        if (isset($columns['resource'])
+            || isset($columns['entity_name'])
+            || isset($columns['entity_id'])
+        ) {
+            $headers['available'] = 'Available'; // @translate
+            $columns['available'] = 'available';
+        }
+
+        if (isset($columns['resource'])) {
+            $headers['title'] = 'Title'; // @translate
+            $columns['title'] = 'title';
+        }
+
+        // This is a array with flat sub-arrays.
+        $table = $this->analytics()->viewedHitsFull($query, $columns, $query['page'], empty($query['per_page']) ? 100: (int) $query['per_page']);
+        $this->paginator(count($table));
 
         $view = new ViewModel([
             'form' => $form,
@@ -464,7 +478,7 @@ SQL;
 
         $columns = empty($query['columns'])
             /** @see \Statistics\Form\AnalyticsByResourceForm */
-            ? ['url', 'hits', 'resource', 'resource_type', 'resource_template']
+            ? ['url', 'hits', 'resource', 'entity_name', 'resource_class_id', 'resource_template_id']
             : $query['columns'];
         unset($query['columns']);
 
@@ -493,10 +507,6 @@ SQL;
 
         $query['type'] = 'resources';
 
-        // This is a array with flat sub-arrays.
-        $table = $this->analytics()->viewedHitsFull($query, $query['page'], empty($query['per_page']) ? 100: (int) $query['per_page']);
-        $this->paginator(count($table));
-
         // Same as \Statisctics\Form\AnalyticsByResourceForm columns.
         $headers = [
             'url' => 'Page', // @translate
@@ -504,14 +514,32 @@ SQL;
             'hits_anonymous' => 'Anonymous', // @translate
             'hits_identified' => 'Identified', // @translate
             'resource' => 'Resource', // @translate
-            'resource_type' => 'Resource type', // @translate
-            'resource_class' => 'Resource class', // @translate
-            'resource_template' => 'Resource template', // @translate
+            'entity_name' => 'Resource type', // @translate
+            'resource_class_id' => 'Resource class', // @translate
+            'resource_template_id' => 'Resource template', // @translate
             'item_sets' => 'Item sets', // @translate
             'media_type' => 'Media type', // @translate
             'date' => 'Last date', // @translate
         ];
         $headers = $columns ? array_intersect_key($headers, array_flip($columns)) : $headers;
+
+        $columns = array_combine(array_keys($headers), array_keys($headers));
+        if (isset($columns['resource'])
+            || isset($columns['entity_name'])
+            || isset($columns['entity_id'])
+        ) {
+            $headers['available'] = 'Available'; // @translate
+            $columns['available'] = 'available';
+        }
+
+        if (isset($columns['resource'])) {
+            $headers['title'] = 'Title'; // @translate
+            $columns['title'] = 'title';
+        }
+
+        // This is a array with flat sub-arrays.
+        $table = $this->analytics()->viewedHitsFull($query, $columns, $query['page'], empty($query['per_page']) ? 100: (int) $query['per_page']);
+        $this->paginator(count($table));
 
         $view = new ViewModel([
             'form' => $form,
@@ -571,8 +599,8 @@ SQL;
 
         $query['type'] = Stat::TYPE_DOWNLOAD;
         $query['user_status'] = $userStatus;
-        $query['file_type'] ??= ['original'];
-        $query['file_type'] = in_array('', $query['file_type'])
+        $query['file_type'] ??= [];
+        $query['file_type'] = empty($query['file_type']) || in_array('', $query['file_type'])
             ? []
             : array_unique($query['file_type']);
 
@@ -593,6 +621,7 @@ SQL;
         }
 
         $columns = empty($query['columns'])
+            /** @see \Statistics\Form\AnalyticsByDownloadForm */
             ? ['url', 'hits', 'resource', 'media_type', 'date']
             : $query['columns'];
         unset($query['columns']);
@@ -622,10 +651,6 @@ SQL;
 
         $query['type'] = 'files';
 
-        // This is a array with flat sub-arrays.
-        $table = $this->analytics()->viewedHitsFull($query, $query['page'], empty($query['per_page']) ? 100: (int) $query['per_page']);
-        $this->paginator(count($table));
-
         // Same as \Statisctics\Form\AnalyticsByDownloadForm columns.
         $headers = [
             'url' => 'Page', // @translate
@@ -633,12 +658,30 @@ SQL;
             'hits_anonymous' => 'Anonymous', // @translate
             'hits_identified' => 'Identified', // @translate
             'resource' => 'Resource', // @translate
-            'resource_class' => 'Resource class', // @translate
-            'resource_template' => 'Resource template', // @translate
+            'resource_class_id' => 'Resource class', // @translate
+            'resource_template_id' => 'Resource template', // @translate
             'media_type' => 'Media type', // @translate
             'date' => 'Last date', // @translate
         ];
         $headers = $columns ? array_intersect_key($headers, array_flip($columns)) : $headers;
+
+        $columns = array_combine(array_keys($headers), array_keys($headers));
+        if (isset($columns['resource'])
+            || isset($columns['entity_name'])
+            || isset($columns['entity_id'])
+        ) {
+            $headers['available'] = 'Available'; // @translate
+            $columns['available'] = 'available';
+        }
+
+        if (isset($columns['resource'])) {
+            $headers['title'] = 'Title'; // @translate
+            $columns['title'] = 'title';
+        }
+
+        // This is a array with flat sub-arrays.
+        $table = $this->analytics()->viewedHitsFull($query, $columns, $query['page'], empty($query['per_page']) ? 100: (int) $query['per_page']);
+        $this->paginator(count($table));
 
         $view = new ViewModel([
             'form' => $form,
@@ -754,7 +797,7 @@ SQL;
         $form = $this->getForm(\Statistics\Form\AnalyticsByItemSetForm::class, [
             'years' => $years,
         ]);
-        $form->remove('resource_type');
+        $form->remove('entity_name');
         $form->remove('query');
 
         if ($data) {
@@ -920,7 +963,7 @@ SQL;
         $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
-        $resourceType = $query['resource_type'] ?? null;
+        $resourceType = $query['entity_name'] ?? null;
         $queryQuery = $query['query'] ?? null;
         if (is_string($queryQuery)) {
             parse_str($query['query'], $queryQuery);

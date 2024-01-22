@@ -194,7 +194,7 @@ class StatisticsController extends AbstractActionController
 
         $baseQuery = $query;
 
-        $resourceTypes = $query['resource_type'] ?? ['items'];
+        $resourceTypes = $query['entity_name'] ?? ['items'];
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $sortBy = $query['sort_by'] ?? 'total';
@@ -286,7 +286,7 @@ class StatisticsController extends AbstractActionController
         $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
-        $resourceTypes = $query['resource_type'] ?? ['items'];
+        $resourceTypes = $query['entity_name'] ?? ['items'];
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $property = $query['property'] ?? null;

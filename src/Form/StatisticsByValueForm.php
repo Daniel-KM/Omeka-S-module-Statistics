@@ -38,7 +38,7 @@ class StatisticsByValueForm extends Form
             // A search form doesn't need a csrf.
             ->remove('csrf')
             ->add([
-                'name' => 'resource_type',
+                'name' => 'entity_name',
                 'type' => CommonElement\OptionalMultiCheckbox::class,
                 'options' => [
                     'label' => 'Resource types', // @translate
@@ -50,7 +50,7 @@ class StatisticsByValueForm extends Form
                     ],
                 ],
                 'attributes' => [
-                    'id' => 'resource_type_resources',
+                    'id' => 'entity_name',
                     'value' => [
                         'items',
                     ],

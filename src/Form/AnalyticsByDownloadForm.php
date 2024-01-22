@@ -45,7 +45,6 @@ class AnalyticsByDownloadForm extends Form
                 'attributes' => [
                     'id' => 'file_type',
                     'value' => [
-                        'original',
                     ],
                 ],
             ])
@@ -145,14 +144,14 @@ class AnalyticsByDownloadForm extends Form
                         'hits_anonymous' => 'Anonymous', // @translate
                         'hits_identified' => 'Identified', // @translate
                         'resource' => 'Resource', // @translate
-                        'resource_class' => 'Resource class', // @translate
-                        'resource_template' => 'Resource template', // @translate
+                        'resource_class_id' => 'Resource class', // @translate
+                        'resource_template_id' => 'Resource template', // @translate
                         'media_type' => 'Media type', // @translate
                         'date' => 'Last date', // @translate
                     ],
                 ],
                 'attributes' => [
-                    'id' => 'resource_type',
+                    'id' => 'columns',
                     'value' => [
                         'url',
                         'hits',

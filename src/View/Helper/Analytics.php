@@ -916,14 +916,23 @@ class Analytics extends AbstractHelper
      *
      * @see \Statistics\View\Helper\Analytics::viewedHits()
      *
+     * @todo Manage sort.
+     *
      * @param array $query A set of parameters by which to filter the objects
      *   that get returned from the database.
+     * @param array $columns The list of columns to output. Default to all.
+     *   The column "url" is required and added in any case.
+     *   "resource" is a merge of "entity_name" and "entity_id".
      * @param int $page Page to retrieve.
      * @param int $limit Number of objects to return per "page".
      * @return array of Hits + data + column total.
      */
-    public function viewedHitsFull(array $query = [], ?int $page = null, ?int $limit = null): array
-    {
+    public function viewedHitsFull(
+        array $query = [],
+        array $columns = [],
+        ?int $page = null,
+        ?int $limit = null
+    ): array {
         $defaultQuery = [
             'page' => null,
             'per_page' => null,
@@ -963,51 +972,108 @@ class Analytics extends AbstractHelper
         // $itemSetsAlias = $this->hitAdapter->createAlias();
         // $resource2Alias = $this->hitAdapter->createAlias();
 
+        $defaultSelect = [
+            'url' => 'omeka_root.url AS url',
+            'hits' => 'COUNT(omeka_root.url) AS hits',
+            'hits_anonymous' => 'COUNT(omeka_root.url) - SUM(CASE omeka_root.userId WHEN 0 THEN 0 ELSE 1 END) AS hits_anonymous',
+            // Because there is no null, a check is needed.
+            // 'hits_identified' => 'COUNT(IF(omeka_root.userId = 0, NULL, 1)) AS hits_identified',
+            // 'hits_identified' => COUNT(CASE omeka_root.userId WHEN 0 THEN NULL ELSE 1 END) AS hits_identified',
+            'hits_identified' => 'SUM(CASE omeka_root.userId WHEN 0 THEN 0 ELSE 1 END) AS hits_identified',
+            'resource' => 'CONCAT(omeka_root.entityName, :entity_joiner, omeka_root.entityId) AS resource',
+            'entity_name' => 'omeka_root.entityName AS entity_name',
+            'entity_id' => 'omeka_root.entityId AS entity_id',
+            // Allow to check if the resource is deleted or unavailable.
+            // Identity is not working, neither count, use case.
+            // 'available' => "IDENTITY($resourceAlias.id) AS available",
+            // 'available' => "COUNT($resourceAlias.id) AS available",
+            'available' => "CASE WHEN $sitePageAlias.id IS NULL AND $resourceAlias.id IS NULL THEN 0 ELSE 1 END AS available",
+            'title' => "COALESCE($sitePageAlias.title, $resourceAlias.title) AS title",
+            'resource_class_id' => "IDENTITY($resourceAlias.resourceClass) AS resource_class_id",
+            'resource_template_id' => "IDENTITY($resourceAlias.resourceTemplate) AS resource_template_id",
+            'media_type' => "$mediaAlias.mediaType AS media_type",
+            // 'item_set_ids' => "GROUP_CONCAT($itemSetsAlias.itemSetId) AS item_set_ids",
+            // 'item_set_titles' => "GROUP_CONCAT($resource2Alias.title SEPARATOR CHAR(31)) AS item_set_titles",
+            'date' => 'MAX(omeka_root.created) AS date'
+            // 'position' => "@position:=@position+1 AS position"
+        ];
+
+        $columns = array_values(array_intersect($columns, array_keys($defaultSelect)))
+            ?: array_keys($defaultSelect);
+        $columns = array_combine($columns, $columns);
+
+        // "url" is a required column for now.
+        if (!isset($columns['url'])) {
+            $columns['url'] = 'url';
+        }
+
         // Build the search query. No event.
         $entityManager = $this->hitAdapter->getEntityManager();
         $qb = $entityManager
             ->createQueryBuilder()
-            ->select(
-                'omeka_root.url AS url',
-                'COUNT(omeka_root.url) AS hits',
-                // Because there is no null, a check is needed.
-                // 'COUNT(IF(omeka_root.userId = 0, NULL, 1)) AS hits_identified',
-                // 'COUNT(CASE omeka_root.userId WHEN 0 THEN NULL ELSE 1 END) AS hits_identified',
-                'SUM(CASE omeka_root.userId WHEN 0 THEN 0 ELSE 1 END) AS hits_identified',
-                'omeka_root.entityName AS entity_name',
-                'omeka_root.entityId AS entity_id',
-                // Allow to check if the resource is deleted or unavailable.
-                // Identity is not working, neither count, use case.
-                // "IDENTITY($resourceAlias.id) AS available",
-                // "COUNT($resourceAlias.id) AS available",
-                "CASE WHEN $resourceAlias.id IS NULL THEN 0 ELSE 1 END AS available",
-                "COALESCE($sitePageAlias.title, $resourceAlias.title) AS title",
-                "IDENTITY($resourceAlias.resourceClass) AS resource_class_id",
-                "IDENTITY($resourceAlias.resourceTemplate) AS resource_template_id",
-                "$mediaAlias.mediaType AS media_type",
-                // "GROUP_CONCAT($itemSetsAlias.itemSetId) AS item_set_ids",
-                // "GROUP_CONCAT($resource2Alias.title SEPARATOR CHAR(31)) AS item_set_titles",
-                'MAX(omeka_root.created) AS date'
-                // "@position:=@position+1 AS position"
-            )
-            ->from(\Statistics\Entity\Hit::class, 'omeka_root')
-            ->leftJoin(\Omeka\Entity\SitePage::class, $sitePageAlias, Expr\Join::WITH, "$sitePageAlias.id = omeka_root.entityId")
-            ->leftJoin(\Omeka\Entity\Resource::class, $resourceAlias, Expr\Join::WITH, "$resourceAlias.id = omeka_root.entityId")
-            ->leftJoin(\Omeka\Entity\Media::class, $mediaAlias, Expr\Join::WITH, "$mediaAlias.id = omeka_root.entityId")
-            // ->leftJoin('item_item_set', $itemSetsAlias, Expr\Join::WITH, "$itemSetsAlias.item_id = omeka_root.entityId")
-            // ->leftJoin(\Omeka\Entity\Resource::class, $resource2Alias, Expr\Join::WITH, "$resource2Alias.id = $itemSetsAlias.item_set_id")
-        ;
+            ->from(\Statistics\Entity\Hit::class, 'omeka_root');
+
+        if (array_intersect($columns, [
+            'available',
+            'title',
+            'resource_class_id',
+            'resource_template_id',
+        ])) {
+            $qb
+                ->leftJoin(\Omeka\Entity\SitePage::class, $sitePageAlias, Expr\Join::WITH, "$sitePageAlias.id = omeka_root.entityId AND omeka_root.entityName = 'site_pages'")
+                ->leftJoin(\Omeka\Entity\Resource::class, $resourceAlias, Expr\Join::WITH, "$resourceAlias.id = omeka_root.entityId AND omeka_root.entityName IN ('items', 'media', 'item_sets')")
+                // ->leftJoin('item_item_set', $itemSetsAlias, Expr\Join::WITH, "$itemSetsAlias.item_id = omeka_root.entityId")
+                // ->leftJoin(\Omeka\Entity\Resource::class, $resource2Alias, Expr\Join::WITH, "$resource2Alias.id = $itemSetsAlias.item_set_id")
+            ;
+        }
+
+        if (array_intersect($columns, [
+            'media_type',
+        ])) {
+            $qb
+                ->leftJoin(\Omeka\Entity\Media::class, $mediaAlias, Expr\Join::WITH, "$mediaAlias.id = omeka_root.entityId AND omeka_root.entityName = 'media'")
+            ;
+        }
+
+        foreach ($columns as $column) {
+            $qb
+                ->addSelect($defaultSelect[$column]);
+        }
+
+        if (isset($columns['resource'])) {
+            $qb
+                ->setParameter('entity_joiner', '/');
+        }
+
+        // Add hidden select when needed.
+        if (isset($columns['resource']) && !isset($columns['entity_name'])) {
+            $qb
+                ->addSelect('omeka_root.entityName AS HIDDEN entity_name',);
+        }
+        if (isset($columns['resource']) && !isset($columns['entity_id'])) {
+            $qb
+                ->addSelect('omeka_root.entityId AS HIDDEN entity_id');
+        }
+
         $this->hitAdapter->buildBaseQuery($qb, $query);
         $this->hitAdapter->buildQuery($qb, $query);
+
         if ($isAnonymous) {
             $qb->andWhere($qb->expr()->eq("$resourceAlias.isPublic", 1));
         }
-        // Don't group by id.
+
         $qb
-            ->groupBy('omeka_root.url')
-            ->addGroupBy('entity_name')
-            ->addGroupBy('entity_id')
-        ;
+            // Don't group by id.
+            ->groupBy('omeka_root.url');
+        if (isset($columns['entity_name']) || isset($columns['resource'])) {
+            $qb
+                ->addGroupBy('entity_name');
+        }
+        if (isset($columns['entity_id']) || isset($columns['resource'])) {
+            $qb
+                ->addGroupBy('entity_id');
+        }
+
         $this->hitAdapter->limitQuery($qb, $query);
         $this->hitAdapter->sortQuery($qb, $query);
 

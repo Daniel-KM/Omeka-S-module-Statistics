@@ -27,9 +27,9 @@ $isAdminRequest = $this->status()->isAdminRequest();
 $totalResults = $this->pagination()->getPaginator()->getTotalCount();
 $currentUrl = $urlHelper(null, [], true);
 $basePath = $this->basePath();
-$currentQuery = $this->params()->fromQuery();
-$currentQueryNoSort = $currentQuery;
-unset($currentQueryNoSort['sort_by']);
+$query = $this->params()->fromQuery();
+$queryNoSort = $query;
+unset($queryNoSort['sort_by']);
 
 $submit = $form->get('submit');
 $form->remove('submit');
@@ -59,22 +59,22 @@ $form->prepare();
         <tr>
             <?php if (empty($columns) || in_array('url', $columns)): ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'url'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Page') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'url'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Page') ?></a>
             </th>
             <?php endif; ?>
             <?php if (empty($columns) || in_array('hits', $columns)): ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'hits'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Hits') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'hits'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Hits') ?></a>
             </th>
             <?php endif; ?>
             <?php if (empty($columns) || in_array('hits_anonymous', $columns)): ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'anonymous'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Anonymous') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'anonymous'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Anonymous') ?></a>
             </th>
             <?php endif; ?>
             <?php if (empty($columns) || in_array('hits_identified', $columns)): ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'identified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Identified') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'identified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Identified') ?></a>
             </th>
             <?php endif; ?>
             <?php if (empty($columns) || in_array('resource', $columns)): ?>
@@ -82,18 +82,18 @@ $form->prepare();
                 <span><?= $translate('Dedicated resource') ?></span>
             </th>
             <?php endif; ?>
-            <?php if (empty($columns) || in_array('resource_type', $columns)): ?>
+            <?php if (empty($columns) || in_array('entity_name', $columns)): ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'resource_type'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Resource type') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'entity_name'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Resource type') ?></a>
             </th>
             <?php endif; ?>
             <?php if ($type === 'resource' || $type === 'download'): ?>
-            <?php if (empty($columns) || in_array('resource_class', $columns)): ?>
+            <?php if (empty($columns) || in_array('resource_class_id', $columns)): ?>
             <th>
                 <span><?= $translate('Resource class') ?></span>
             </th>
             <?php endif; ?>
-            <?php if (empty($columns) || in_array('resource_template', $columns)): ?>
+            <?php if (empty($columns) || in_array('resource_template_id', $columns)): ?>
             <th>
                 <span><?= $translate('Resource template') ?></span>
             </th>
@@ -111,7 +111,7 @@ $form->prepare();
             <?php endif; ?>
             <?php if (empty($columns) || in_array('date', $columns)): ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'modified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Last date') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'modified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Last date') ?></a>
             </th>
             <?php endif; ?>
         </tr>
@@ -152,7 +152,7 @@ $form->prepare();
                 <?php endif; ?>
             </td>
             <?php endif; ?>
-            <?php if (empty($columns) || in_array('resource_type', $columns)): ?>
+            <?php if (empty($columns) || in_array('entity_name', $columns)): ?>
             <td class="statistics-record-type">
                 <?php if ($statResource): ?>
                     <?= $stat->humanResourceType() ?>
@@ -160,14 +160,14 @@ $form->prepare();
             </td>
             <?php endif; ?>
             <?php if ($type === 'resource' || $type === 'download'): ?>
-            <?php if (empty($columns) || in_array('resource_class', $columns)): ?>
+            <?php if (empty($columns) || in_array('resource_class_id', $columns)): ?>
             <td class="statistics-resource-class">
                 <?php if ($statResource && $statResource instanceof \Omeka\Api\Representation\AbstractResourceEntityRepresentation): ?>
                     <?= $statResource->displayResourceClassLabel() ?>
                 <?php endif; ?>
             </td>
             <?php endif; ?>
-            <?php if (empty($columns) || in_array('resource_template', $columns)): ?>
+            <?php if (empty($columns) || in_array('resource_template_id', $columns)): ?>
             <td class="statistics-resource-template">
                 <?php if ($statResource && $statResource instanceof \Omeka\Api\Representation\AbstractResourceEntityRepresentation): ?>
                     <?= $statResource->displayResourceTemplateLabel() ?>

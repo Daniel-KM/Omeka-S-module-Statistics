@@ -29,9 +29,9 @@ $isAdminRequest = $this->status()->isAdminRequest();
 $totalResults = $this->pagination()->getPaginator()->getTotalCount();
 $currentUrl = $urlHelper(null, [], true);
 $basePath = $this->basePath();
-$currentQuery = $this->params()->fromQuery();
-$currentQueryNoSort = $currentQuery;
-unset($currentQueryNoSort['sort_by']);
+$query = $this->params()->fromQuery();
+$queryNoSort = $query;
+unset($queryNoSort['sort_by']);
 
 $submit = $form->get('submit');
 $form->remove('submit');
@@ -70,42 +70,42 @@ $resourceToControllers = [
             <?php foreach ($headers as $header => $label): switch ($header):
                 case 'url': ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'url'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'url'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
             </th>
             <?php break;
                 case 'hits': ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'hits'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'hits'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
             </th>
             <?php break;
                 case 'hits_anonymous': ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'anonymous'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'hits_anonymous'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
             </th>
             <?php break;
                 case 'hits_identified': ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'identified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'hits_identified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
             </th>
             <?php break;
                 case 'resource': ?>
             <th>
-                <span><?= $translate($label) ?></span>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'resource'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
             </th>
             <?php break;
-                case 'resource_type': ?>
+                case 'entity_name': ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'resource_type'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'entity_name'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
             </th>
             <?php break;
-                case 'resource_class': ?>
+                case 'resource_class_id': ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'resource_class'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'resource_class_id'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
             </th>
             <?php break;
-                case 'resource_template': ?>
+                case 'resource_template_id': ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'resource_template'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'resource_template_id'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
             </th>
             <?php break;
                 case 'item_sets': ?>
@@ -115,12 +115,12 @@ $resourceToControllers = [
             <?php break;
                 case 'media_type': ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'media_type'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'media_type'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
             </th>
             <?php break;
                 case 'date': ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'created'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($queryNoSort + ['sort_by' => 'created'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate($label) ?></a>
             </th>
             <?php endswitch; endforeach; ?>
         </tr>
@@ -143,7 +143,7 @@ $resourceToControllers = [
             <?php break;
                 case 'hits_anonymous': ?>
             <td class="statistics-hits stats-anonymous">
-                <?= (int) ($row['hits'] - $row['hits_identified']) ?>
+                <?= (int) ($row['hits_anonymous']) ?>
             </td>
             <?php break;
                 case 'hits_identified': ?>
@@ -151,33 +151,35 @@ $resourceToControllers = [
                 <?= (int) $row['hits_identified'] ?>
             </td>
             <?php break;
-                case 'resource': ?>
+                case 'resource':
+                    $entityName = strtok($row['resource'], '/');
+                    $entityId = (int) strtok('/'); ?>
             <td class="statistics-resource">
                 <div class="statistics-hover">
-                <?php if ($row['available'] && isset($resourceToControllers[$row['entity_name']])): ?>
-                    <?php if ($row['entity_name'] === 'site_pages'): ?>
+                <?php if (!empty($row['available'])): ?>
+                    <?php if ($entityName === 'site_pages'): ?>
                     <span><?= $escape($row['title'] ?: $translate('[no title]')) ?></span>
-                    <span>[<?= '#' . $row['entity_id'] ?>]</span>
+                    <span>[<?= '#' . $entityId ?>]</span>
                     <?php else: ?>
-                    <a href="<?= $escapeAttr(sprintf('%s/%s/%s', $baseResourceUrl, $resourceToControllers[$row['entity_name']], $row['entity_id'])) ?>"><?= $escape($row['title'] ?: $translate('[no title]')) ?></a>
+                    <a href="<?= $escapeAttr(sprintf('%s/%s/%s', $baseResourceUrl, $resourceToControllers[$entityName] ?? $entityName, $entityId)) ?>"><?= $escape($row['title'] ?: $translate('[no title]')) ?></a>
                     <?php endif; ?>
-                <?php elseif ($row['entity_name']): ?>
-                    <?= $row['entity_name'] . ' #' . $row['entity_id'] ?>
+                <?php elseif ($entityName): ?>
+                    <?= sprintf('%s #%d', $entityName, $entityId) ?>
                 <?php endif; ?>
                 </div>
             </td>
             <?php break;
-                case 'resource_type': ?>
+                case 'entity_name': ?>
             <td class="statistics-record-type">
                 <?= $translate($easyMeta->resourceLabel($row['entity_name'])) ?>
             </td>
             <?php break;
-                case 'resource_class': ?>
+                case 'resource_class_id': ?>
             <td class="statistics-resource-class">
                 <?= $easyMeta->resourceClassTerm($row['resource_class_id']) ?>
             </td>
             <?php break;
-                case 'resource_template': ?>
+                case 'resource_template_id': ?>
             <td class="statistics-resource-template">
                 <?= $easyMeta->resourceTemplateLabel($row['resource_template_id']) ?>
             </td>
@@ -185,7 +187,8 @@ $resourceToControllers = [
                 case 'item_sets': ?>
             <td class="statistics-item-set">
                 <?php // TODO The item may be removed or private. The item set too.
-                if ($row['entity_name'] === 'items' && !empty($row['item_sets'])):
+                $entityName = array_key_exists('entity_name', $row) ? $row['entity_name'] : (array_key_exists('resource', $row) ? strtok($row['resource'], '/') : null);
+                if ($entityName === 'items' && !empty($row['item_sets'])):
                     $itemSets = array_combine(explode(',', $row['item_sets']), explode(chr(31), $row['item_sets_title'])); ?>
                     <ul>
                         <?php foreach ($itemSets as $itemSetId => $itemSetTitle): ?>

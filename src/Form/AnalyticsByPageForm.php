@@ -29,7 +29,7 @@ class AnalyticsByPageForm extends Form
             // A search form doesn't need a csrf.
             ->remove('csrf')
             ->add([
-                'name' => 'resource_type',
+                'name' => 'entity_name',
                 'type' => CommonElement\OptionalCheckbox::class,
                 'options' => [
                     'label' => 'Site pages only', // @ŧranslate
@@ -37,7 +37,7 @@ class AnalyticsByPageForm extends Form
                     'use_hidden_element' => false,
                 ],
                 'attributes' => [
-                    'id' => 'has_resource',
+                    'id' => 'entity_name',
                 ],
             ])
             ->add([
@@ -146,6 +146,7 @@ class AnalyticsByPageForm extends Form
                         'url',
                         'hits',
                         'resource',
+                        'date',
                     ],
                 ],
             ])
