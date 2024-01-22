@@ -3,6 +3,7 @@
 namespace Statistics\View\Helper;
 
 use Doctrine\ORM\Query\Expr;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Laminas\View\Helper\AbstractHelper;
 use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Request;
@@ -54,6 +55,11 @@ class Analytics extends AbstractHelper
         'anonymous' => 'hits_anonymous',
         'identified' => 'hits_identified',
     ];
+
+    /**
+     * @var integer
+     */
+    protected $lastTotal = 0;
 
     public function __construct(HitAdapter $hitAdapter, StatAdapter $statAdapter)
     {
@@ -916,6 +922,7 @@ class Analytics extends AbstractHelper
      *
      * @see \Statistics\View\Helper\Analytics::viewedHits()
      *
+     * @todo Use omaka api response?
      * @todo Manage sort.
      *
      * @param array $query A set of parameters by which to filter the objects
@@ -1040,11 +1047,6 @@ class Analytics extends AbstractHelper
                 ->addSelect($defaultSelect[$column]);
         }
 
-        if (isset($columns['resource'])) {
-            $qb
-                ->setParameter('entity_joiner', '/');
-        }
-
         // Add hidden select when needed.
         if (isset($columns['resource']) && !isset($columns['entity_name'])) {
             $qb
@@ -1075,7 +1077,26 @@ class Analytics extends AbstractHelper
         }
 
         $this->hitAdapter->limitQuery($qb, $query);
+
+        // Before adding the ORDER BY clause, set a paginator responsible for
+        // getting the total count. This optimization excludes the ORDER BY
+        // clause from the count query, greatly speeding up response time.
+        $countQb = clone $qb;
+        $countQb
+            ->select('COUNT(omeka_root.url)')
+            ->groupBy('omeka_root.url')
+            ->resetDQLPart('orderBy');
+        $countPaginator = new Paginator($countQb, false);
+
+        // Should be added after clone.
+        if (isset($columns['resource'])) {
+            $qb
+                ->setParameter('entity_joiner', '/');
+        }
+
         $this->hitAdapter->sortQuery($qb, $query);
+
+        $this->lastTotal = $countPaginator->count();
 
         return $qb->getQuery()->getScalarResult();
     }
@@ -1378,6 +1399,11 @@ class Analytics extends AbstractHelper
         return empty($type) || empty($id)
             ? ['type' => '', 'id' => 0]
             : ['type' => (string) $type, 'id' => (int) $id];
+    }
+
+    public function lastTotal(): int
+    {
+        return (int) $this->lastTotal;
     }
 
     /**

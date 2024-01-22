@@ -398,9 +398,12 @@ SQL;
             $columns['title'] = 'title';
         }
 
+        $page = $query['page'];
+        $perPage = empty($query['per_page']) ? 100: (int) $query['per_page'];
+
         // This is a array with flat sub-arrays.
-        $table = $this->analytics()->viewedHitsFull($query, $columns, $query['page'], empty($query['per_page']) ? 100: (int) $query['per_page']);
-        $this->paginator(count($table));
+        $table = $this->analytics()->viewedHitsFull($query, $columns, $page, $perPage);
+        $this->paginator($this->analytics()->lastTotal());
 
         $view = new ViewModel([
             'form' => $form,
@@ -537,9 +540,12 @@ SQL;
             $columns['title'] = 'title';
         }
 
+        $page = $query['page'];
+        $perPage = empty($query['per_page']) ? 100: (int) $query['per_page'];
+
         // This is a array with flat sub-arrays.
-        $table = $this->analytics()->viewedHitsFull($query, $columns, $query['page'], empty($query['per_page']) ? 100: (int) $query['per_page']);
-        $this->paginator(count($table));
+        $table = $this->analytics()->viewedHitsFull($query, $columns, $page, $perPage);
+        $this->paginator($this->analytics()->lastTotal());
 
         $view = new ViewModel([
             'form' => $form,
@@ -679,9 +685,12 @@ SQL;
             $columns['title'] = 'title';
         }
 
+        $page = $query['page'];
+        $perPage = empty($query['per_page']) ? 100: (int) $query['per_page'];
+
         // This is a array with flat sub-arrays.
-        $table = $this->analytics()->viewedHitsFull($query, $columns, $query['page'], empty($query['per_page']) ? 100: (int) $query['per_page']);
-        $this->paginator(count($table));
+        $table = $this->analytics()->viewedHitsFull($query, $columns, $page, $perPage);
+        $this->paginator($this->analytics()->lastTotal());
 
         $view = new ViewModel([
             'form' => $form,
