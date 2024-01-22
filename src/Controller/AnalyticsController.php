@@ -425,7 +425,8 @@ SQL;
             }
         }
 
-        $field = empty($query['field']) ? 'referrer' : $query['field'];
+        $query['field'] = empty($query['field']) ? 'referrer' : $query['field'];
+        $field = $query['field'];
 
         $query = $this->defaultSort($query, [$field, 'hits'], 'hits');
 
