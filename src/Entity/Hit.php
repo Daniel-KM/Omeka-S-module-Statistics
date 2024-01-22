@@ -14,6 +14,8 @@ use Omeka\Entity\AbstractEntity;
  * @see \HistoryLog\Entity\Log
  *
  * @todo Check if full separation of the two tables is still needed with doctrine (performance). Check if indexes are needed too.
+ * @todo Create sub tables for url, ip, referrer, user agent, and accept language, then a view to simplify access to this entity.
+ * @todo Create a virtual column filled during indexation according to url and entity to get same types than Stat (or other: see adapter).
  *
  * @Entity
  * @Table(

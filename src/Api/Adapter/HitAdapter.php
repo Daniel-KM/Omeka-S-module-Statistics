@@ -79,6 +79,46 @@ class HitAdapter extends AbstractEntityAdapter
     {
         $expr = $qb->expr();
 
+        // TODO Create a virtual column filled during indexation according to url and entity to get same types than Stat.
+        // Here, "resource" and "page" have no meaning, since a resource may be
+        // a resource and a page. So "resources" means a public resource page
+        // (items, media, item sets) and "site_pages" means a public editorial
+        // page.
+        // TODO Add more types: login/logout, embed, user account, iiif, oai-pmh, sparql, etc.
+        if (isset($query['type']) && $query['type'] !== '' && $query['type'] !== []) {
+            if ($query['type'] === 'resources') {
+                $qb
+                    ->andWhere($expr->in('omeka_root.entityName', ['items', 'media', 'item_sets']))
+                    // It's a lot quicker to check if a site is set.
+                    // ->andWhere($expr->notLike('omeka_root.url', '/api/%'))
+                    // ->andWhere($expr->notLike('omeka_root.url', '/files/%'))
+                    ->andWhere($expr->neq('omeka_root.siteId', 0))
+                ;
+            } elseif ($query['type'] === 'site_pages') {
+                $qb
+                    ->andWhere($expr->eq('omeka_root.entityName', $this->createNamedParameter($qb, 'site_pages')))
+                    // It's a lot quicker to check if a site is set.
+                    // ->andWhere($expr->notLike('omeka_root.url', $this->createNamedParameter($qb, '/api/%')))
+                    // ->andWhere($expr->notLike('omeka_root.url', $this->createNamedParameter($qb, '/files/%')))
+                    ->andWhere($expr->neq('omeka_root.siteId', 0))
+                ;
+            } elseif ($query['type'] === 'files') {
+                $qb
+                    // A download has no site, so speed search.
+                    ->andWhere($expr->eq('omeka_root.siteId', 0))
+                    ->andWhere($expr->like('omeka_root.url', $this->createNamedParameter($qb, '/files/%')))
+                ;
+            } elseif ($query['type'] === 'api') {
+                $qb
+                    // An api has no site, so speed search.
+                    ->andWhere($expr->eq('omeka_root.siteId', 0))
+                    ->andWhere($expr->like('omeka_root.url', $this->createNamedParameter($qb, '/api/%')))
+                ;
+            } else {
+                $qb->andWhere($expr->isNull('omeka_root.id'));
+            }
+        }
+
         if (isset($query['url']) && $query['url'] !== '' && $query['url'] !== []) {
             if (is_array($query['url'])) {
                 $qb->andWhere($expr->in(

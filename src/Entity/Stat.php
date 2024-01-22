@@ -44,6 +44,8 @@ class Stat extends AbstractEntity
     /**#@+
      * Stat types.
      *
+     * Type "resource" is larger than resources: it includes any api resources.
+     *
      * @todo Remove types and merge stats.
      */
     const TYPE_API = 'api'; // @translate
