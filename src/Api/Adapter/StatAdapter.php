@@ -203,6 +203,39 @@ class StatAdapter extends AbstractEntityAdapter
             }
         }
 
+        if (isset($query['is_download']) && $query['is_download'] !== '') {
+            if ($query['is_download']) {
+                $qb->andWhere($expr->like(
+                    'omeka_root.url',
+                    $this->createNamedParameter($qb, '/files/%')
+                ));
+            } else {
+                $qb->andWhere($expr->notLike(
+                    'omeka_root.url',
+                    $this->createNamedParameter($qb, '/files/%')
+                ));
+            }
+        }
+
+        if (isset($query['file_type']) && $query['file_type'] !== '' && $query['file_type'] !== []) {
+            if (is_array($query['file_type'])) {
+                $exprs = [];
+                foreach ($query['file_type'] as $fileType) {
+                    $exprs[] = $expr->like(
+                        'omeka_root.url',
+                        $this->createNamedParameter($qb, '/files/' . $fileType . '/%')
+                    );
+                }
+                $orX = new \Doctrine\ORM\Query\Expr\Orx($exprs);
+                $qb->andWhere($orX);
+            } else {
+                $qb->andWhere($expr->notLike(
+                    'omeka_root.url',
+                    $this->createNamedParameter($qb, '/files/' . $query['file_type'] . '/%')
+                ));
+            }
+        }
+
         if (isset($query['not_zero']) && is_scalar($query['not_zero'])) {
             // Check the column, because this is the user value.
             $column = $this->statusColumns[$query['not_zero']] ?? 'hits';

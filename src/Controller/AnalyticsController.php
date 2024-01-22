@@ -571,6 +571,10 @@ SQL;
 
         $query['type'] = Stat::TYPE_DOWNLOAD;
         $query['user_status'] = $userStatus;
+        $query['file_type'] ??= ['original'];
+        $query['file_type'] = in_array('', $query['file_type'])
+            ? []
+            : array_unique($query['file_type']);
 
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];

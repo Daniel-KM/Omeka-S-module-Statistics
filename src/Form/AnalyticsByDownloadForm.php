@@ -30,6 +30,26 @@ class AnalyticsByDownloadForm extends Form
             // A search form doesn't need a csrf.
             ->remove('csrf')
             ->add([
+                'name' => 'file_type',
+                'type' => CommonElement\OptionalMultiCheckbox::class,
+                'options' => [
+                    'label' => 'Original and thumbnails', // @ŧranslate
+                    'value_options' => [
+                        '' => 'All', // @translate
+                        'original' => 'Original', // @translate
+                        'large' => 'Large', // @translate
+                        'medium' => 'Medium', // @translate
+                        'square' => 'Square', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'file_type',
+                    'value' => [
+                        'original',
+                    ],
+                ],
+            ])
+            ->add([
                 'type' => OmekaElement\Query::class,
                 'name' => 'query',
                 'options' => [

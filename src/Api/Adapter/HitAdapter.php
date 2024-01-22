@@ -304,6 +304,25 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
+        if (isset($query['file_type']) && $query['file_type'] !== '' && $query['file_type'] !== []) {
+            if (is_array($query['file_type'])) {
+                $exprs = [];
+                foreach ($query['file_type'] as $fileType) {
+                    $exprs[] = $expr->like(
+                        'omeka_root.url',
+                        $this->createNamedParameter($qb, '/files/' . $fileType . '/%')
+                    );
+                }
+                $orX = new \Doctrine\ORM\Query\Expr\Orx($exprs);
+                $qb->andWhere($orX);
+            } else {
+                $qb->andWhere($expr->notLike(
+                    'omeka_root.url',
+                    $this->createNamedParameter($qb, '/files/' . $query['file_type'] . '/%')
+                ));
+            }
+        }
+
         if (isset($query['ip']) && $query['ip'] !== '' && $query['ip'] !== []) {
             if (is_array($query['ip'])) {
                 $qb->andWhere($expr->in(
