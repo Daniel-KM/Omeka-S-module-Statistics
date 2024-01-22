@@ -912,10 +912,93 @@ class Analytics extends AbstractHelper
     }
 
     /**
-     * Get the most viewed specified rows with url, resource, total and data.
+     * Get the most viewed specified rows with url, pages, total and data.
      *
-     * Unlike viewedHits(), only standard resources are returned (items, media,
-     * item sets),
+     * @see \Statistics\View\Helper\Analytics::viewedHits()
+     *
+     * @param array $query A set of parameters by which to filter the objects
+     *   that get returned from the database.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return array of Hits + column total.
+     */
+    public function viewedHitsPages(array $query = [], ?int $page = null, ?int $limit = null): array
+    {
+        $defaultQuery = [
+            'page' => null,
+            'per_page' => null,
+            'limit' => null,
+            'offset' => null,
+            'sort_by' => null,
+            'sort_order' => null,
+        ];
+        $query += $defaultQuery;
+        $query['sort_order'] = strtoupper((string) $query['sort_order']) === 'DESC' ? 'DESC' : 'ASC';
+
+        // Here, it's not possible to check identified user.
+        $isAnonymous = !$this->view->identity();
+        if ($isAnonymous) {
+            $query['user_status'] = 'anonymous';
+        }
+
+        // Limit to standard resources. No, like stats.
+        // $query['type'] = 'site_pages';
+
+        // For order.
+        $query['field'] = 'url';
+
+        $request = new Request(Request::SEARCH, 'hits');
+        $request
+            ->setContent($query)
+            ->setOption('initialize', false)
+            ->setOption('finalize', false);
+
+        $sitePageAlias = $this->hitAdapter->createAlias();
+
+        // Build the search query. No event.
+        $entityManager = $this->hitAdapter->getEntityManager();
+        $qb = $entityManager
+            ->createQueryBuilder()
+            ->select(
+                'omeka_root.url AS url',
+                'COUNT(omeka_root.url) AS hits',
+                // Because there is no null, a check is needed.
+                // 'COUNT(IF(omeka_root.userId = 0, NULL, 1)) AS hits_identified',
+                // 'COUNT(CASE omeka_root.userId WHEN 0 THEN NULL ELSE 1 END) AS hits_identified',
+                'SUM(CASE omeka_root.userId WHEN 0 THEN 0 ELSE 1 END) AS hits_identified',
+                'omeka_root.entityName AS entity_name',
+                'omeka_root.entityId AS entity_id',
+                // Allow to check if the resource is deleted or unavailable.
+                // Identity is not working, neither count, use case.
+                // "IDENTITY($resourceAlias.id) AS available",
+                // "COUNT($resourceAlias.id) AS available",
+                "CASE WHEN $sitePageAlias.id IS NULL THEN 0 ELSE 1 END AS available",
+                "$sitePageAlias.title AS title",
+                'MAX(omeka_root.created) AS date'
+                // "@position:=@position+1 AS position"
+            )
+            ->from(\Statistics\Entity\Hit::class, 'omeka_root')
+            ->leftJoin(\Omeka\Entity\SitePage::class, $sitePageAlias, Expr\Join::WITH, "$sitePageAlias.id = omeka_root.entityId")
+        ;
+        $this->hitAdapter->buildBaseQuery($qb, $query);
+        $this->hitAdapter->buildQuery($qb, $query);
+        if ($isAnonymous) {
+            $qb->andWhere($qb->expr()->eq("$sitePageAlias.isPublic", 1));
+        }
+        // Don't group by id.
+        $qb
+            ->groupBy('omeka_root.url')
+            ->addGroupBy('entity_name')
+            ->addGroupBy('entity_id')
+        ;
+        $this->hitAdapter->limitQuery($qb, $query);
+        $this->hitAdapter->sortQuery($qb, $query);
+
+        return $qb->getQuery()->getScalarResult();
+    }
+
+    /**
+     * Get the most viewed specified rows with url, resource, total and data.
      *
      * @see \Statistics\View\Helper\Analytics::viewedHits()
      *
@@ -945,7 +1028,7 @@ class Analytics extends AbstractHelper
         }
 
         // Limit to standard resources.
-        $query['type'] = 'resources';
+        // $query['type'] ??= 'resources';
 
         // For order.
         $query['field'] = 'url';

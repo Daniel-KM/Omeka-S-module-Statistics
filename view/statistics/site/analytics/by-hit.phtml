@@ -43,6 +43,7 @@ $resourceToControllers = [
     'items' => 'item',
     'item_sets' => 'item-set',
     'media' => 'media',
+    'site_pages' => 'page',
 ];
 ?>
 
@@ -154,7 +155,12 @@ $resourceToControllers = [
             <td class="statistics-resource">
                 <div class="statistics-hover">
                 <?php if ($row['available'] && isset($resourceToControllers[$row['entity_name']])): ?>
+                    <?php if ($row['entity_name'] === 'site_pages'): ?>
+                    <span><?= $escape($row['title'] ?: $translate('[no title]')) ?></span>
+                    <span>[<?= '#' . $row['entity_id'] ?>]</span>
+                    <?php else: ?>
                     <a href="<?= $escapeAttr(sprintf('%s/%s/%s', $baseResourceUrl, $resourceToControllers[$row['entity_name']], $row['entity_id'])) ?>"><?= $escape($row['title'] ?: $translate('[no title]')) ?></a>
+                    <?php endif; ?>
                 <?php elseif ($row['entity_name']): ?>
                     <?= $row['entity_name'] . ' #' . $row['entity_id'] ?>
                 <?php endif; ?>
