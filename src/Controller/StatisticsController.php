@@ -304,8 +304,12 @@ class StatisticsController extends AbstractActionController
         $isByCount = !in_array($compute, ['percent', 'evolution', 'variation']);
 
         // A property is required to get stats, so get empty without a good one.
+        $process = true;
         if (!$property && !$isMetadata && $query) {
-            $this->messenger()->addError(new PsrMessage('A property is required to get statistics.')); // @translate
+            $process = false;
+            if ($data) {
+                $this->messenger()->addError(new PsrMessage('A property is required to get statistics.')); // @translate
+            }
         }
 
         switch ($byPeriodFilter) {
@@ -319,7 +323,9 @@ class StatisticsController extends AbstractActionController
                     $periods = $this->listYearMonths('resource', (int) sprintf('%04d01', $year), (int) sprintf('%04d12', $year), true);
                 } elseif ($month) {
                     $periods = null;
-                    $this->messenger()->addError(new PsrMessage('A year is required to get details by month.')); // @translate
+                    if ($data) {
+                        $this->messenger()->addError(new PsrMessage('A year is required to get details by month.')); // @translate
+                    }
                 } else {
                     $periods = $this->listYearMonths('resource', null, null, true);
                 }
@@ -352,6 +358,7 @@ class StatisticsController extends AbstractActionController
 
         if (is_null($periods)
             || (!$property && !$isMetadata)
+            || !$process
         ) {
             return $view;
         }

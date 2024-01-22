@@ -701,11 +701,14 @@ SQL;
         $sortBy = empty($query['sort_by']) ? 'hits' : $query['sort_by'];
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
+        $process = true;
+
         if ($property) {
             $joinProperty = ' AND property_id = :property_id';
             $bind['property_id'] = $this->easyMeta()->propertyId($property);
             $types['property_id'] = \Doctrine\DBAL\ParameterType::INTEGER;
-        } elseif ($query) {
+        } elseif ($data) {
+            $process = false;
             $this->messenger()->addError(new Message('A property is required to get statistics.')); // @translate
         }
 
@@ -720,7 +723,9 @@ SQL;
                     $periods = $this->listYearMonths('hit', (int) sprintf('%04d01', $year), (int) sprintf('%04d12', $year), true);
                 } elseif ($month) {
                     $periods = null;
-                    $this->messenger()->addError(new Message('A year is required to get details by month.')); // @translate
+                    if ($data) {
+                        $this->messenger()->addError(new Message('A year is required to get details by month.')); // @translate
+                    }
                 } else {
                     $periods = $this->listYearMonths('hit', null, null, true);
                 }
@@ -746,7 +751,10 @@ SQL;
         $view
             ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-value' : 'statistics/site/analytics/by-value');
 
-        if (is_null($periods) || !$property) {
+        if (is_null($periods)
+            || !$property
+            || !$process
+        ) {
             return $view;
         }
 

@@ -69,7 +69,7 @@ class StatisticsByValueForm extends Form
                     'id' => 'property',
                     'class' => 'chosen-select',
                     'data-placeholder' => 'Select a property…',
-                    'value' => 'dcterms:title',
+                    'value' => '',
                 ],
             ])
             ->add([

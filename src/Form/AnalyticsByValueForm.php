@@ -42,8 +42,6 @@ class AnalyticsByValueForm extends Form
                     'id' => 'property',
                     'class' => 'chosen-select',
                     'data-placeholder' => 'Select a property…',
-                    'required' => true,
-                    'value' => 'dcterms:title',
                 ],
             ])
             ->add([
