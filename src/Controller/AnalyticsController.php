@@ -156,7 +156,9 @@ class AnalyticsController extends AbstractActionController
 
         if ($data) {
             $form->setData($data);
-            if ($form->isValid()) {
+            // The @ fixes a warning because new DateTime->getLastErrors() may be false, not an array.
+            /** @see \Laminas\Validator\Date::convertString() */
+            if (@$form->isValid()) {
                 $query = $form->getData();
                 unset($query['csrf'], $query['submit']);
             } else {
@@ -494,7 +496,9 @@ SQL;
 
         if ($data) {
             $form->setData($data);
-            if ($form->isValid()) {
+            // The @ fixes a warning because new DateTime->getLastErrors() may be false, not an array.
+            /** @see \Laminas\Validator\Date::convertString() */
+            if (@$form->isValid()) {
                 $query = $form->getData();
                 unset($query['csrf'], $query['submit']);
             } else {
