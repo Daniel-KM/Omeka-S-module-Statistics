@@ -9,6 +9,19 @@ use Omeka\Form\Element as OmekaElement;
 
 class AnalyticsByDownloadForm extends Form
 {
+    /**
+     * @var array
+     */
+    protected $years = [];
+
+    public function __construct($name = null, array $options = [])
+    {
+        if (array_key_exists('years', $options) && is_array($options['years'])) {
+            $this->years = array_map('intval', $options['years']);
+        }
+        parent::__construct($name, $options);
+    }
+
     public function init(): void
     {
         $this
@@ -32,6 +45,76 @@ class AnalyticsByDownloadForm extends Form
                 ],
             ])
             ->add([
+                'name' => 'year',
+                'type' => CommonElement\OptionalSelect::class,
+                'options' => [
+                    'label' => 'Year', // @ŧranslate
+                    'value_options' => [
+                        '' => 'All years', // @translate
+                    ] + $this->years,
+                    'empty_value' => '',
+                ],
+                'attributes' => [
+                    'id' => 'year',
+                ],
+            ])
+            ->add([
+                'name' => 'month',
+                'type' => CommonElement\OptionalSelect::class,
+                'options' => [
+                    'label' => 'Month', // @ŧranslate
+                    'value_options' => [
+                        '' => 'All monthes', // @translate
+                        1 => 'January',
+                        2 => 'February',
+                        3 => 'March',
+                        4 => 'April',
+                        5 => 'May',
+                        6 => 'June',
+                        7 => 'July',
+                        8 => 'August',
+                        9 => 'September',
+                        10 => 'October',
+                        11 => 'November',
+                        12 => 'December',
+                    ],
+                    'empty_value' => '',
+                ],
+                'attributes' => [
+                    'id' => 'month',
+                    'class' => 'chosen-select',
+                    'data-placeholder' => 'Select a month…',
+                ],
+            ])
+            ->add([
+                'name' => 'since',
+                'type' => CommonElement\OptionalDate::class,
+                'options' => [
+                    'label' => 'From', // @ŧranslate
+                    'format' => 'Y-m-d',
+                ],
+                'attributes' => [
+                    'id' => 'since',
+                    'min' => reset($this->years) . '-01-01',
+                    'max' => end($this->years) . '-12-31',
+                    'step' => 1,
+                ],
+            ])
+            ->add([
+                'name' => 'until',
+                'type' => CommonElement\OptionalDate::class,
+                'options' => [
+                    'label' => 'Until', // @ŧranslate
+                    'format' => 'Y-m-d',
+                ],
+                'attributes' => [
+                    'id' => 'until',
+                    'min' => reset($this->years) . '-01-01',
+                    'max' => end($this->years) . '-12-31',
+                    'step' => 1,
+                ],
+            ])
+            ->add([
                 'name' => 'columns',
                 'type' => CommonElement\OptionalMultiCheckbox::class,
                 'options' => [
@@ -42,10 +125,8 @@ class AnalyticsByDownloadForm extends Form
                         'hits_anonymous' => 'Anonymous', // @translate
                         'hits_identified' => 'Identified', // @translate
                         'resource' => 'Resource', // @translate
-                        'resource_type' => 'Resource type', // @translate
                         'resource_class' => 'Resource class', // @translate
                         'resource_template' => 'Resource template', // @translate
-                        'item_sets' => 'Item sets', // @translate
                         'media_type' => 'Media type', // @translate
                         'date' => 'Last date', // @translate
                     ],
@@ -57,6 +138,7 @@ class AnalyticsByDownloadForm extends Form
                         'hits',
                         'resource',
                         'media_type',
+                        'date',
                     ],
                 ],
             ])
@@ -83,7 +165,7 @@ class AnalyticsByDownloadForm extends Form
                     ],
                 ],
                 'attributes' => [
-                    'id' => 'resource_type',
+                    'id' => 'per_page',
                     'value' => '100',
                 ],
             ])
@@ -100,5 +182,11 @@ class AnalyticsByDownloadForm extends Form
                 ],
             ])
         ;
+    }
+
+    public function setYears(array $years): self
+    {
+        $this->years = array_map('intval', $years);
+        return $this;
     }
 }

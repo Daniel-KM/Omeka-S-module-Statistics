@@ -47,7 +47,7 @@ class AnalyticsByPageForm extends Form
                     'label' => 'Filter pages with resources', // @ŧranslate
                     'value_options' => [
                         '' => 'All', // @translate
-                        '1' => 'Has resource', // @translate
+                        '1' => 'Has resource or page', // @translate
                         '0' => 'Has no resource', // @translate
                     ],
                 ],
