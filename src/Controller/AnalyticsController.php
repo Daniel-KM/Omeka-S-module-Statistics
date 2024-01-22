@@ -2,10 +2,10 @@
 
 namespace Statistics\Controller;
 
+use Common\Stdlib\PsrMessage;
 use Doctrine\DBAL\Connection;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
-use Omeka\Stdlib\Message;
 use Statistics\Entity\Stat;
 
 /**
@@ -139,9 +139,9 @@ class AnalyticsController extends AbstractActionController
             : $settings->get('statistics_default_user_status_public');
 
         if ($userStatus === 'anonymous') {
-            $whereStatus = "\nAND hit.user_id = 0";
+            $whereStatus = 'AND hit.user_id = 0';
         } elseif ($userStatus === 'identified') {
-            $whereStatus = "\nAND hit.user_id <> 0";
+            $whereStatus = 'AND hit.user_id <> 0';
         } else {
             $whereStatus = '';
         }
@@ -538,9 +538,9 @@ SQL;
             : $settings->get('statistics_default_user_status_public');
 
         if ($userStatus === 'anonymous') {
-            $whereStatus = "\nAND hit.user_id = 0";
+            $whereStatus = 'AND hit.user_id = 0';
         } elseif ($userStatus === 'identified') {
-            $whereStatus = "\nAND hit.user_id <> 0";
+            $whereStatus = 'AND hit.user_id <> 0';
         } else {
             $whereStatus = '';
         }
@@ -657,19 +657,6 @@ SQL;
         $years  = $this->listYears('resource', null, null, true);
 
         $isAdminRequest = $this->status()->isAdminRequest();
-        $settings = $this->settings();
-
-        $userStatus = $isAdminRequest
-            ? $settings->get('statistics_default_user_status_admin')
-            : $settings->get('statistics_default_user_status_public');
-
-        if ($userStatus === 'anonymous') {
-            $whereStatus = "\nAND hit.user_id = 0";
-        } elseif ($userStatus === 'identified') {
-            $whereStatus = "\nAND hit.user_id <> 0";
-        } else {
-            $whereStatus = '';
-        }
 
         $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
         $query = [];
@@ -703,13 +690,27 @@ SQL;
 
         $process = true;
 
+        $settings = $this->settings();
+
+        $userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
+
+        if ($userStatus === 'anonymous') {
+            $whereStatus = 'AND hit.user_id = 0';
+        } elseif ($userStatus === 'identified') {
+            $whereStatus = 'AND hit.user_id <> 0';
+        } else {
+            $whereStatus = '';
+        }
+
         if ($property) {
             $joinProperty = ' AND property_id = :property_id';
             $bind['property_id'] = $this->easyMeta()->propertyId($property);
             $types['property_id'] = \Doctrine\DBAL\ParameterType::INTEGER;
         } elseif ($data) {
             $process = false;
-            $this->messenger()->addError(new Message('A property is required to get statistics.')); // @translate
+            $this->messenger()->addError(new PsrMessage('A property is required to get statistics.')); // @translate
         }
 
         switch ($byPeriodFilter) {
@@ -724,7 +725,7 @@ SQL;
                 } elseif ($month) {
                     $periods = null;
                     if ($data) {
-                        $this->messenger()->addError(new Message('A year is required to get details by month.')); // @translate
+                        $this->messenger()->addError(new PsrMessage('A year is required to get details by month.')); // @translate
                     }
                 } else {
                     $periods = $this->listYearMonths('hit', null, null, true);
@@ -768,19 +769,27 @@ SQL;
                 $joinResource = '';
                 $selectValue = 'value.value AS "value", "" AS "label"';
                 $typeFilterValue = 'value.value';
-                $whereFilterValue = "\nAND value.value IS NOT NULL\nAND value.value <> ''\nAND (value.uri IS NULL OR value.uri = '')\nAND (value.value_resource_id IS NULL OR value.value_resource_id = '')";
+                $whereFilterValue = 'AND value.value IS NOT NULL
+    AND value.value <> ""
+    AND (value.uri IS NULL OR value.uri = "")
+    AND (value.value_resource_id IS NULL OR value.value_resource_id = "")';
                 break;
             case 'resource':
-                $joinResource = "\nLEFT JOIN resource ON resource.id = value.value_resource_id";
+                $joinResource = 'LEFT JOIN resource ON resource.id = value.value_resource_id';
                 $selectValue = 'value.value_resource_id AS "value", resource.title AS "label"';
                 $typeFilterValue = 'value.value_resource_id';
-                $whereFilterValue = "\nAND value.value_resource_id IS NOT NULL\nAND value.value_resource_id <> 0\nAND (value.value IS NULL OR value.value= '')\nAND (value.uri IS NULL OR value.uri = '')";
+                $whereFilterValue = 'AND value.value_resource_id IS NOT NULL
+    AND value.value_resource_id <> 0
+    AND (value.value IS NULL OR value.value= "")
+    AND (value.uri IS NULL OR value.uri = "")';
                 break;
             case 'uri':
                 $joinResource = '';
                 $selectValue = 'value.uri AS "value", value.value AS "label"';
                 $typeFilterValue = 'value.uri';
-                $whereFilterValue = "\nAND value.uri IS NOT NULL\nAND value.uri <> ''\nAND (value.value_resource_id IS NULL OR value.value_resource_id = '')";
+                $whereFilterValue = 'AND value.uri IS NOT NULL
+    AND value.uri <> ""
+    AND (value.value_resource_id IS NULL OR value.value_resource_id = "")';
                 break;
         }
 
