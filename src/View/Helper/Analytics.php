@@ -2,6 +2,7 @@
 
 namespace Statistics\View\Helper;
 
+use Doctrine\ORM\Query\Expr;
 use Laminas\View\Helper\AbstractHelper;
 use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Request;
@@ -907,7 +908,107 @@ class Analytics extends AbstractHelper
         $this->hitAdapter->sortQuery($qb, $query);
         $qb->addOrderBy('omeka_root.id', $query['sort_order']);
 
-        // Return an array with four columns.
+        return $qb->getQuery()->getScalarResult();
+    }
+
+    /**
+     * Get the most viewed specified rows with url, resource, total and data.
+     *
+     * Unlike viewedHits(), only standard resources are returned (items, media,
+     * item sets),
+     *
+     * @see \Statistics\View\Helper\Analytics::viewedHits()
+     *
+     * @param array $query A set of parameters by which to filter the objects
+     *   that get returned from the database.
+     * @param int $page Page to retrieve.
+     * @param int $limit Number of objects to return per "page".
+     * @return array of Hits + column total.
+     */
+    public function viewedHitsResources(array $query = [], ?int $page = null, ?int $limit = null): array
+    {
+        $defaultQuery = [
+            'page' => null,
+            'per_page' => null,
+            'limit' => null,
+            'offset' => null,
+            'sort_by' => null,
+            'sort_order' => null,
+        ];
+        $query += $defaultQuery;
+        $query['sort_order'] = strtoupper((string) $query['sort_order']) === 'DESC' ? 'DESC' : 'ASC';
+
+        // Here, it's not possible to check identified user.
+        $isAnonymous = !$this->view->identity();
+        if ($isAnonymous) {
+            $query['user_status'] = 'anonymous';
+        }
+
+        // Limit to standard resources.
+        $query['type'] = 'resources';
+
+        // For order.
+        $query['field'] = 'url';
+
+        $request = new Request(Request::SEARCH, 'hits');
+        $request
+            ->setContent($query)
+            ->setOption('initialize', false)
+            ->setOption('finalize', false);
+
+        $resourceAlias = $this->hitAdapter->createAlias();
+        $mediaAlias = $this->hitAdapter->createAlias();
+        // TODO To get item sets list may need a second query or a direct sql query.
+        // $itemSetsAlias = $this->hitAdapter->createAlias();
+        // $resource2Alias = $this->hitAdapter->createAlias();
+
+        // Build the search query. No event.
+        $entityManager = $this->hitAdapter->getEntityManager();
+        $qb = $entityManager
+            ->createQueryBuilder()
+            ->select(
+                'omeka_root.url AS url',
+                'COUNT(omeka_root.url) AS hits',
+                // Because there is no null, a check is needed.
+                // 'COUNT(IF(omeka_root.userId = 0, NULL, 1)) AS hits_identified',
+                // 'COUNT(CASE omeka_root.userId WHEN 0 THEN NULL ELSE 1 END) AS hits_identified',
+                'SUM(CASE omeka_root.userId WHEN 0 THEN 0 ELSE 1 END) AS hits_identified',
+                'omeka_root.entityName AS entity_name',
+                'omeka_root.entityId AS entity_id',
+                // Allow to check if the resource is deleted or unavailable.
+                // Identity is not working, neither count, use case.
+                // "IDENTITY($resourceAlias.id) AS available",
+                // "COUNT($resourceAlias.id) AS available",
+                "CASE WHEN $resourceAlias.id IS NULL THEN 0 ELSE 1 END AS available",
+                "$resourceAlias.title AS title",
+                "IDENTITY($resourceAlias.resourceClass) AS resource_class_id",
+                "IDENTITY($resourceAlias.resourceTemplate) AS resource_template_id",
+                "$mediaAlias.mediaType AS media_type",
+                // "GROUP_CONCAT($itemSetsAlias.itemSetId) AS item_set_ids",
+                // "GROUP_CONCAT($resource2Alias.title SEPARATOR CHAR(31)) AS item_set_titles",
+                'MAX(omeka_root.created) AS date'
+                // "@position:=@position+1 AS position"
+            )
+            ->from(\Statistics\Entity\Hit::class, 'omeka_root')
+            ->leftJoin(\Omeka\Entity\Resource::class, $resourceAlias, Expr\Join::WITH, "$resourceAlias.id = omeka_root.entityId")
+            ->leftJoin(\Omeka\Entity\Media::class, $mediaAlias, Expr\Join::WITH, "$mediaAlias.id = omeka_root.entityId")
+            // ->leftJoin('item_item_set', $itemSetsAlias, Expr\Join::WITH, "$itemSetsAlias.item_id = omeka_root.entityId")
+            // ->leftJoin(\Omeka\Entity\Resource::class, $resource2Alias, Expr\Join::WITH, "$resource2Alias.id = $itemSetsAlias.item_set_id")
+        ;
+        $this->hitAdapter->buildBaseQuery($qb, $query);
+        $this->hitAdapter->buildQuery($qb, $query);
+        if ($isAnonymous) {
+            $qb->andWhere($qb->expr()->eq("$resourceAlias.isPublic", 1));
+        }
+        // Don't group by id.
+        $qb
+            ->groupBy('omeka_root.url')
+            ->addGroupBy('entity_name')
+            ->addGroupBy('entity_id')
+        ;
+        $this->hitAdapter->limitQuery($qb, $query);
+        $this->hitAdapter->sortQuery($qb, $query);
+
         return $qb->getQuery()->getScalarResult();
     }
 

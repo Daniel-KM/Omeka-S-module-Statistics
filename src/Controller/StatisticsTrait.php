@@ -28,7 +28,7 @@ trait StatisticsTrait
             ->from($table, $table)
             ->orderBy('period', 'asc');
         // Don't use function YEAR() in where for speed. Extract() is useless here.
-        // TODO Add a generated index (doctrine 2.11, so Omeka 4).
+        // TODO Add a generated index (doctrine 2.11, so Omeka 4). or simply >= and <=.
         if ($fromYear && $toYear) {
             method_exists($expr, 'between')
                 ? $qb->andWhere($expr->between($table . '.' . $field, ':from_date', ':to_date'))
@@ -77,7 +77,7 @@ trait StatisticsTrait
             ->from($table, $table)
             ->orderBy('period', 'asc');
         // Don't use function YEAR() in where for speed. Extract() is useless here.
-        // TODO Add a generated index (doctrine 2.11, so Omeka 4).
+        // TODO Add a generated index (doctrine 2.11, so Omeka 4). or simply >= and <=.
         $bind = [];
         $types = [];
         if ($fromYearMonth) {

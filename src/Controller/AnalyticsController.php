@@ -10,6 +10,8 @@ use Statistics\Entity\Stat;
 
 /**
  * Controller to browse Analytics.
+ *
+ * @todo Create an single output (or two) for all statistics (with or without period).
  */
 class AnalyticsController extends AbstractActionController
 {
@@ -356,12 +358,18 @@ SQL;
         $userStatusBrowse = $defaultSorts[$userStatus] ?? 'hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
+        $years  = $this->listYears('hit', null, null, true);
+
         /** @var \Statistics\Form\AnalyticsByResourceForm $form */
-        $form = $this->getForm(\Statistics\Form\AnalyticsByResourceForm::class);
+        $form = $this->getForm(\Statistics\Form\AnalyticsByResourceForm::class, [
+            'years' => $years,
+        ]);
 
         if ($data) {
             $form->setData($data);
-            if ($form->isValid()) {
+            // The @ fixes a warning because new DateTime->getLastErrors() may be false, not an array.
+            /** @see \Laminas\Validator\Date::convertString() */
+            if (@$form->isValid()) {
                 $query = $form->getData();
             } else {
                 $this->messenger()->addFormErrors($form);
@@ -378,26 +386,80 @@ SQL;
         $query['type'] = Stat::TYPE_RESOURCE;
         $query['user_status'] = $userStatus;
 
-        $columns = empty($query['columns']) ? ['url', 'hits', 'resource', 'resource_template'] : $query['columns'];
+        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
+        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
+        if ($year || $month) {
+            if (!$year) {
+                $year = end($years);
+            }
+            if ($month) {
+                $query['since'] = sprintf('%04d-%02d', $year, $month) . '-01 00:00:00';
+                $query['until'] = sprintf('%04d-%02d', $year, $month) . '-31 23:59:59';
+            } else {
+                $query['since'] = sprintf('%04d', $year) . '-01-01 00:00:00';
+                $query['until'] = sprintf('%04d', $year) . '-12-31 23:59:59';
+            }
+            unset($query['year'], $query['month']);
+        }
+
+        $columns = empty($query['columns'])
+            /** @see \Statistics\Form\AnalyticsByResourceForm */
+            ? ['url', 'hits', 'resource', 'resource_type', 'resource_template']
+            : $query['columns'];
         unset($query['columns']);
 
         // Page is not in the form.
         $query['page'] = empty($data['page']) ? 1 : (int) $data['page'];
 
-        $response = $this->api()->search('stats', $query);
-        $this->paginator($response->getTotalResults());
-        $stats = $response->getContent();
+        // Use the aggregated table "stat" when possible.
+        $quick = empty($query['since']) && empty($query['until']);
+        if ($quick) {
+            $response = $this->api()->search('stats', $query);
+            $stats = $response->getContent();
+
+            $this->paginator($response->getTotalResults());
+
+            $view = new ViewModel([
+                'form' => $form,
+                'resources' => $stats ?? null,
+                'stats' => $stats,
+                'userStatus' => $userStatus,
+                'type' => Stat::TYPE_RESOURCE,
+                'columns' => $columns,
+            ]);
+            return $view
+                ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-stat' : 'statistics/site/analytics/by-stat');
+        }
+
+        // This is a array with flat sub-arrays.
+        $table = $this->analytics()->viewedHitsResources($query, $query['page'], empty($query['per_page']) ? 100: (int) $query['per_page']);
+        $this->paginator(count($table));
+
+        // Same as \Statisctics\Form\AnalyticsByResourceForm columns.
+        $headers = [
+            'url' => 'Page', // @translate
+            'hits' => 'Hits', // @translate
+            'hits_anonymous' => 'Anonymous', // @translate
+            'hits_identified' => 'Identified', // @translate
+            'resource' => 'Resource', // @translate
+            'resource_type' => 'Resource type', // @translate
+            'resource_class' => 'Resource class', // @translate
+            'resource_template' => 'Resource template', // @translate
+            'item_sets' => 'Item sets', // @translate
+            'media_type' => 'Media type', // @translate
+            'date' => 'Last date', // @translate
+        ];
+        $headers = $columns ? array_intersect_key($headers, array_flip($columns)) : $headers;
 
         $view = new ViewModel([
             'form' => $form,
-            'resources' => $stats,
-            'stats' => $stats,
+            'headers' => $headers,
+            'table' => $table,
             'userStatus' => $userStatus,
             'type' => Stat::TYPE_RESOURCE,
-            'columns' => $columns,
         ]);
         return $view
-            ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-stat' : 'statistics/site/analytics/by-stat');
+            ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-hit' : 'statistics/site/analytics/by-hit');
     }
 
     /**

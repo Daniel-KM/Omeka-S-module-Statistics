@@ -2,6 +2,7 @@
 /**
  * @var \Laminas\View\Renderer\PhpRenderer $this
  * @var \Statistics\Form\AnalyticsByDownloadForm|\Statistics\Form\AnalyticsByResourceForm $form
+ * @var \Statistics\Api\Representation\StatRepresentation[] $resources
  * @var \Statistics\Api\Representation\StatRepresentation[] $stats
  * @var string $userStatus
  * @var string $type
@@ -66,12 +67,12 @@ $form->prepare();
                 <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'hits'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Hits') ?></a>
             </th>
             <?php endif; ?>
-            <?php if (empty($columns) || in_array('anonymous', $columns)): ?>
+            <?php if (empty($columns) || in_array('hits_anonymous', $columns)): ?>
             <th>
                 <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'anonymous'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Anonymous') ?></a>
             </th>
             <?php endif; ?>
-            <?php if (empty($columns) || in_array('identified', $columns)): ?>
+            <?php if (empty($columns) || in_array('hits_identified', $columns)): ?>
             <th>
                 <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'identified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Identified') ?></a>
             </th>
@@ -132,12 +133,12 @@ $form->prepare();
                 <?= $stat->totalHits() ?>
             </td>
             <?php endif; ?>
-            <?php if (empty($columns) || in_array('anonymous', $columns)): ?>
+            <?php if (empty($columns) || in_array('hits_anonymous', $columns)): ?>
             <td class="statistics-hits stats-anonymous">
                 <?= $stat->totalHits('anonymous') ?>
             </td>
             <?php endif; ?>
-            <?php if (empty($columns) || in_array('identified', $columns)): ?>
+            <?php if (empty($columns) || in_array('hits_identified', $columns)): ?>
             <td class="statistics-hits stats-identified">
                 <?= $stat->totalHits('identified') ?>
             </td>
