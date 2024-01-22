@@ -9,12 +9,33 @@
             "email": "Daniel.git@Berthereau.net"
         }
     ],
+    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics",
+    "support": {
+        "issues": "https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics/-/issues",
+        "forum": "https://forum.omeka.org/"
+    },
+    "keywords": [
+        "Omeka S",
+        "module",
+        "admin",
+        "statistics"
+    ],
+    "require": {
+        "openspout/openspout": "^3.7"
+    },
     "autoload": {
         "psr-4": {
             "Statistics\\": "src/"
         }
     },
-    "require": {
-        "openspout/openspout": "^3.7"
+    "config": {
+        "platform": {
+            "php": "7.4"
+        },
+        "allow-plugins": {
+            "composer/installers": true,
+            "cweagans/composer-patches": true,
+            "oomphinc/composer-installers-extender": true
+        }
     }
 }

@@ -9,6 +9,7 @@ if (!class_exists(\Common\TraitModule::class)) {
 use Common\TraitModule;
 use Laminas\EventManager\Event;
 use Laminas\EventManager\SharedEventManagerInterface;
+use Laminas\ModuleManager\ModuleManager;
 use Laminas\Mvc\MvcEvent;
 use Laminas\View\Renderer\PhpRenderer;
 use Omeka\Api\Representation\AbstractResourceRepresentation;
@@ -20,7 +21,7 @@ use Omeka\Module\AbstractModule;
  * Logger that counts views of pages and resources and makes stats about usage
  * and users of the site.
  *
- * @copyright Daniel Berthereau, 2014-2023
+ * @copyright Daniel Berthereau, 2014-2024
  * @license http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.txt
  */
 class Module extends AbstractModule
@@ -28,6 +29,11 @@ class Module extends AbstractModule
     const NAMESPACE = __NAMESPACE__;
 
     use TraitModule;
+
+    public function init(ModuleManager $moduleManager): void
+    {
+        require_once __DIR__ . '/vendor/autoload.php';
+    }
 
     protected function postInstall(): void
     {

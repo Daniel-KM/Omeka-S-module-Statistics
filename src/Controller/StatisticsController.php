@@ -2,8 +2,6 @@
 
 namespace Statistics\Controller;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-
 use Common\Stdlib\PsrMessage;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
