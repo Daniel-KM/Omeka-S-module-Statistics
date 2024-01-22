@@ -132,20 +132,6 @@ class AnalyticsController extends AbstractActionController
 
         $isAdminRequest = $this->status()->isAdminRequest();
 
-        $settings = $this->settings();
-
-        $userStatus = $isAdminRequest
-            ? $settings->get('statistics_default_user_status_admin')
-            : $settings->get('statistics_default_user_status_public');
-
-        if ($userStatus === 'anonymous') {
-            $whereStatus = 'AND hit.user_id = 0';
-        } elseif ($userStatus === 'identified') {
-            $whereStatus = 'AND hit.user_id <> 0';
-        } else {
-            $whereStatus = '';
-        }
-
         $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
         $query = [];
 
@@ -170,6 +156,12 @@ class AnalyticsController extends AbstractActionController
         $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
+        $resourceType = $query['resource_type'] ?? null;
+        $queryQuery = $query['query'] ?? null;
+        if (is_string($queryQuery)) {
+            parse_str($query['query'], $queryQuery);
+        }
+        $queryQuery = $queryQuery ?: null;
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $since = $query['since'] ?? null;
@@ -183,6 +175,38 @@ class AnalyticsController extends AbstractActionController
         $force = $appendDates['force'];
         $whereYear = $appendDates['whereYear'];
         $whereMonth = $appendDates['whereMonth'];
+        $whereIn = '';
+
+        $settings = $this->settings();
+        $userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
+        if ($userStatus === 'anonymous') {
+            $whereStatus = 'AND hit.user_id = 0';
+        } elseif ($userStatus === 'identified') {
+            $whereStatus = 'AND hit.user_id <> 0';
+        } else {
+            $whereStatus = '';
+        }
+
+        if ($resourceType && !in_array($resourceType, ['', 'resources', 'site_pages'])) {
+            $whereEntityName = 'hit.entity_name = :entity_name';
+            $bind['entity_name'] = $resourceType;
+            $types['entity_name'] = \Doctrine\DBAL\ParameterType::STRING;
+        } else {
+            $whereEntityName = '1 = 1';
+        }
+
+        if ($queryQuery && !in_array($resourceType, ['', 'resources', 'site_pages'])) {
+            $subIds = $this->api()->search($resourceType, $queryQuery, ['returnScalar' => 'id'])->getContent();
+            if ($subIds) {
+                $whereIn = 'AND hit.entity_id IN (:entity_ids)';
+                $bind['entity_ids'] = $subIds;
+                $types['entity_ids'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+            } else {
+                $whereIn = 'AND hit.entity_id = -1';
+            }
+        }
 
         if ($since && $until) {
             $whereBetween = 'AND hit.created BETWEEN :since AND :until';
@@ -201,11 +225,12 @@ class AnalyticsController extends AbstractActionController
         $sql = <<<SQL
 SELECT hit.site_id, COUNT(hit.id) AS total_hits
 FROM hit hit $force
-WHERE hit.entity_name = "items"
+WHERE $whereEntityName
     $whereStatus
     $whereYear
     $whereMonth
     $whereBetween
+    $whereIn
 GROUP BY hit.site_id
 ORDER BY total_hits ASC
 ;
@@ -341,10 +366,12 @@ SQL;
         $query['sort_by'] = empty($data['sort_by']) ? 'hits' : $data['sort_by'];
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
+        // The query includes the resource type and a query.
+
         $query['type'] = Stat::TYPE_RESOURCE;
         $query['user_status'] = $userStatus;
-
         $response = $this->api()->search('stats', $query);
+
         $this->paginator($response->getTotalResults());
         $stats = $response->getContent();
 
@@ -394,6 +421,9 @@ SQL;
         // Sort is not in the form.
         $query['sort_by'] = empty($data['sort_by']) ? 'hits' : $data['sort_by'];
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
+
+        // The query includes a query, but need a resource type.
+        $query['entity_name'] = 'media';
 
         $query['type'] = Stat::TYPE_DOWNLOAD;
         $query['user_status'] = $userStatus;
@@ -455,6 +485,8 @@ SQL;
             ? (int) $settings->get('pagination_per_page', 25)
             : (int) $this->siteSettings()->get('pagination_per_page', 25);
 
+        // The query includes the resource type and a query.
+
         // Don't use api, because this is a synthesis, not a list of resources.
         /** @var \Statistics\View\Helper\Analytics $analytics */
         $analytics = $this->viewHelpers()->get('analytics');
@@ -514,6 +546,8 @@ SQL;
         $form = $this->getForm(\Statistics\Form\AnalyticsByItemSetForm::class, [
             'years' => $years,
         ]);
+        $form->remove('resource_type');
+        $form->remove('query');
 
         if ($data) {
             $form->setData($data);
@@ -531,20 +565,6 @@ SQL;
         $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
-        $settings = $this->settings();
-
-        $userStatus = $isAdminRequest
-            ? $settings->get('statistics_default_user_status_admin')
-            : $settings->get('statistics_default_user_status_public');
-
-        if ($userStatus === 'anonymous') {
-            $whereStatus = 'AND hit.user_id = 0';
-        } elseif ($userStatus === 'identified') {
-            $whereStatus = 'AND hit.user_id <> 0';
-        } else {
-            $whereStatus = '';
-        }
-
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $since = $query['since'] ?? null;
@@ -558,6 +578,18 @@ SQL;
         $force = $appendDates['force'];
         $whereYear = $appendDates['whereYear'];
         $whereMonth = $appendDates['whereMonth'];
+
+        $settings = $this->settings();
+        $userStatus = $isAdminRequest
+            ? $settings->get('statistics_default_user_status_admin')
+            : $settings->get('statistics_default_user_status_public');
+        if ($userStatus === 'anonymous') {
+            $whereStatus = 'AND hit.user_id = 0';
+        } elseif ($userStatus === 'identified') {
+            $whereStatus = 'AND hit.user_id <> 0';
+        } else {
+            $whereStatus = '';
+        }
 
         if ($since && $until) {
             $whereBetween = 'AND hit.created BETWEEN :since AND :until';
@@ -680,6 +712,12 @@ SQL;
         $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
+        $resourceType = $query['resource_type'] ?? null;
+        $queryQuery = $query['query'] ?? null;
+        if (is_string($queryQuery)) {
+            parse_str($query['query'], $queryQuery);
+        }
+        $queryQuery = $queryQuery ?: null;
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $property = $query['property'] ?? null;
@@ -691,11 +729,9 @@ SQL;
         $process = true;
 
         $settings = $this->settings();
-
         $userStatus = $isAdminRequest
             ? $settings->get('statistics_default_user_status_admin')
             : $settings->get('statistics_default_user_status_public');
-
         if ($userStatus === 'anonymous') {
             $whereStatus = 'AND hit.user_id = 0';
         } elseif ($userStatus === 'identified') {
@@ -757,6 +793,26 @@ SQL;
             || !$process
         ) {
             return $view;
+        }
+
+        if ($resourceType && !in_array($resourceType, ['', 'resources', 'site_pages'])) {
+            $filterEntityName = true;
+            $whereEntityName = 'hit.entity_name = :entity_name';
+        } else {
+            $filterEntityName = false;
+            $whereEntityName = '1 = 1';
+        }
+
+        if ($queryQuery && !in_array($resourceType, ['', 'resources', 'site_pages'])) {
+            $subIds = $this->api()->search($resourceType, $queryQuery, ['returnScalar' => 'id'])->getContent();
+            if ($subIds) {
+                $whereIn = 'AND hit.entity_id IN (:entity_ids)';
+            } else {
+                $whereIn = 'AND hit.entity_id = -1';
+            }
+        } else {
+            $subIds = null;
+            $whereIn = '';
         }
 
         // TODO There is no pagination currently in stats by value.
@@ -826,6 +882,14 @@ SQL;
                 $force = $appendDates['force'];
                 $whereYear = $appendDates['whereYear'];
                 $whereMonth = $appendDates['whereMonth'];
+                if ($filterEntityName) {
+                    $bind['entity_name'] = $resourceType;
+                    $types['entity_name'] = \Doctrine\DBAL\ParameterType::STRING;
+                }
+                if ($whereIn) {
+                    $bind['entity_ids'] = $subIds;
+                    $types['entity_ids'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+                }
 
                 $sql = <<<SQL
 SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hits_sub
@@ -833,11 +897,12 @@ FROM hit hit $force
 JOIN value ON hit.entity_id = value.resource_id
 $joinProperty
 $joinResource
-WHERE hit.entity_name = "items"
+WHERE $whereEntityName
     $whereStatus
     $whereYear
     $whereMonth
     $whereFilterValue
+    $whereIn
 GROUP BY $typeFilterValue
 ORDER BY hits DESC
 ;
@@ -860,6 +925,14 @@ SQL;
             $force = $appendDates['force'];
             $whereYear = $appendDates['whereYear'];
             $whereMonth = $appendDates['whereMonth'];
+            if ($filterEntityName) {
+                $bind['entity_name'] = $resourceType;
+                $types['entity_name'] = \Doctrine\DBAL\ParameterType::STRING;
+            }
+            if ($whereIn) {
+                $bind['entity_ids'] = $subIds;
+                $types['entity_ids'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+            }
 
             $sql = <<<SQL
 SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hits_sub
@@ -867,11 +940,12 @@ FROM hit hit $force
 JOIN value ON hit.entity_id = value.resource_id
 $joinProperty
 $joinResource
-WHERE hit.entity_name = "items"
+WHERE $whereEntityName
     $whereStatus
     $whereYear
     $whereMonth
     $whereFilterValue
+    $whereIn
 GROUP BY $typeFilterValue
 ORDER BY hits DESC
 ;

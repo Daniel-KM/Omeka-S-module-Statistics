@@ -56,6 +56,7 @@ class StatisticsByValueForm extends Form
                     ],
                 ],
             ])
+            // TODO Add a filter query to statistics by value.
             ->add([
                 'name' => 'property',
                 'type' => OmekaElement\PropertySelect::class,

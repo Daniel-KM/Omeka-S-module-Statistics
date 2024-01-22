@@ -4,6 +4,7 @@ namespace Statistics\Form;
 
 use Laminas\Form\Element;
 use Laminas\Form\Form;
+use Omeka\Form\Element as OmekaElement;
 
 class AnalyticsByDownloadForm extends Form
 {
@@ -14,6 +15,21 @@ class AnalyticsByDownloadForm extends Form
             ->setAttribute('method', 'GET')
             // A search form doesn't need a csrf.
             ->remove('csrf')
+            ->add([
+                'type' => OmekaElement\Query::class,
+                'name' => 'query',
+                'options' => [
+                    'label' => 'Resource query', // @translate
+                    'info' => 'Filter the resources', // @translate
+                    'documentation' => 'https://omeka.org/s/docs/user-manual/sites/site_pages/#browse-preview',
+                    'query_resource_type' => 'media',
+                    'query_partial_excludelist' => [
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'query',
+                ],
+            ])
             ->add([
                 'name' => 'submit',
                 'type' => Element\Button::class,

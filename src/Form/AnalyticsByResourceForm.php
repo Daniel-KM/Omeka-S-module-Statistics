@@ -5,6 +5,7 @@ namespace Statistics\Form;
 use Common\Form\Element as CommonElement;
 use Laminas\Form\Element;
 use Laminas\Form\Form;
+use Omeka\Form\Element as OmekaElement;
 
 class AnalyticsByResourceForm extends Form
 {
@@ -31,6 +32,21 @@ class AnalyticsByResourceForm extends Form
                 'attributes' => [
                     'id' => 'resource_type',
                     'value' => '',
+                ],
+            ])
+            ->add([
+                'type' => OmekaElement\Query::class,
+                'name' => 'query',
+                'options' => [
+                    'label' => 'Resource query', // @translate
+                    'info' => 'Filter the resources', // @translate
+                    'documentation' => 'https://omeka.org/s/docs/user-manual/sites/site_pages/#browse-preview',
+                    'query_resource_type' => 'resources',
+                    'query_partial_excludelist' => [
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'query',
                 ],
             ])
             ->add([
