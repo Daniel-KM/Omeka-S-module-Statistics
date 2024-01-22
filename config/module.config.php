@@ -63,6 +63,7 @@ return [
     ],
     'controller_plugins' => [
         'factories' => [
+            'analytics' => Service\ControllerPlugin\AnalyticsFactory::class,
             'logCurrentUrl' => Service\ControllerPlugin\LogCurrentUrlFactory::class,
         ],
     ],
