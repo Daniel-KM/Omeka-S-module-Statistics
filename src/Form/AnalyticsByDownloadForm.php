@@ -2,6 +2,7 @@
 
 namespace Statistics\Form;
 
+use Common\Form\Element as CommonElement;
 use Laminas\Form\Element;
 use Laminas\Form\Form;
 use Omeka\Form\Element as OmekaElement;
@@ -28,6 +29,35 @@ class AnalyticsByDownloadForm extends Form
                 ],
                 'attributes' => [
                     'id' => 'query',
+                ],
+            ])
+            ->add([
+                'name' => 'columns',
+                'type' => CommonElement\OptionalMultiCheckbox::class,
+                'options' => [
+                    'label' => 'Columns', // @ŧranslate
+                    'value_options' => [
+                        'url' => 'Page', // @translate
+                        'hits' => 'Hits', // @translate
+                        'hits_anonymous' => 'Anonymous', // @translate
+                        'hits_identified' => 'Identified', // @translate
+                        'resource' => 'Resource', // @translate
+                        'resource_type' => 'Resource type', // @translate
+                        'resource_class' => 'Resource class', // @translate
+                        'resource_template' => 'Resource template', // @translate
+                        'item_sets' => 'Item sets', // @translate
+                        'media_type' => 'Media type', // @translate
+                        'date' => 'Last date', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'resource_type',
+                    'value' => [
+                        'url',
+                        'hits',
+                        'resource',
+                        'media_type',
+                    ],
                 ],
             ])
             ->add([

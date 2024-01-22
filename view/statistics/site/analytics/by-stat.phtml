@@ -5,6 +5,7 @@
  * @var \Statistics\Api\Representation\StatRepresentation[] $stats
  * @var string $userStatus
  * @var string $type
+ * @var array $columns
  *
  * @todo Add the basePath to the hit url.
  */
@@ -55,61 +56,147 @@ $form->prepare();
 <table class="tablesaw statistics-table" data-tablesaw-mode="stack">
     <thead>
         <tr>
+            <?php if (empty($columns) || in_array('url', $columns)): ?>
             <th>
                 <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'url'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Page') ?></a>
             </th>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('hits', $columns)): ?>
             <th>
                 <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'hits'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Hits') ?></a>
             </th>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('anonymous', $columns)): ?>
             <th>
                 <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'anonymous'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Anonymous') ?></a>
             </th>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('identified', $columns)): ?>
             <th>
                 <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'identified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Identified') ?></a>
             </th>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('resource', $columns)): ?>
             <th>
                 <span><?= $translate('Dedicated resource') ?></span>
             </th>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('resource_type', $columns)): ?>
             <th>
                 <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'resource_type'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Resource type') ?></a>
             </th>
+            <?php endif; ?>
+            <?php if ($type === 'resource' || $type === 'download'): ?>
+            <?php if (empty($columns) || in_array('resource_class', $columns)): ?>
             <th>
-                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'modified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Date') ?></a>
+                <span><?= $translate('Resource class') ?></span>
             </th>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('resource_template', $columns)): ?>
+            <th>
+                <span><?= $translate('Resource template') ?></span>
+            </th>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('item_sets', $columns)): ?>
+            <th>
+                <span><?= $translate('Item sets') ?></span>
+            </th>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('media_type', $columns)): ?>
+            <th>
+                <span><?= $translate('Media type') ?></span>
+            </th>
+            <?php endif; ?>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('date', $columns)): ?>
+            <th>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'modified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Last date') ?></a>
+            </th>
+            <?php endif; ?>
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($stats as $stat): ?>
+        <?php foreach ($stats as $stat):
+            $statResource = $stat->entityResource();
+            ?>
         <tr class="statistics-stat">
+            <?php if (empty($columns) || in_array('url', $columns)): ?>
             <td class="statistics-url">
                 <div class="statistics-hover">
                     <a href="<?= $escapeAttr($basePath . $stat->hitUrl()) ?>"><?= $escape($stat->hitUrl()) ?></a>
                 </div>
             </td>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('hits', $columns)): ?>
             <td class="statistics-hits">
                 <?= $stat->totalHits() ?>
             </td>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('anonymous', $columns)): ?>
             <td class="statistics-hits stats-anonymous">
                 <?= $stat->totalHits('anonymous') ?>
             </td>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('identified', $columns)): ?>
             <td class="statistics-hits stats-identified">
                 <?= $stat->totalHits('identified') ?>
             </td>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('resource', $columns)): ?>
             <td class="statistics-resource">
-                <?php if ($stat->hasResource()): ?>
+                <?php if ($statResource): ?>
                 <div class="statistics-hover">
                     <?= $stat->linkEntity() ?>
                 </div>
                 <?php endif; ?>
             </td>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('resource_type', $columns)): ?>
             <td class="statistics-record-type">
-                <?php if ($stat->hasResource()): ?>
+                <?php if ($statResource): ?>
                     <?= $stat->humanResourceType() ?>
                 <?php endif; ?>
             </td>
-            <td>
-                <?= $escape($stat->modified()->format('Y-m-j H:i:s')) ?>
+            <?php endif; ?>
+            <?php if ($type === 'resource' || $type === 'download'): ?>
+            <?php if (empty($columns) || in_array('resource_class', $columns)): ?>
+            <td class="statistics-resource-class">
+                <?php if ($statResource && $statResource instanceof \Omeka\Api\Representation\AbstractResourceEntityRepresentation): ?>
+                    <?= $statResource->displayResourceClassLabel() ?>
+                <?php endif; ?>
             </td>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('resource_template', $columns)): ?>
+            <td class="statistics-resource-template">
+                <?php if ($statResource && $statResource instanceof \Omeka\Api\Representation\AbstractResourceEntityRepresentation): ?>
+                    <?= $statResource->displayResourceTemplateLabel() ?>
+                <?php endif; ?>
+            </td>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('item_sets', $columns)): ?>
+            <td class="statistics-item-set">
+                <?php if ($statResource && $statResource instanceof \Omeka\Api\Representation\ItemRepresentation): ?>
+                    <ul>
+                    <?php foreach ($statResource->itemSets() as $itemSet): ?>
+                    <li><?= $itemSet->link($itemSet->displayTitle()) ?></li>
+                    <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            </td>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('media_type', $columns)): ?>
+            <td class="statistics-media-type">
+                <?php if ($statResource && $statResource instanceof \Omeka\Api\Representation\MediaRepresentation): ?>
+                    <?= $statResource->mediaType() ?></li>
+                <?php endif; ?>
+            </td>
+            <?php endif; ?>
+            <?php endif; ?>
+            <?php if (empty($columns) || in_array('date', $columns)): ?>
+            <td>
+                <?= $escape($stat->modified()->format('Y-m-d H:i:s')) ?>
+            </td>
+            <?php endif; ?>
         </tr>
         <?php endforeach; ?>
     </tbody>

@@ -315,6 +315,9 @@ SQL;
         $query['user_status'] = $userStatus;
         $query['has_resource'] ??= '';
 
+        $columns = empty($query['columns']) ? ['url', 'hits', 'resource'] : $query['columns'];
+        unset($query['columns']);
+
         $response = $this->api()->search('stats', $query);
         $this->paginator($response->getTotalResults());
         $stats = $response->getContent();
@@ -325,6 +328,7 @@ SQL;
             'stats' => $stats,
             'userStatus' => $userStatus,
             'type' => Stat::TYPE_PAGE,
+            'columns' => $columns,
         ]);
         return $view
             ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-stat' : 'statistics/site/analytics/by-stat');
@@ -370,8 +374,11 @@ SQL;
 
         $query['type'] = Stat::TYPE_RESOURCE;
         $query['user_status'] = $userStatus;
-        $response = $this->api()->search('stats', $query);
 
+        $columns = empty($query['columns']) ? ['url', 'hits', 'resource', 'resource_template'] : $query['columns'];
+        unset($query['columns']);
+
+        $response = $this->api()->search('stats', $query);
         $this->paginator($response->getTotalResults());
         $stats = $response->getContent();
 
@@ -381,6 +388,7 @@ SQL;
             'stats' => $stats,
             'userStatus' => $userStatus,
             'type' => Stat::TYPE_RESOURCE,
+            'columns' => $columns,
         ]);
         return $view
             ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-stat' : 'statistics/site/analytics/by-stat');
@@ -428,6 +436,9 @@ SQL;
         $query['type'] = Stat::TYPE_DOWNLOAD;
         $query['user_status'] = $userStatus;
 
+        $columns = empty($query['columns']) ? ['url', 'hits', 'resource', 'media_type'] : $query['columns'];
+        unset($query['columns']);
+
         $response = $this->api()->search('stats', $query);
         $this->paginator($response->getTotalResults());
         $stats = $response->getContent();
@@ -438,6 +449,7 @@ SQL;
             'stats' => $stats,
             'userStatus' => $userStatus,
             'type' => Stat::TYPE_DOWNLOAD,
+            'columns' => $columns,
         ]);
         return $view
             ->setTemplate($isAdminRequest ? 'statistics/admin/analytics/by-stat' : 'statistics/site/analytics/by-stat');

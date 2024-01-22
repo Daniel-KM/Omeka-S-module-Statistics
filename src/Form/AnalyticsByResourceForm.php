@@ -50,6 +50,36 @@ class AnalyticsByResourceForm extends Form
                 ],
             ])
             ->add([
+                'name' => 'columns',
+                'type' => CommonElement\OptionalMultiCheckbox::class,
+                'options' => [
+                    'label' => 'Columns', // @ŧranslate
+                    'value_options' => [
+                        'url' => 'Page', // @translate
+                        'hits' => 'Hits', // @translate
+                        'hits_anonymous' => 'Anonymous', // @translate
+                        'hits_identified' => 'Identified', // @translate
+                        'resource' => 'Resource', // @translate
+                        'resource_type' => 'Resource type', // @translate
+                        'resource_class' => 'Resource class', // @translate
+                        'resource_template' => 'Resource template', // @translate
+                        'item_sets' => 'Item sets', // @translate
+                        'media_type' => 'Media type', // @translate
+                        'date' => 'Last date', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'resource_type',
+                    'value' => [
+                        'url',
+                        'hits',
+                        'resource',
+                        'resource_type',
+                        'resource_template',
+                    ],
+                ],
+            ])
+            ->add([
                 'name' => 'submit',
                 'type' => Element\Button::class,
                 'options' => [
