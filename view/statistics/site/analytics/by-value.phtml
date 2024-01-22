@@ -40,6 +40,8 @@ $isYearPeriods = $byPeriodFilter === 'year';
 
 $submit = $form->get('submit');
 $form->remove('submit');
+
+$form->prepare();
 ?>
 
 <?= $this->pageTitle($translate('By value'), 1, $isAdminRequest ? $translate('Analytics') : null) ?>

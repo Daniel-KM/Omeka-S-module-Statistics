@@ -72,6 +72,34 @@ class AnalyticsBySiteForm extends Form
                 ],
             ])
             ->add([
+                'name' => 'since',
+                'type' => CommonElement\OptionalDate::class,
+                'options' => [
+                    'label' => 'From', // @ŧranslate
+                    'format' => 'Y-m-d',
+                ],
+                'attributes' => [
+                    'id' => 'since',
+                    'min' => reset($this->years) . '-01-01',
+                    'max' => end($this->years) . '-12-31',
+                    'step' => 1,
+                ],
+            ])
+            ->add([
+                'name' => 'until',
+                'type' => CommonElement\OptionalDate::class,
+                'options' => [
+                    'label' => 'Until', // @ŧranslate
+                    'format' => 'Y-m-d',
+                ],
+                'attributes' => [
+                    'id' => 'until',
+                    'min' => reset($this->years) . '-01-01',
+                    'max' => end($this->years) . '-12-31',
+                    'step' => 1,
+                ],
+            ])
+            ->add([
                 'name' => 'submit',
                 'type' => Element\Submit::class,
                 'options' => [

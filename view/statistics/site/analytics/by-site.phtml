@@ -25,6 +25,8 @@ $currentUrl = $urlHelper(null, [], true);
 
 $submit = $form->get('submit');
 $form->remove('submit');
+
+$form->prepare();
 ?>
 
 <?= $this->pageTitle($translate('By site'), 1, $isAdminRequest ? $translate('Analytics') : null) ?>

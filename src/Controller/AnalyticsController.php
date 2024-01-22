@@ -166,6 +166,8 @@ class AnalyticsController extends AbstractActionController
 
         $year = $query['year'] ?? null;
         $month = $query['month'] ?? null;
+        $since = $query['since'] ?? null;
+        $until = $query['until'] ?? null;
         $sortBy = empty($query['sort_by']) ? 'hitsInclusive' : $query['sort_by'];
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
@@ -176,14 +178,33 @@ class AnalyticsController extends AbstractActionController
         $whereYear = $appendDates['whereYear'];
         $whereMonth = $appendDates['whereMonth'];
 
+        if ($since && $until) {
+            $whereBetween = 'AND hit.created BETWEEN :since AND :until';
+            $bind['since'] = $since . ' 00:00:00';
+            $bind['until'] = $until . ' 23:59:59';
+        } elseif ($since) {
+            $whereBetween = 'AND hit.created >= :since';
+            $bind['since'] = $since . ' 00:00:00';
+        } elseif ($until) {
+            $whereBetween = 'AND hit.created <= :until';
+            $bind['until'] = $until . ' 23:59:59';
+        } else {
+            $whereBetween = '';
+        }
+
         $sql = <<<SQL
 SELECT hit.site_id, COUNT(hit.id) AS total_hits
 FROM hit hit $force
-WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth
+WHERE hit.entity_name = "items"
+    $whereStatus
+    $whereYear
+    $whereMonth
+    $whereBetween
 GROUP BY hit.site_id
 ORDER BY total_hits ASC
 ;
 SQL;
+
         $hitsPerSite = $this->connection->executeQuery($sql, $bind, $types)->fetchAllKeyValue();
 
         $removedSite = $this->translate('[Removed site #%d]'); // @translate
@@ -497,6 +518,8 @@ SQL;
 
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
+        $since = $query['since'] ?? null;
+        $until = $query['until'] ?? null;
         $sortBy = empty($query['sort_by']) ? 'hitsInclusive' : $query['sort_by'];
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
@@ -507,11 +530,29 @@ SQL;
         $whereYear = $appendDates['whereYear'];
         $whereMonth = $appendDates['whereMonth'];
 
+        if ($since && $until) {
+            $whereBetween = 'AND hit.created BETWEEN :since AND :until';
+            $bind['since'] = $since . ' 00:00:00';
+            $bind['until'] = $until . ' 23:59:59';
+        } elseif ($since) {
+            $whereBetween = 'AND hit.created >= :since';
+            $bind['since'] = $since . ' 00:00:00';
+        } elseif ($until) {
+            $whereBetween = 'AND hit.created <= :until';
+            $bind['until'] = $until . ' 23:59:59';
+        } else {
+            $whereBetween = '';
+        }
+
         $sql = <<<SQL
 SELECT item_item_set.item_set_id, COUNT(hit.id) AS total_hits
 FROM hit hit $force
 JOIN item_item_set ON hit.entity_id = item_item_set.item_id
-WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth
+WHERE hit.entity_name = "items"
+    $whereStatus
+    $whereYear
+    $whereMonth
+    $whereBetween
 GROUP BY item_item_set.item_set_id
 ORDER BY total_hits ASC
 ;
@@ -734,8 +775,14 @@ SQL;
                 $sql = <<<SQL
 SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hitsInclusive
 FROM hit hit $force
-JOIN value ON hit.entity_id = value.resource_id$joinProperty$joinResource
-WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth$whereFilterValue
+JOIN value ON hit.entity_id = value.resource_id
+$joinProperty
+$joinResource
+WHERE hit.entity_name = "items"
+    $whereStatus
+    $whereYear
+    $whereMonth
+    $whereFilterValue
 GROUP BY $typeFilterValue
 ORDER BY hits DESC
 ;
@@ -764,9 +811,15 @@ SQL;
 
             $sql = <<<SQL
 SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hitsInclusive
-FROM hit hit$force
-JOIN value ON hit.entity_id = value.resource_id$joinProperty$joinResource
-WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth$whereFilterValue
+FROM hit hit $force
+JOIN value ON hit.entity_id = value.resource_id
+$joinProperty
+$joinResource
+WHERE hit.entity_name = "items"
+    $whereStatus
+    $whereYear
+    $whereMonth
+    $whereFilterValue
 GROUP BY $typeFilterValue
 ORDER BY hits DESC
 ;
@@ -892,17 +945,17 @@ SQL;
     {
         if ($year || $month) {
             // This is the doctrine hashed name index for the column "created".
-            $force = ' FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
+            $force = 'FORCE INDEX FOR JOIN (`IDX_5AD22641B23DB7B8`)';
             if ($year && $month) {
-                $whereYear = "\nAND EXTRACT(YEAR_MONTH FROM hit.created) = :year_month";
+                $whereYear = 'AND EXTRACT(YEAR_MONTH FROM hit.created) = :year_month';
                 $bind['year_month'] = sprintf('%04d%02d', $year, $month);
                 $types['year_month'] = \Doctrine\DBAL\ParameterType::INTEGER;
             } elseif ($year) {
-                $whereYear = "\nAND EXTRACT(YEAR FROM hit.created) = :year";
+                $whereYear = 'AND EXTRACT(YEAR FROM hit.created) = :year';
                 $bind['year'] = $year;
                 $types['year'] = \Doctrine\DBAL\ParameterType::INTEGER;
             } elseif ($month) {
-                $whereMonth = "\nAND EXTRACT(MONTH FROM hit.created) = :month";
+                $whereMonth = 'AND EXTRACT(MONTH FROM hit.created) = :month';
                 $bind['month'] = $month;
                 $types['month'] = \Doctrine\DBAL\ParameterType::INTEGER;
             }

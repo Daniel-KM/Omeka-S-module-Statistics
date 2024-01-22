@@ -28,6 +28,8 @@ $currentUrl = $urlHelper(null, [], true);
 
 $submit = $form->get('submit');
 $form->remove('submit');
+
+$form->prepare();
 ?>
 
 <?= $this->pageTitle(sprintf($translate('Analytics (%s total)'), $totalResults), 1, $isAdminRequest ? $translate('Analytics') : null) ?>
