@@ -468,9 +468,20 @@ class HitAdapter extends AbstractEntityAdapter
 
     public function sortQuery(QueryBuilder $qb, array $query): void
     {
+        // "sort_field" is used to get multiple orders without overriding core.
         if (isset($query['sort_field']) && is_array($query['sort_field'])) {
             foreach ($query['sort_field'] as $by => $order) {
+                // Sort by "hits" is not a sort by field, but a sort by count.
+                // TODO Normalize sort by hits: in Omeka, it is "item_count", "property_count", etc.
                 if ($by === 'hits') {
+                    /**
+                     * @see \Statistics\View\Helper\Analytics::viewedHits
+                     * @see \Statistics\View\Helper\Analytics::frequents
+                     * @see \Omeka\Api\Adapter\AbstractEntityAdapter::sortByCount()
+                     */
+                    if (empty($query['field'])) {
+                        $qb->addSelect("COUNT(omeka_root.url) HIDDEN hits");
+                    }
                     $qb->addOrderBy('hits', $order);
                 } else {
                     parent::sortQuery($qb, [
@@ -483,10 +494,13 @@ class HitAdapter extends AbstractEntityAdapter
 
         // Sort by "hits" is not a sort by field, but a sort by count.
         if (isset($query['sort_by']) && $query['sort_by'] === 'hits') {
+            if (empty($query['field'])) {
+                $qb->addSelect("COUNT(omeka_root.url) HIDDEN hits");
+            }
             $qb->addOrderBy('hits', $query['sort_order'] ?? 'asc');
+        } else {
+            parent::sortQuery($qb, $query);
         }
-
-        parent::sortQuery($qb, $query);
     }
 
     /**

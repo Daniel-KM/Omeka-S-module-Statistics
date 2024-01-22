@@ -878,6 +878,8 @@ class Analytics extends AbstractHelper
             $query['user_status'] = 'anonymous';
         }
 
+        $query['field'] = 'url';
+
         $request = new Request(Request::SEARCH, 'hits');
         $request
             ->setContent($query)
@@ -892,7 +894,7 @@ class Analytics extends AbstractHelper
                 'omeka_root.url AS url',
                 'omeka_root.entity_name AS entity_name',
                 'omeka_root.entity_id AS entity_id',
-                'COUNT(url) AS hits'
+                'COUNT(omeka_root.url) AS hits'
                 // "@position:=@position+1 AS position"
             )
             ->from(\Statistics\Entity\Hit::class, 'omeka_root')

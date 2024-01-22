@@ -260,6 +260,7 @@ class StatAdapter extends AbstractEntityAdapter
 
     public function sortQuery(QueryBuilder $qb, array $query): void
     {
+        // "sort_field" is used to get multiple orders without overriding core.
         if (isset($query['sort_field']) && is_array($query['sort_field'])) {
             foreach ($query['sort_field'] as $by => $order) {
                 parent::sortQuery($qb, [
