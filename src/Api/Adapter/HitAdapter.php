@@ -152,27 +152,36 @@ class HitAdapter extends AbstractEntityAdapter
         }
 
         // The query may use "resource_id" or "entity_id".
+        // There is no NULL in the table.
         if (isset($query['resource_id']) && $query['resource_id'] !== '' && $query['resource_id'] !== []) {
             $query['entity_id'] = $query['resource_id'];
         }
-        if (isset($query['entity_id']) && $query['entity_id'] !== '' && $query['entity_id'] !== []) {
-            if (is_array($query['entity_id'])) {
+        if (isset($query['entity_id'])
+            && $query['entity_id'] !== ''
+            && $query['entity_id'] !== []
+        ) {
+            $ids = is_array($query['entity_id']) ? $query['entity_id'] : [$query['entity_id']];
+            $ids = array_values(array_unique(array_map('intval', array_filter($ids, 'is_numeric'))));
+            if (count($ids) > 1) {
                 $qb->andWhere($expr->in(
                     'omeka_root.entityId',
-                    $this->createNamedParameter($qb, $query['entity_id'])
+                    $this->createNamedParameter($qb, $ids)
                 ));
-            } else {
+            } elseif (count($ids) === 1) {
                 $qb->andWhere($expr->eq(
                     'omeka_root.entityId',
-                    $this->createNamedParameter($qb, $query['entity_id'])
+                    $this->createNamedParameter($qb, reset($ids))
                 ));
+            } else {
+                // Issue in query, so no output.
+                $qb->andWhere($expr->eq('omeka_root.entityId', -1));
             }
         }
 
         if (isset($query['has_resource']) && $query['has_resource'] !== '') {
             $query['has_entity'] = (bool) $query['has_resource'];
         }
-        if (isset($query['has_entity']) && $query['has_entity'] !== '') {
+        if (isset($query['has_entity']) && $query['has_entity'] !== '' && $query['has_entity'] !== []) {
             $qb
                 ->andWhere(
                     (bool) $query['has_entity']
@@ -219,31 +228,49 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
-        if (isset($query['site_id']) && $query['site_id'] !== '' && $query['site_id'] !== []) {
-            if (is_array($query['site_id'])) {
+        // The site may be 0 (download of a file, api call).
+        if (isset($query['site_id'])
+            && $query['site_id'] !== ''
+            && $query['site_id'] !== []
+        ) {
+            $ids = is_array($query['site_id']) ? $query['site_id'] : [$query['site_id']];
+            $ids = array_values(array_unique(array_map('intval', array_filter($ids, 'is_numeric'))));
+            if (count($ids) > 1) {
                 $qb->andWhere($expr->in(
                     'omeka_root.siteId',
-                    $this->createNamedParameter($qb, $query['site_id'])
+                    $this->createNamedParameter($qb, $ids)
                 ));
-            } else {
+            } elseif (count($ids) === 1) {
                 $qb->andWhere($expr->eq(
                     'omeka_root.siteId',
-                    $this->createNamedParameter($qb, $query['site_id'])
+                    $this->createNamedParameter($qb, reset($ids))
                 ));
+            } else {
+                // Issue in query, so no output.
+                $qb->andWhere($expr->eq('omeka_root.siteId', -1));
             }
         }
 
-        if (isset($query['user_id']) && $query['user_id'] !== '' && $query['user_id'] !== []) {
-            if (is_array($query['user_id'])) {
+        // The user may be 0 (anonymous).
+        if (isset($query['user_id'])
+            && $query['user_id'] !== ''
+            && $query['user_id'] !== []
+        ) {
+            $ids = is_array($query['user_id']) ? $query['user_id'] : [$query['user_id']];
+            $ids = array_values(array_unique(array_map('intval', array_filter($ids, 'is_numeric'))));
+            if (count($ids) > 1) {
                 $qb->andWhere($expr->in(
                     'omeka_root.userId',
-                    $this->createNamedParameter($qb, $query['user_id'])
+                    $this->createNamedParameter($qb, $ids)
                 ));
-            } else {
+            } elseif (count($ids) === 1) {
                 $qb->andWhere($expr->eq(
                     'omeka_root.userId',
-                    $this->createNamedParameter($qb, $query['user_id'])
+                    $this->createNamedParameter($qb, reset($ids))
                 ));
+            } else {
+                // Issue in query, so no output.
+                $qb->andWhere($expr->eq('omeka_root.userId', -1));
             }
         }
 

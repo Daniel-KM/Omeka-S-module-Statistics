@@ -131,17 +131,25 @@ class StatAdapter extends AbstractEntityAdapter
         if (isset($query['resource_id']) && $query['resource_id'] !== '' && $query['resource_id'] !== []) {
             $query['entity_id'] = $query['resource_id'];
         }
-        if (isset($query['entity_id']) && $query['entity_id'] !== '' && $query['entity_id'] !== []) {
-            if (is_array($query['entity_id'])) {
+        if (isset($query['entity_id'])
+            && $query['entity_id'] !== ''
+            && $query['entity_id'] !== []
+        ) {
+            $ids = is_array($query['entity_id']) ? $query['entity_id'] : [$query['entity_id']];
+            $ids = array_values(array_unique(array_map('intval', array_filter($ids, 'is_numeric'))));
+            if (count($ids) > 1) {
                 $qb->andWhere($expr->in(
                     'omeka_root.entityId',
-                    $this->createNamedParameter($qb, $query['entity_id'])
+                    $this->createNamedParameter($qb, $ids)
                 ));
-            } else {
+            } elseif (count($ids) === 1) {
                 $qb->andWhere($expr->eq(
                     'omeka_root.entityId',
-                    $this->createNamedParameter($qb, $query['entity_id'])
+                    $this->createNamedParameter($qb, reset($ids))
                 ));
+            } else {
+                // Issue in query, so no output.
+                $qb->andWhere($expr->eq('omeka_root.entityId', -1));
             }
         }
 
