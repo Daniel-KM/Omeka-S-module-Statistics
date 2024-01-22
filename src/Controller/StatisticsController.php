@@ -236,35 +236,47 @@ class StatisticsController extends AbstractActionController
             return $this->redirectToIndex();
         }
 
-        $isAdminRequest = $this->status()->isAdminRequest();
-
-        $query = $this->params()->fromQuery();
-
-        $resourceTypes = empty($query['resource_type']) ? ['items'] : (is_array($query['resource_type']) ? $query['resource_type'] : [$query['resource_type']]);
-        $resourceTypes = array_intersect(['resources', 'item_sets', 'items', 'media'], $resourceTypes) ?: ['items'];
-        $originalResourceTypes = $resourceTypes;
-        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
-        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
-        $property = $query['property'] ?? null;
-        $typeFilter = $query['value_type'] ?? null;
-        $byPeriodFilter = isset($query['by_period']) && in_array($query['by_period'], ['year', 'month']) ? $query['by_period'] : 'all';
-        $compute = isset($query['compute']) && in_array($query['compute'], ['percent', 'evolution', 'variation']) ? $query['compute'] : 'count';
-        $sortBy = isset($query['sort_by']) && in_array($query['sort_by'], ['value', 'resources', 'item_sets', 'items', 'media']) ? $query['sort_by'] : 'total';
-        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
-
         $years  = $this->listYears('resource', null, null, true);
 
-        $isMetadata = in_array($typeFilter, ['resource_class', 'resource_template', 'owner']);
+        $isAdminRequest = $this->status()->isAdminRequest();
 
-        // A property is required to get stats, so get empty without a good one.
-        if ($property) {
-            $property = $this->easyMeta()->propertyTerm($property);
-            $propertyId = $this->easyMeta()->propertyId($property);
-        } else {
-            $property = null;
-            $propertyId = null;
+        $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
+        $query = [];
+
+        /** @var \Statistics\Form\StatisticsByValueForm $form */
+        $form = $this->getForm(\Statistics\Form\StatisticsByValueForm::class, [
+            'has_access' => $this->hasAccess,
+            'years' => $years,
+        ]);
+
+        if ($data) {
+            $form->setData($data);
+            if ($form->isValid()) {
+                $query = $form->getData();
+                unset($query['csrf'], $query['submit']);
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
         }
 
+        $resourceTypes = $query['resource_type'] ?? ['items'];
+        $year = $query['year'] ?? null;
+        $month = $query['month'] ?? null;
+        $property = $query['property'] ?? null;
+        $valueTypeFilter = $query['value_type'] ?? null;
+        $byPeriodFilter = $query['by_period'] ?? 'all';
+        $compute = $query['compute'] ?? 'count';
+        $sortBy = $query['sort_by'] ?? 'total';
+        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
+
+        $originalResourceTypes = $resourceTypes;
+
+        $isMetadata = in_array($valueTypeFilter, ['resource_class', 'resource_template', 'owner']);
+        $isSimpleValue = !in_array($valueTypeFilter, ['resource', 'uri' , 'resource_class', 'resource_template', 'owner', 'access']);
+        $isByAll = !in_array($byPeriodFilter, ['year', 'month']);
+        $isByCount = !in_array($compute, ['percent', 'evolution', 'variation']);
+
+        // A property is required to get stats, so get empty without a good one.
         if (!$property && !$isMetadata && $query) {
             $this->messenger()->addError(new PsrMessage('A property is required to get statistics.')); // @translate
         }
@@ -292,6 +304,7 @@ class StatisticsController extends AbstractActionController
         }
 
         $view = new ViewModel([
+            'form' => $form,
             'type' => 'value',
             'results' => [],
             'totals' => [],
@@ -301,7 +314,7 @@ class StatisticsController extends AbstractActionController
             'yearFilter' => $year,
             'monthFilter' => $month,
             'propertyFilter' => $property,
-            'valueTypeFilter' => $typeFilter,
+            'valueTypeFilter' => $valueTypeFilter,
             'byPeriodFilter' => $byPeriodFilter,
             'compute' => $compute,
             'hasAccess' => $this->hasAccess,
@@ -387,7 +400,8 @@ class StatisticsController extends AbstractActionController
             $expr = $qb->expr();
 
             // Set custom parameters.
-            if ($propertyId) {
+            if ($property) {
+                $propertyId = $this->easyMeta()->propertyId($property);
                 // TODO Probably useless now, since property is included cleanly in the query.
                 $qb
                     // Use class, it is orm qb.
@@ -396,7 +410,7 @@ class StatisticsController extends AbstractActionController
 
             // TODO Add a type filter for all, or no type filter.
             $hasEmpty = false;
-            switch ($typeFilter) {
+            switch ($valueTypeFilter) {
                 default:
                 case 'value':
                     $qb
@@ -666,7 +680,7 @@ class StatisticsController extends AbstractActionController
         }
 
         // Make the table simpler to manage in the view, nearly like a spreadsheet.
-        $hasValueLabel = in_array($typeFilter, ['resource', 'uri', 'resource_class', 'resource_template' , 'owner']);
+        $hasValueLabel = in_array($valueTypeFilter, ['resource', 'uri', 'resource_class', 'resource_template' , 'owner']);
 
         $results = $this->mergeResultsByValue($results, $hasValueLabel);
         $totals = $this->totalsByValue($results, $originalResourceTypes, $byPeriodFilter === 'all' ? ['all'] : $periods);

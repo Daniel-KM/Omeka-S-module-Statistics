@@ -3,13 +3,13 @@
 namespace Statistics;
 
 return [
-    'listeners' => [
-        Mvc\MvcListeners::class,
-    ],
     'service_manager' => [
         'invokables' => [
             Mvc\MvcListeners::class => Mvc\MvcListeners::class,
         ],
+    ],
+    'listeners' => [
+        Mvc\MvcListeners::class,
     ],
     'entity_manager' => [
         'mapping_classes_paths' => [
@@ -41,6 +41,9 @@ return [
     'form_elements' => [
         'invokables' => [
             Form\SettingsFieldset::class => Form\SettingsFieldset::class,
+        ],
+        'factories' => [
+            Form\StatisticsByValueForm::class => Service\Form\FormFactory::class,
         ],
     ],
     'controllers' => [
