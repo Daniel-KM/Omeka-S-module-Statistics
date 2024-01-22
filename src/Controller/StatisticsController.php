@@ -195,8 +195,8 @@ class StatisticsController extends AbstractActionController
         $baseQuery = $query;
 
         $resourceTypes = $query['resource_type'] ?? ['items'];
-        $year = $query['year'] ?? null;
-        $month = $query['month'] ?? null;
+        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
+        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $sortBy = $query['sort_by'] ?? 'total';
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
@@ -287,8 +287,8 @@ class StatisticsController extends AbstractActionController
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $resourceTypes = $query['resource_type'] ?? ['items'];
-        $year = $query['year'] ?? null;
-        $month = $query['month'] ?? null;
+        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
+        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $property = $query['property'] ?? null;
         $valueTypeFilter = $query['value_type'] ?? null;
         $byPeriodFilter = $query['by_period'] ?? 'all';
@@ -547,9 +547,12 @@ class StatisticsController extends AbstractActionController
                     if ($byPeriodFilter === 'year') {
                         $yearPeriod = $period;
                         $monthPeriod = null;
-                    } else {
+                    } elseif ($byPeriodFilter === 'month') {
                         $yearPeriod = (int) substr((string) $period, 0, 4);
                         $monthPeriod = (int) substr((string) $period, 4, 2);
+                    } else {
+                        $yearPeriod = null;
+                        $monthPeriod = null;
                     }
                     if ($yearPeriod || $monthPeriod) {
                         // TODO Add the index on table omeka resource for "created" and "modified".

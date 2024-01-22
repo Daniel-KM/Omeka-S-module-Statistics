@@ -170,8 +170,8 @@ class AnalyticsController extends AbstractActionController
         $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
-        $year = $query['year'] ?? null;
-        $month = $query['month'] ?? null;
+        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
+        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $since = $query['since'] ?? null;
         $until = $query['until'] ?? null;
         $sortBy = empty($query['sort_by']) ? 'hits' : $query['sort_by'];
@@ -693,8 +693,8 @@ SQL;
         $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
         $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
-        $year = $query['year'] ?? null;
-        $month = $query['month'] ?? null;
+        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
+        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $property = $query['property'] ?? null;
         $typeFilter = $query['value_type'] ?? null;
         $byPeriodFilter = $query['by_period'] ?? 'all';
@@ -797,11 +797,11 @@ SQL;
                 // TODO Manage "force index" via query builder.
                 // $qb = $this->connection->createQueryBuilder();
                 if ($byPeriodFilter === 'year') {
-                    $yearPeriod = $period;
+                    $yearPeriod = (int) $period;
                     $monthPeriod = null;
                 } else {
-                    $yearPeriod = substr((string) $period, 0, 4);
-                    $monthPeriod = substr((string) $period, 4, 2);
+                    $yearPeriod = (int) substr((string) $period, 0, 4);
+                    $monthPeriod = (int) substr((string) $period, 4, 2);
                 }
                 $appendDates = $this->whereDate($yearPeriod, $monthPeriod, $baseBind, $baseTypes);
                 $bind = $appendDates['bind'];
@@ -973,7 +973,7 @@ SQL;
      *
      * Require doctrine DBAL, not ORM, that does no support "extract".
      */
-    protected function whereDate($year = null, $month = null, array $bind = [], array $types = []): array
+    protected function whereDate(?int $year = null, ?int $month = null, array $bind = [], array $types = []): array
     {
         if ($year || $month) {
             // This is the doctrine hashed name index for the column "created".
