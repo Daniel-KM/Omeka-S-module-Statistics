@@ -61,6 +61,33 @@ class AnalyticsByDownloadForm extends Form
                 ],
             ])
             ->add([
+                'name' => 'per_page',
+                'type' => CommonElement\OptionalSelect::class,
+                'options' => [
+                    'label' => 'Results per page', // @ŧranslate
+                    'value_options' => [
+                        '25' => '25',
+                        '50' => '50',
+                        '100' => '100',
+                        '200' => '200',
+                        '500' => '500',
+                        '1000' => '1000',
+                        '2000' => '2000',
+                        '5000' => '5000',
+                        '10000' => '10000',
+                        '20000' => '20000',
+                        '50000' => '50000',
+                        '100000' => '100000',
+                        '200000' => '200000',
+                        '500000' => '500000',
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'resource_type',
+                    'value' => '100',
+                ],
+            ])
+            ->add([
                 'name' => 'submit',
                 'type' => Element\Button::class,
                 'options' => [

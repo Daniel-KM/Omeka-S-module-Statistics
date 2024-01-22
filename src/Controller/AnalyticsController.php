@@ -318,6 +318,9 @@ SQL;
         $columns = empty($query['columns']) ? ['url', 'hits', 'resource'] : $query['columns'];
         unset($query['columns']);
 
+        // Page is not in the form.
+        $query['page'] = empty($data['page']) ? 1 : (int) $data['page'];
+
         $response = $this->api()->search('stats', $query);
         $this->paginator($response->getTotalResults());
         $stats = $response->getContent();
@@ -377,6 +380,9 @@ SQL;
 
         $columns = empty($query['columns']) ? ['url', 'hits', 'resource', 'resource_template'] : $query['columns'];
         unset($query['columns']);
+
+        // Page is not in the form.
+        $query['page'] = empty($data['page']) ? 1 : (int) $data['page'];
 
         $response = $this->api()->search('stats', $query);
         $this->paginator($response->getTotalResults());
@@ -438,6 +444,9 @@ SQL;
 
         $columns = empty($query['columns']) ? ['url', 'hits', 'resource', 'media_type'] : $query['columns'];
         unset($query['columns']);
+
+        // Page is not in the form.
+        $query['page'] = empty($data['page']) ? 1 : (int) $data['page'];
 
         $response = $this->api()->search('stats', $query);
         $this->paginator($response->getTotalResults());
