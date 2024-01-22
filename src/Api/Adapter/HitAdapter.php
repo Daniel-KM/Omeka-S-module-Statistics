@@ -141,6 +141,44 @@ class HitAdapter extends AbstractEntityAdapter
                 );
         }
 
+        if (isset($query['query']) && $query['query'] !== '' && $query['query'] !== []) {
+            $entityName = empty($query['entity_name']) ? 'resources' : $query['entity_name'];
+            // For now, it is not posible to search in mixed resources.
+            if ($entityName === 'resources') {
+                $api = $this->getServiceLocator()->get('Omeka\Logger')->err(
+                    'It is not possible to query hits on all resources types at the same time for now.' // @translate
+                );
+            } else {
+                $qb->andWhere($expr->eq(
+                    'omeka_root.entityName',
+                    $this->createNamedParameter($qb, $entityName)
+                ));
+                $queryQuery = $query['query'];
+                if (is_string($queryQuery)) {
+                    parse_str($query['query'], $queryQuery);
+                }
+                if ($queryQuery) {
+                    // TODO Use a sub query-builder to avoid issues with big bases.
+                    $api = $this->getServiceLocator()->get('Omeka\ApiManager');
+                    $subIds = $api->search($entityName, $queryQuery, ['returnScalar' => 'id'])->getContent();
+                    if ($subIds) {
+                        $subIdsAlias = $this->createAlias();
+                        $qb
+                            ->andWhere($expr->in(
+                                'omeka_root.entityId',
+                                ":$subIdsAlias"
+                            ))
+                            ->setParameter($subIdsAlias, $subIds, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+                    } else {
+                        $qb->andWhere($expr->eq(
+                            'omeka_root.entityId',
+                            $this->createNamedParameter($qb, 0)
+                        ));
+                    }
+                }
+            }
+        }
+
         if (isset($query['site_id']) && $query['site_id'] !== '' && $query['site_id'] !== []) {
             if (is_array($query['site_id'])) {
                 $qb->andWhere($expr->in(
