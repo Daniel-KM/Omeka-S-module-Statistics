@@ -29,6 +29,7 @@ class AnalyticsBySiteForm extends Form
         $this
             ->setAttribute('id', 'analytics')
             ->setAttribute('method', 'GET')
+            ->remove('csrf')
             ->add([
                 'name' => 'year',
                 'type' => CommonElement\OptionalSelect::class,

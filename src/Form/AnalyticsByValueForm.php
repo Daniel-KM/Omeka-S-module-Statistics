@@ -27,6 +27,8 @@ class AnalyticsByValueForm extends Form
         $this
             ->setAttribute('id', 'statistics')
             ->setAttribute('method', 'GET')
+            // A search form doesn't need a csrf.
+            ->remove('csrf')
             ->add([
                 'name' => 'property',
                 'type' => OmekaElement\PropertySelect::class,

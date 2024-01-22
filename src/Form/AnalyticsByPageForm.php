@@ -13,6 +13,8 @@ class AnalyticsByPageForm extends Form
         $this
             ->setAttribute('id', 'analytics')
             ->setAttribute('method', 'GET')
+            // A search form doesn't need a csrf.
+            ->remove('csrf')
             ->add([
                 'name' => 'has_resource',
                 'type' => CommonElement\OptionalRadio::class,

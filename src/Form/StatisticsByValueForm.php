@@ -35,6 +35,8 @@ class StatisticsByValueForm extends Form
         $this
             ->setAttribute('id', 'statistics')
             ->setAttribute('method', 'GET')
+            // A search form doesn't need a csrf.
+            ->remove('csrf')
             ->add([
                 'name' => 'resource_type',
                 'type' => CommonElement\OptionalMultiCheckbox::class,
