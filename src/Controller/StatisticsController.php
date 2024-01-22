@@ -1167,12 +1167,4 @@ class StatisticsController extends AbstractActionController
         $writer->close();
         exit();
     }
-
-    protected function getFilename($type, $extension): string
-    {
-        return ($_SERVER['SERVER_NAME'] ?? 'omeka')
-            . '-' . $type
-            . '-' . date('Ymd-His')
-            . '.' . $extension;
-    }
 }

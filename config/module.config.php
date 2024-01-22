@@ -124,6 +124,18 @@ return [
                                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
                                     ],
                                 ],
+                                'may_terminate' => true,
+                                'child_routes' => [
+                                    'output' => [
+                                        'type' => \Laminas\Router\Http\Segment::class,
+                                        'options' => [
+                                            'route' => '.:output',
+                                            'constraints' => [
+                                                'output' => 'csv|ods|tsv',
+                                            ],
+                                        ],
+                                    ],
+                                ],
                             ],
                         ],
                     ],
@@ -155,7 +167,7 @@ return [
                                         'options' => [
                                             'route' => '.:output',
                                             'constraints' => [
-                                                'output' => 'csv|tsv|ods',
+                                                'output' => 'csv|ods|tsv',
                                             ],
                                         ],
                                     ],
@@ -188,6 +200,18 @@ return [
                                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
                                     ],
                                 ],
+                                'may_terminate' => true,
+                                'child_routes' => [
+                                    'output' => [
+                                        'type' => \Laminas\Router\Http\Segment::class,
+                                        'options' => [
+                                            'route' => '.:output',
+                                            'constraints' => [
+                                                'output' => 'csv|ods|tsv',
+                                            ],
+                                        ],
+                                    ],
+                                ],
                             ],
                         ],
                     ],
@@ -219,7 +243,7 @@ return [
                                         'options' => [
                                             'route' => '.:output',
                                             'constraints' => [
-                                                'output' => 'csv|tsv|ods',
+                                                'output' => 'csv|ods|tsv',
                                             ],
                                         ],
                                     ],

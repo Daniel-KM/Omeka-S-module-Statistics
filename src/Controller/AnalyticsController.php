@@ -398,12 +398,25 @@ SQL;
             $columns['title'] = 'title';
         }
 
-        $page = $query['page'];
-        $perPage = empty($query['per_page']) ? 100: (int) $query['per_page'];
+        $output = $this->params()->fromRoute('output');
+        if ($output) {
+            $page = null;
+            $perPage = null;
+        } else {
+            $page = $query['page'];
+            $perPage = empty($query['per_page']) ? 100: (int) $query['per_page'];
+        }
 
         // This is a array with flat sub-arrays.
         $table = $this->analytics()->viewedHitsFull($query, $columns, $page, $perPage);
         $this->paginator($this->analytics()->lastTotal());
+
+        if ($output) {
+            $result = $this->exportTable($table, $headers, $output);
+            if ($result) {
+                return $result;
+            }
+        }
 
         $view = new ViewModel([
             'form' => $form,
@@ -540,12 +553,25 @@ SQL;
             $columns['title'] = 'title';
         }
 
-        $page = $query['page'];
-        $perPage = empty($query['per_page']) ? 100: (int) $query['per_page'];
+        $output = $this->params()->fromRoute('output');
+        if ($output) {
+            $page = null;
+            $perPage = null;
+        } else {
+            $page = $query['page'];
+            $perPage = empty($query['per_page']) ? 100: (int) $query['per_page'];
+        }
 
         // This is a array with flat sub-arrays.
         $table = $this->analytics()->viewedHitsFull($query, $columns, $page, $perPage);
         $this->paginator($this->analytics()->lastTotal());
+
+        if ($output) {
+            $result = $this->exportTable($table, $headers, $output);
+            if ($result) {
+                return $result;
+            }
+        }
 
         $view = new ViewModel([
             'form' => $form,
@@ -685,12 +711,25 @@ SQL;
             $columns['title'] = 'title';
         }
 
-        $page = $query['page'];
-        $perPage = empty($query['per_page']) ? 100: (int) $query['per_page'];
+        $output = $this->params()->fromRoute('output');
+        if ($output) {
+            $page = null;
+            $perPage = null;
+        } else {
+            $page = $query['page'];
+            $perPage = empty($query['per_page']) ? 100: (int) $query['per_page'];
+        }
 
         // This is a array with flat sub-arrays.
         $table = $this->analytics()->viewedHitsFull($query, $columns, $page, $perPage);
         $this->paginator($this->analytics()->lastTotal());
+
+        if ($output) {
+            $result = $this->exportTable($table, $headers, $output);
+            if ($result) {
+                return $result;
+            }
+        }
 
         $view = new ViewModel([
             'form' => $form,

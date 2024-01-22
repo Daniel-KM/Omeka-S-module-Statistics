@@ -2,6 +2,9 @@
 
 namespace Statistics\Controller;
 
+use Common\Stdlib\PsrMessage;
+use OpenSpout\Writer\Common\Creator\WriterEntityFactory;
+
 trait StatisticsTrait
 {
     /**
@@ -170,5 +173,100 @@ trait StatisticsTrait
         $bb = (int) ($b[$this->orderByColumn['sort_by']] ?? 0);
         $cmp = $aa <=> $bb;
         return $this->orderByColumn['sort_order'] === 'desc' ? -$cmp : $cmp;
+    }
+
+    protected function exportTable(array $table, array $headers, string $output)
+    {
+        if (!count($table)) {
+            $this->messenger()->addError(new PsrMessage(
+                'There is no results.' // @translate
+            ));
+            return null;
+        }
+
+        if (!count($headers)) {
+            $this->messenger()->addError(new PsrMessage(
+                'There is no headers.' // @translate
+            ));
+            return null;
+        }
+
+        switch ($output) {
+            case 'csv':
+                $writer = WriterEntityFactory::createCSVWriter();
+                $writer
+                    ->setFieldDelimiter(',')
+                    ->setFieldEnclosure('"')
+                    // The escape character cannot be set with this writer.
+                    // ->setFieldEscape($this->getParam('escape', '\\'))
+                    // The end of line cannot be set with csv writer (reader only).
+                    // ->setEndOfLineCharacter("\n")
+                    ->setShouldAddBOM(true);
+                break;
+            case 'tsv':
+                $writer = WriterEntityFactory::createCSVWriter();
+                $writer
+                    ->setFieldDelimiter("\t")
+                    // Unlike import, chr(0) cannot be used, because it's output.
+                    // Anyway, enclosure and escape are used only when there is a tabulation
+                    // inside the value, but this is forbidden by the format and normally
+                    // never exist.
+                    // TODO Check if the value contains a tabulation before export.
+                    // TODO Do not use an enclosure for tsv export.
+                    ->setFieldEnclosure('"')
+                    // The escape character cannot be set with this writer.
+                    // ->setFieldEscape($this->getParam('escape', '\\'))
+                    // The end of line cannot be set with csv writer (reader only).
+                    // ->setEndOfLineCharacter("\n")
+                    ->setShouldAddBOM(true);
+                break;
+            case 'ods':
+                $writer = WriterEntityFactory::createODSWriter();
+                break;
+            case 'xlsx':
+                /*
+                 $writer = WriterEntityFactory::createXLSXWriter();
+                 break;
+                 */
+            default:
+                $this->messenger()->addError(new PsrMessage(
+                    'The format "{format}" is not supported to export statistics.', // @translate
+                    ['format' => $output]
+                ));
+                return null;
+        }
+
+        $filename = $this->getFilename('analytics', $output);
+        // $writer->openToFile($filePath);
+        $writer->openToBrowser($filename);
+
+        // TODO Make values translatable (resource class, template).
+        $translate = $this->plugin('translate');
+
+        // Output headers.
+        foreach ($headers as &$header) {
+            $header = $translate($header);
+        }
+        unset($header);
+        $rowFromValues = WriterEntityFactory::createRowFromArray($headers);
+        $writer->addRow($rowFromValues);
+
+        // Output rows.
+        foreach ($table as $row) {
+            $rowFromValues = WriterEntityFactory::createRowFromArray($row);
+            $writer->addRow($rowFromValues);
+        }
+
+        $writer->close();
+        // TODO Return without exit after streaming file.
+        exit();
+    }
+
+    protected function getFilename($type, $extension): string
+    {
+        return ($_SERVER['SERVER_NAME'] ?? 'omeka')
+            . '-' . $type
+            . '-' . date('Ymd-His')
+            . '.' . $extension;
     }
 }

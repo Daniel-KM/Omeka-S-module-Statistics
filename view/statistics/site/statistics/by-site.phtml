@@ -51,7 +51,7 @@ $form->prepare();
 
 <div class="browse-controls">
     <?php //= $this->pagination() ?>
-    <div>
+    <div class="statistics-export">
         <?= $hyperlink($translate('ODS'), $urlHelper('admin/statistics/default/output', ['output' => 'ods'], ['query' => $query], true)) ?>
         <?= $hyperlink($translate('TSV'), $urlHelper('admin/statistics/default/output', ['output' => 'tsv'], ['query' => $query], true)) ?>
         <?= $hyperlink($translate('CSV'), $urlHelper('admin/statistics/default/output', ['output' => 'csv'], ['query' => $query], true)) ?>
