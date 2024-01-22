@@ -63,7 +63,7 @@ $form->prepare();
 <?= $this->form($form) ?>
 
 <div id="page-actions">
-    <?= $this->formSubmit($submit) ?>
+    <?= $this->formButton($submit) ?>
 </div>
 
 <?php if (count($results) && ($propertyFilter || $isMetadata) && !is_null($periods)): ?>

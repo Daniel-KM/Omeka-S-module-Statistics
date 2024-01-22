@@ -16,14 +16,14 @@ class AnalyticsByDownloadForm extends Form
             ->remove('csrf')
             ->add([
                 'name' => 'submit',
-                'type' => Element\Submit::class,
+                'type' => Element\Button::class,
                 'options' => [
                     'label' => 'Submit', // @ŧranslate
                 ],
                 'attributes' => [
                     'id' => 'submit',
+                    'type' => 'submit',
                     'form' => 'analytics',
-                    'value' => 'Submit',
                 ],
             ])
         ;

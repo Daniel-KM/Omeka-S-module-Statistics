@@ -170,14 +170,14 @@ class StatisticsByValueForm extends Form
             ])
             ->add([
                 'name' => 'submit',
-                'type' => Element\Submit::class,
+                'type' => Element\Button::class,
                 'options' => [
                     'label' => 'Submit', // @ŧranslate
                 ],
                 'attributes' => [
                     'id' => 'submit',
+                    'type' => 'submit',
                     'form' => 'statistics',
-                    'value' => 'Submit',
                 ],
             ])
         ;
