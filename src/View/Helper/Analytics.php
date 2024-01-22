@@ -35,7 +35,7 @@ class Analytics extends AbstractHelper
         'url' => 'url',
         'entity_name' => 'entityName',
         'entity_id' => 'entityId',
-        // TODO Clarify query for sort (used in some other places).
+        // The name of the column in the table is not the name in the entity.
         'hits' => 'totalHits',
         'anonymous' => 'totalHitsAnonymous',
         'identified' => 'totalHitsIdentified',
@@ -44,11 +44,6 @@ class Analytics extends AbstractHelper
         'total_hits' => 'totalHits',
         'total_hits_anonymous' => 'totalHitsAnonymous',
         'total_hits_identified' => 'totalHitsIdentified',
-        'hitsAnonymous' => 'totalHitsAnonymous',
-        'hitsIdentified' => 'totalHitsIdentified',
-        'totalHits' => 'totalHits',
-        'totalHitsAnonymous' => 'totalHitsAnonymous',
-        'totalHitsIdentified' => 'totalHitsIdentified',
         'created' => 'created',
         'modified' => 'modified',
     ];
@@ -752,7 +747,7 @@ class Analytics extends AbstractHelper
             $query['limit'] = $limit;
         }
 
-        $fieldKey = $this->normalizeFieldForQueryKey($queryField);
+        $fieldKey = $queryField;
 
         $defaultQuery = [
             'page' => null,
@@ -1107,6 +1102,8 @@ class Analytics extends AbstractHelper
                 return $translate('Media');
             case 'resources':
                 return $translate('Resource');
+            case 'sites':
+                return $translate('Site');
             case 'site_pages':
                 return $translate('Page');
             default:
@@ -1392,31 +1389,9 @@ class Analytics extends AbstractHelper
             'user_agent' => 'userAgent',
             'accept_language' => 'acceptLanguage',
             'created' => 'created',
-            // For simplicity, but not recommended.
-            'entityName' => 'entityName',
-            'entityId' => 'entityId',
-            'userId' => 'userId',
-            'userAgent' => 'userAgent',
-            'acceptLanguage' => 'acceptLanguage',
             'language' => 'acceptLanguage',
         ];
         return $fields[$params['field'] ?? null] ?? null;
-    }
-
-    /**
-     * Check if there is a key 'field' with a column name for frequency queries.
-     */
-    protected function normalizeFieldForQueryKey(string $field): ?string
-    {
-        $fields = [
-            'entityName' => 'entity_name',
-            'entityId' => 'entity_id',
-            'userId' => 'user_id',
-            'userAgent' => 'user_agent',
-            'acceptLanguage' => 'accept_language',
-            'language' => 'language',
-        ];
-        return $fields[$field] ?? $field;
     }
 
     /**

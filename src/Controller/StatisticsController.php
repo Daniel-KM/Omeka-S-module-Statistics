@@ -177,11 +177,15 @@ class StatisticsController extends AbstractActionController
             $form->setData($data);
             if ($form->isValid()) {
                 $query = $form->getData();
-                unset($query['csrf'], $query['submit']);
             } else {
                 $this->messenger()->addFormErrors($form);
             }
+            unset($query['csrf'], $query['submit']);
         }
+
+        // Sort is not in the form.
+        $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
+        $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         /** @var \Omeka\Mvc\Controller\Plugin\Api $api */
         $api = $this->api();
@@ -272,11 +276,15 @@ class StatisticsController extends AbstractActionController
             $form->setData($data);
             if ($form->isValid()) {
                 $query = $form->getData();
-                unset($query['csrf'], $query['submit']);
             } else {
                 $this->messenger()->addFormErrors($form);
             }
+            unset($query['csrf'], $query['submit']);
         }
+
+        // Sort is not in the form.
+        $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
+        $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $resourceTypes = $query['resource_type'] ?? ['items'];
         $year = $query['year'] ?? null;
@@ -580,12 +588,7 @@ class StatisticsController extends AbstractActionController
                     // This is a qb from orm: it's not possible to use connection directly.
                     $result = $qb->getQuery()->getScalarResult();
 
-                    /*
-                    usort($result, function ($a, $b) use ($sortBy, $sortOrder) {
-                        $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
-                        return $sortOrder === 'desc' ? -$cmp : $cmp;
-                    });
-                    */
+                    // TODO Add sort or reinclude sort order inside sql.
 
                     $results[$period][$resourceType] = $result;
                 }
@@ -626,13 +629,7 @@ class StatisticsController extends AbstractActionController
                 // This is a qb from orm: it's not possible to use connection directly.
                 $results['all'][$resourceType] = $qb->getQuery()->getScalarResult();
 
-                // TODO Reinclude sort order inside sql.
-                /*
-                usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
-                    $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
-                    return $sortOrder === 'desc' ? -$cmp : $cmp;
-                });
-                */
+                // TODO Add sort or reinclude sort order inside sql.
             }
         }
 

@@ -25,6 +25,9 @@ $isAdminRequest = $this->status()->isAdminRequest();
 $totalResults = $this->pagination()->getPaginator()->getTotalCount();
 $currentUrl = $urlHelper(null, [], true);
 $basePath = $this->basePath();
+$currentQuery = $this->params()->fromQuery();
+$currentQueryNoSort = $currentQuery;
+unset($currentQueryNoSort['sort_by']);
 
 $submit = $form->get('submit');
 $form->remove('submit');
@@ -53,25 +56,25 @@ $form->prepare();
     <thead>
         <tr>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=url' ?>"><?= $translate('Page') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'url'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Page') ?></a>
             </th>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=hits' ?>"><?= $translate('Hits') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'hits'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Hits') ?></a>
             </th>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=anonymous' ?>"><?= $translate('Anonymous') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'anonymous'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Anonymous') ?></a>
             </th>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=identified' ?>"><?= $translate('Identified') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'identified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Identified') ?></a>
             </th>
             <th>
                 <span><?= $translate('Dedicated resource') ?></span>
             </th>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=resource_type' ?>"><?= $translate('Resource type') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'resource_type'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Resource type') ?></a>
             </th>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=modified' ?>"><?= $translate('Date') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'modified'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Date') ?></a>
             </th>
         </tr>
     </thead>

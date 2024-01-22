@@ -5,6 +5,14 @@ namespace Statistics\Controller;
 trait StatisticsTrait
 {
     /**
+     * @var array
+     */
+    protected $orderByColumn = [
+        'sort_by' => null,
+        'sort_order' => null,
+    ];
+
+    /**
      * List years as key and value from a table.
      *
      * When the option to include dates without value is set, value may be null.
@@ -138,5 +146,29 @@ trait StatisticsTrait
         }
 
         return array_replace($range, $periods);
+    }
+
+    /**
+     * Order an array by key specified in the class key.
+     *
+     * Use strnatcasecmp() to manage string and number naturally.
+     */
+    protected function orderByColumnString($a, $b): int
+    {
+        $aa = (string) ($a[$this->orderByColumn['sort_by']] ?? '');
+        $bb = (string) ($b[$this->orderByColumn['sort_by']] ?? '');
+        $cmp = strnatcasecmp($aa, $bb);
+        return $this->orderByColumn['sort_order'] === 'desc' ? -$cmp : $cmp;
+    }
+
+    /**
+     * Order an array by key specified in the class key.
+     */
+    protected function orderByColumnNumber($a, $b): int
+    {
+        $aa = (int) ($a[$this->orderByColumn['sort_by']] ?? 0);
+        $bb = (int) ($b[$this->orderByColumn['sort_by']] ?? 0);
+        $cmp = $aa <=> $bb;
+        return $this->orderByColumn['sort_order'] === 'desc' ? -$cmp : $cmp;
     }
 }

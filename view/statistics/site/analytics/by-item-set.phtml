@@ -14,6 +14,7 @@ $plugins = $this->getHelperPluginManager();
 $assetUrl = $plugins->get('assetUrl');
 $translate = $plugins->get('translate');
 $urlHelper = $plugins->get('url');
+$escapeAttr = $plugins->get('escapeHtmlAttr');
 
 $this->headLink()->prependStylesheet($assetUrl('css/statistics.css', 'Statistics'));
 
@@ -22,6 +23,9 @@ $this->htmlElement('body')->appendAttribute('class', 'statistics browse');
 $isAdminRequest = $this->status()->isAdminRequest();
 
 $currentUrl = $urlHelper(null, [], true);
+$currentQuery = $this->params()->fromQuery();
+$currentQueryNoSort = $currentQuery;
+unset($currentQueryNoSort['sort_by']);
 
 $submit = $form->get('submit');
 $form->remove('submit');
@@ -45,10 +49,10 @@ $form->prepare();
     <thead>
         <tr>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=item-set' ?>"><?= $translate('Item set') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'item-set'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Item set') ?></a>
             </th>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=hits' ?>"><?= $translate('Hits') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'hits'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Hits') ?></a>
             </th>
         </tr>
     </thead>

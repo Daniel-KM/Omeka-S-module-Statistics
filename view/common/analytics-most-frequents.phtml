@@ -17,7 +17,7 @@ $translate = $plugins->get('translate');
 <?php else: ?>
 
 <ol>
-    <?php foreach ($results as $position => $result): ?>
+    <?php foreach ($results as /* $position => */ $result): ?>
     <li><?= sprintf($translate('%s (%d views)'), $result[$field], $result['hits']) ?></li>
     <?php endforeach; ?>
 </ol>

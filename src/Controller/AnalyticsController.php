@@ -160,17 +160,21 @@ class AnalyticsController extends AbstractActionController
             /** @see \Laminas\Validator\Date::convertString() */
             if (@$form->isValid()) {
                 $query = $form->getData();
-                unset($query['csrf'], $query['submit']);
             } else {
                 $this->messenger()->addFormErrors($form);
             }
+            unset($query['csrf'], $query['submit']);
         }
+
+        // Sort is not in the form.
+        $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
+        $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $year = $query['year'] ?? null;
         $month = $query['month'] ?? null;
         $since = $query['since'] ?? null;
         $until = $query['until'] ?? null;
-        $sortBy = empty($query['sort_by']) ? 'hitsInclusive' : $query['sort_by'];
+        $sortBy = empty($query['sort_by']) ? 'hits' : $query['sort_by'];
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $appendDates = $this->whereDate($year, $month, [], []);
@@ -222,17 +226,17 @@ SQL;
             $results[] = [
                 'site' => $siteTitle,
                 'hits' => $hits,
-                'hitsInclusive' => '',
             ];
         }
 
         $this->paginator(count($results));
 
         // TODO Manage special sort fields.
-        usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
-            $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
-            return $sortOrder === 'desc' ? -$cmp : $cmp;
-        });
+        $this->orderByColumn = [
+            'sort_by' => $sortBy,
+            'sort_order' => $sortOrder,
+        ];
+        usort($results, [$this, $sortOrder === 'hits' ? 'orderByColumnNumber' : 'orderByColumnString']);
 
         $view = new ViewModel([
             'form' => $form,
@@ -261,8 +265,8 @@ SQL;
             ? $settings->get('statistics_default_user_status_admin')
             : $settings->get('statistics_default_user_status_public');
 
-        $defaultSorts = ['anonymous' => 'total_hits_anonymous', 'identified' => 'total_hits_identified'];
-        $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
+        $defaultSorts = ['hits_anonymous' => 'hits_anonymous', 'hits_identified' => 'hits_identified'];
+        $userStatusBrowse = $defaultSorts[$userStatus] ?? 'hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
         /** @var \Statistics\Form\AnalyticsByPageForm $form */
@@ -272,11 +276,15 @@ SQL;
             $form->setData($data);
             if ($form->isValid()) {
                 $query = $form->getData();
-                unset($query['csrf'], $query['submit']);
             } else {
                 $this->messenger()->addFormErrors($form);
             }
+            unset($query['csrf'], $query['submit']);
         }
+
+        // Sort is not in the form.
+        $query['sort_by'] = empty($data['sort_by']) ? 'hits' : $data['sort_by'];
+        $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $query['type'] = Stat::TYPE_PAGE;
         $query['user_status'] = $userStatus;
@@ -312,8 +320,8 @@ SQL;
             ? $settings->get('statistics_default_user_status_admin')
             : $settings->get('statistics_default_user_status_public');
 
-        $defaultSorts = ['anonymous' => 'total_hits_anonymous', 'identified' => 'total_hits_identified'];
-        $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
+        $defaultSorts = ['hits_anonymous' => 'hits_anonymous', 'hits_identified' => 'hits_identified'];
+        $userStatusBrowse = $defaultSorts[$userStatus] ?? 'hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
         /** @var \Statistics\Form\AnalyticsByResourceForm $form */
@@ -323,11 +331,15 @@ SQL;
             $form->setData($data);
             if ($form->isValid()) {
                 $query = $form->getData();
-                unset($query['csrf'], $query['submit']);
             } else {
                 $this->messenger()->addFormErrors($form);
             }
+            unset($query['csrf'], $query['submit']);
         }
+
+        // Sort is not in the form.
+        $query['sort_by'] = empty($data['sort_by']) ? 'hits' : $data['sort_by'];
+        $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $query['type'] = Stat::TYPE_RESOURCE;
         $query['user_status'] = $userStatus;
@@ -362,8 +374,8 @@ SQL;
             ? $settings->get('statistics_default_user_status_admin')
             : $settings->get('statistics_default_user_status_public');
 
-        $defaultSorts = ['anonymous' => 'total_hits_anonymous', 'identified' => 'total_hits_identified'];
-        $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
+        $defaultSorts = ['hits_anonymous' => 'hits_anonymous', 'hits_identified' => 'hits_identified'];
+        $userStatusBrowse = $defaultSorts[$userStatus] ?? 'hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
         /** @var \Statistics\Form\AnalyticsByDownloadForm $form */
@@ -373,11 +385,15 @@ SQL;
             $form->setData($data);
             if ($form->isValid()) {
                 $query = $form->getData();
-                unset($query['csrf'], $query['submit']);
             } else {
                 $this->messenger()->addFormErrors($form);
             }
+            unset($query['csrf'], $query['submit']);
         }
+
+        // Sort is not in the form.
+        $query['sort_by'] = empty($data['sort_by']) ? 'hits' : $data['sort_by'];
+        $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $query['type'] = Stat::TYPE_DOWNLOAD;
         $query['user_status'] = $userStatus;
@@ -419,11 +435,15 @@ SQL;
             $form->setData($data);
             if ($form->isValid()) {
                 $query = $form->getData();
-                unset($query['csrf'], $query['submit']);
             } else {
                 $this->messenger()->addFormErrors($form);
             }
+            unset($query['csrf'], $query['submit']);
         }
+
+        // Sort is not in the form.
+        $query['sort_by'] = empty($data['sort_by']) ? 'hits' : $data['sort_by'];
+        $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $query['field'] = empty($query['field']) ? 'referrer' : $query['field'];
         $field = $query['field'];
@@ -501,11 +521,15 @@ SQL;
             /** @see \Laminas\Validator\Date::convertString() */
             if (@$form->isValid()) {
                 $query = $form->getData();
-                unset($query['csrf'], $query['submit']);
             } else {
                 $this->messenger()->addFormErrors($form);
             }
+            unset($query['csrf'], $query['submit']);
         }
+
+        // Sort is not in the form.
+        $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
+        $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $settings = $this->settings();
 
@@ -525,7 +549,7 @@ SQL;
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
         $since = $query['since'] ?? null;
         $until = $query['until'] ?? null;
-        $sortBy = empty($query['sort_by']) ? 'hitsInclusive' : $query['sort_by'];
+        $sortBy = empty($query['sort_by']) ? 'hits' : $query['sort_by'];
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $appendDates = $this->whereDate($year, $month, [], []);
@@ -572,8 +596,8 @@ SQL;
         if (false && $this->plugins()->has('itemSetsTree')) {
             $itemSetIds = $api->search('item_sets', [], ['returnScalar', 'id'])->getContent();
             foreach ($itemSetIds as $itemSetId) {
-                $hitsInclusive = $this->getHitsPerItemSet($hitsPerItemSet, $itemSetId);
-                if ($hitsInclusive > 0) {
+                $hitsSub = $this->getHitsByItemSet($hitsPerItemSet, $itemSetId);
+                if ($hitsSub > 0) {
                     try {
                         $itemSetTitle = $api->read('item_sets', ['id' => $itemSetId])->getContent()->displayTitle();
                     } catch (\Exception $e) {
@@ -582,7 +606,7 @@ SQL;
                     $results[] = [
                         'item-set' => $itemSetTitle,
                         'hits' => $hitsPerItemSet[$itemSetId] ?? 0,
-                        'hitsInclusive' => $hitsInclusive,
+                        'hits_sub' => '',
                     ];
                 }
             }
@@ -596,7 +620,6 @@ SQL;
                 $results[] = [
                     'item-set' => $itemSetTitle,
                     'hits' => $hits,
-                    'hitsInclusive' => '',
                 ];
             }
         }
@@ -604,10 +627,11 @@ SQL;
         $this->paginator(count($results));
 
         // TODO Manage special sort fields.
-        usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
-            $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
-            return $sortOrder === 'desc' ? -$cmp : $cmp;
-        });
+        $this->orderByColumn = [
+            'sort_by' => $sortBy,
+            'sort_order' => $sortOrder,
+        ];
+        usort($results, [$this, $sortOrder === 'hits' ? 'orderByColumnNumber' : 'orderByColumnString']);
 
         $years = $this->listYears('hit', null, null, false);
 
@@ -659,18 +683,22 @@ SQL;
             $form->setData($data);
             if ($form->isValid()) {
                 $query = $form->getData();
-                unset($query['csrf'], $query['submit']);
             } else {
                 $this->messenger()->addFormErrors($form);
             }
+            unset($query['csrf'], $query['submit']);
         }
+
+        // Sort is not in the form.
+        $query['sort_by'] = empty($data['sort_by']) ? null : $data['sort_by'];
+        $query['sort_order'] = isset($data['sort_order']) && strtolower($data['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $year = $query['year'] ?? null;
         $month = $query['month'] ?? null;
         $property = $query['property'] ?? null;
         $typeFilter = $query['value_type'] ?? null;
         $byPeriodFilter = $query['by_period'] ?? 'all';
-        $sortBy = empty($query['sort_by']) ? 'hitsInclusive' : $query['sort_by'];
+        $sortBy = empty($query['sort_by']) ? 'hits' : $query['sort_by'];
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         if ($property) {
@@ -750,6 +778,11 @@ SQL;
 
         // FIXME The results are doubled when the property has duplicate values for a resource, so fix it or warn about deduplicating values regularly (module BulkEdit).
 
+        $this->orderByColumn = [
+            'sort_by' => $sortBy,
+            'sort_order' => $sortOrder,
+        ];
+
         $baseBind = $bind;
         $baseTypes = $types;
         if ($periods) {
@@ -778,7 +811,7 @@ SQL;
                 $whereMonth = $appendDates['whereMonth'];
 
                 $sql = <<<SQL
-SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hitsInclusive
+SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hits_sub
 FROM hit hit $force
 JOIN value ON hit.entity_id = value.resource_id
 $joinProperty
@@ -794,10 +827,7 @@ ORDER BY hits DESC
 SQL;
                 $result = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();
 
-                usort($result, function ($a, $b) use ($sortBy, $sortOrder) {
-                    $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
-                    return $sortOrder === 'desc' ? -$cmp : $cmp;
-                });
+                usort($result, [$this, $sortOrder === 'hits' ? 'orderByColumnNumber' : 'orderByColumnString']);
 
                 $results[$period] = $result;
             }
@@ -815,7 +845,7 @@ SQL;
             $whereMonth = $appendDates['whereMonth'];
 
             $sql = <<<SQL
-SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hitsInclusive
+SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hits_sub
 FROM hit hit $force
 JOIN value ON hit.entity_id = value.resource_id
 $joinProperty
@@ -832,10 +862,7 @@ SQL;
             $results = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();
 
             // TODO Reinclude sort order inside sql.
-            usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
-                $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
-                return $sortOrder === 'desc' ? -$cmp : $cmp;
-            });
+            usort($results, [$this, 'orderByColumn']);
 
             // TODO Use the same format for all queries to simplify view.
             // $results['all'] = $results;
@@ -898,7 +925,7 @@ SQL;
         $childrenHits = 0;
         $childItemSetIds = $this->api()->search('item_sets_tree_edge', [], ['returnScalar' => 'id'])->getChildCollections($itemSetId);
         foreach ($childItemSetIds as $childItemSetId) {
-            $childrenHits += $this->getHitsPerItemSet($hitsPerItemSet, $childItemSetId);
+            $childrenHits += $this->getHitsByItemSet($hitsPerItemSet, $childItemSetId);
         }
         return ($hitsPerItemSet[$itemSetId] ?? 0) + $childrenHits;
     }

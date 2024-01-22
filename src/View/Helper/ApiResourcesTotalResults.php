@@ -22,8 +22,8 @@ class ApiResourcesTotalResults extends AbstractHelper
         $query['limit'] = 0;
 
         $resourceTypes = [
-            'item_sets',
             'items',
+            'item_sets',
             'media',
         ];
 

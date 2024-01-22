@@ -40,11 +40,7 @@ class HitAdapter extends AbstractEntityAdapter
         'referrer' => 'referrer',
         'user_agent' => 'userAgent',
         'accept_language' => 'acceptLanguage',
-        // TODO Clarify query for sort.
-        'entityName' => 'entityName',
-        'entityId' => 'entityId',
-        'userAgent' => 'userAgent',
-        'acceptLanguage' => 'acceptLanguage',
+        'language' => 'acceptLanguage',
         'created' => 'created',
     ];
 
@@ -60,6 +56,7 @@ class HitAdapter extends AbstractEntityAdapter
         'referrer' => 'referrer',
         'user_agent' => 'userAgent',
         'accept_language' => 'acceptLanguage',
+        'language' => 'acceptLanguage',
         'created' => 'created',
     ];
 
@@ -305,15 +302,13 @@ class HitAdapter extends AbstractEntityAdapter
 
         // TODO @experimental or @deprecated
         if (isset($query['not_empty'])
-            && in_array($query['not_empty'], ['query', 'referrer', 'user_agent', 'accept_language', 'userAgent', 'acceptLanguage'])
+            && in_array($query['not_empty'], ['query', 'referrer', 'user_agent', 'accept_language'])
         ) {
             $columns = [
                 'query' => 'query',
                 'referrer' => 'referrer',
                 'user_agent' => 'userAgent',
                 'accept_language' => 'acceptLanguage',
-                'userAgent' => 'userAgent',
-                'acceptLanguage' => 'acceptLanguage',
             ];
             $field = $columns[$query['not_empty']];
             if ($field === 'query') {

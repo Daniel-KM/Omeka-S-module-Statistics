@@ -25,7 +25,7 @@ class StatAdapter extends AbstractEntityAdapter
         'url' => 'url',
         'entity_id' => 'entityId',
         'entity_name' => 'entityName',
-        // TODO Clarify query for sort (used in some other places).
+        // The name of the column in the table is not the name in the entity.
         'hits' => 'totalHits',
         'anonymous' => 'totalHitsAnonymous',
         'identified' => 'totalHitsIdentified',
@@ -34,11 +34,6 @@ class StatAdapter extends AbstractEntityAdapter
         'total_hits' => 'totalHits',
         'total_hits_anonymous' => 'totalHitsAnonymous',
         'total_hits_identified' => 'totalHitsIdentified',
-        'hitsAnonymous' => 'totalHitsAnonymous',
-        'hitsIdentified' => 'totalHitsIdentified',
-        'totalHits' => 'totalHits',
-        'totalHitsAnonymous' => 'totalHitsAnonymous',
-        'totalHitsIdentified' => 'totalHitsIdentified',
         'created' => 'created',
         'modified' => 'modified',
     ];
@@ -49,6 +44,11 @@ class StatAdapter extends AbstractEntityAdapter
         'url' => 'url',
         'entity_id' => 'entityId',
         'entity_name' => 'entityName',
+        'hits' => 'totalHits',
+        'anonymous' => 'totalHitsAnonymous',
+        'identified' => 'totalHitsIdentified',
+        'hits_anonymous' => 'totalHitsAnonymous',
+        'hits_identified' => 'totalHitsIdentified',
         'total_hits' => 'totalHits',
         'total_hits_anonymous' => 'totalHitsAnonymous',
         'total_hits_identified' => 'totalHitsIdentified',

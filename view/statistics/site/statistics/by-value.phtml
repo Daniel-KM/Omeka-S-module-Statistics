@@ -49,6 +49,9 @@ $isYearPeriods = $byPeriodFilter === 'year';
 
 $submit = $form->get('submit');
 $form->remove('submit');
+$currentQuery = $this->params()->fromQuery();
+$currentQueryNoSort = $currentQuery;
+unset($currentQueryNoSort['sort_by']);
 
 $form->prepare();
 ?>
@@ -91,7 +94,7 @@ $form->prepare();
     <thead>
         <tr>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=value' ?>"><?= $translate('Value') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'value'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Value') ?></a>
             </th>
             <?php if ($isLinked): ?>
             <th>
@@ -135,7 +138,7 @@ $form->prepare();
     <thead>
         <tr>
             <th>
-                <a href="<?= $currentUrl . '?sort_by=value' ?>"><?= $translate('Value') ?></a>
+                <a href="<?= $escapeAttr($currentUrl . '?' . http_build_query($currentQueryNoSort + ['sort_by' => 'value'], '', '&', PHP_QUERY_RFC3986)) ?>"><?= $translate('Value') ?></a>
             </th>
             <?php if ($isLinked): ?>
             <th>
