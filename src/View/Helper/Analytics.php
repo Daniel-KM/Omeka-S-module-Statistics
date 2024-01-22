@@ -390,26 +390,26 @@ class Analytics extends AbstractHelper
      *
      * Filters events are not triggered.
      *
-     * @param array $params A set of parameters by which to filter the objects
+     * @param array $query A set of parameters by which to filter the objects
      * that get returned from the database.
      * @param int $page Page to retrieve.
      * @param int $limit Number of objects to return per "page".
      * @return \Statistics\Api\Representation\StatRepresentation[]
      */
-    public function vieweds(array $params = [], ?int $page = null, ?int $limit = null): array
+    public function vieweds(array $query = [], ?int $page = null, ?int $limit = null): array
     {
         if ($page) {
-            $params['page'] = $page;
+            $query['page'] = $page;
             if ($limit) {
-                $params['per_page'] = $limit;
+                $query['per_page'] = $limit;
             }
         } elseif ($limit) {
-            $params['limit'] = $limit;
+            $query['limit'] = $limit;
         }
 
         $request = new Request(Request::SEARCH, 'stats');
         $request
-            ->setContent($params)
+            ->setContent($query)
             ->setOption('initialize', false)
             ->setOption('finalize', false);
         $result = $this->statAdapter->search($request)->getContent();
@@ -722,7 +722,7 @@ class Analytics extends AbstractHelper
      *
      * Default sort is descendant (most frequents first).
      *
-     * @param array $params A set of parameters by which to filter the objects
+     * @param array $query A set of parameters by which to filter the objects
      *   that get returned from the database. It should contains a 'field' for
      *   the name of the column to evaluate.
      * @param int $page Page to retrieve.
@@ -848,13 +848,13 @@ class Analytics extends AbstractHelper
     /**
      * Get the most viewed specified rows with url, resource and total.
      *
-     * This method uses the table Hits directly, so query is different..
+     * This method uses the table Hits directly, so query is different.
      * Zero viewed rows are never returned.
      *
      * Main difference with search() is that values are not resources, but array
-     * of synthetic values.
+     * of synthetic values. Furthermore, no event from api manager is thrown.
      *
-     * @param array $params A set of parameters by which to filter the objects
+     * @param array $query A set of parameters by which to filter the objects
      *   that get returned from the database.
      * @param int $page Page to retrieve.
      * @param int $limit Number of objects to return per "page".
@@ -895,7 +895,8 @@ class Analytics extends AbstractHelper
                 'COUNT(url) AS hits'
                 // "@position:=@position+1 AS position"
             )
-            ->from(\Statistics\Entity\Hit::class, 'omeka_root');
+            ->from(\Statistics\Entity\Hit::class, 'omeka_root')
+        ;
         $this->hitAdapter->buildBaseQuery($qb, $query);
         $this->hitAdapter->buildQuery($qb, $query);
         // Don't group by id.
@@ -1375,7 +1376,7 @@ class Analytics extends AbstractHelper
     /**
      * Check if there is a key 'field' with a column name for frequency queries.
      */
-    protected function checkFieldForFrequency($params): ?string
+    protected function checkFieldForFrequency(array $query): ?string
     {
         $fields = [
             'id' => 'id',
@@ -1391,7 +1392,7 @@ class Analytics extends AbstractHelper
             'created' => 'created',
             'language' => 'acceptLanguage',
         ];
-        return $fields[$params['field'] ?? null] ?? null;
+        return $fields[$query['field'] ?? null] ?? null;
     }
 
     /**
