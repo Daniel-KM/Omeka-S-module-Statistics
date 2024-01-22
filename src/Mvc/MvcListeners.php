@@ -149,6 +149,7 @@ class MvcListeners extends AbstractListenerAggregate
             // An issue may occur, so skip when the stat is not unique:
             // - the controller is not found for an image;
             // - the same image is loaded multiple times on the same page.
+            // - the slug of a site page may have been updated.
         } catch (\Exception $e) {
             $logger = $this->services->get('Omeka\Logger');
             $logger->err(new \Omeka\Stdlib\Message(

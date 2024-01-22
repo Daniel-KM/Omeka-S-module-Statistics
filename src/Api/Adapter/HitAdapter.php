@@ -556,10 +556,17 @@ class HitAdapter extends AbstractEntityAdapter
             }
             $qb
                 ->andWhere($expr->eq('omeka_root.entityName', ':entity_name'))
-                ->andWhere($expr->eq('omeka_root.entityId', ':entity_id'));
+            ;
             $parameters[] = new Parameter('type', Stat::TYPE_RESOURCE, ParameterType::STRING);
             $parameters[] = new Parameter('entity_name', $entityName, ParameterType::STRING);
-            $parameters[] = new Parameter('entity_id', $entityId, ParameterType::INTEGER);
+            // The site page name may have changed, etc., so the most important
+            // for stats is the url.
+            if (in_array($entityName, ['items', 'item_sets', 'media'])) {
+                $qb
+                    ->andWhere($expr->eq('omeka_root.entityId', ':entity_id'))
+                ;
+                $parameters[] = new Parameter('entity_id', $entityId, ParameterType::INTEGER);
+            }
         }
 
         // Stat is created and filled via getStat() if not exists.
@@ -806,10 +813,12 @@ class HitAdapter extends AbstractEntityAdapter
             'item-set' => 'item_sets',
             'media' => 'media',
             'site_page' => 'site_pages',
+            'page' => 'site_pages',
             'annotation' => 'annotations',
             'Item' => 'items',
             'ItemSet' => 'item_sets',
             'Media' => 'media',
+            'Page' => 'site_pages',
             'SitePage' => 'site_pages',
             'Annotation' => 'annotations',
             'Omeka\Controller\Site\Item' => 'items',
@@ -894,7 +903,7 @@ class HitAdapter extends AbstractEntityAdapter
                 ->findOneBy(['slug' => $routeParams['page-slug']]);
             if ($pageId) {
                 $result['name'] = 'site_pages';
-                $result['id'] = (int) $pageId;
+                $result['id'] = $pageId->getId();
             }
         }
 
