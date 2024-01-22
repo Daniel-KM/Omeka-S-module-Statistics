@@ -82,7 +82,7 @@ class HitAdapter extends AbstractEntityAdapter
     {
         $expr = $qb->expr();
 
-        if (isset($query['url'])) {
+        if (isset($query['url']) && $query['url'] !== '' && $query['url'] !== []) {
             if (is_array($query['url'])) {
                 $qb->andWhere($expr->in(
                     'omeka_root.url',
@@ -97,10 +97,10 @@ class HitAdapter extends AbstractEntityAdapter
         }
 
         // The query may use "resource_type" or "entity_name".
-        if (isset($query['resource_type'])) {
+        if (isset($query['resource_type']) && $query['resource_type'] !== '' && $query['resource_type'] !== []) {
             $query['entity_name'] = $query['resource_type'];
         }
-        if (isset($query['entity_name'])) {
+        if (isset($query['entity_name']) && $query['entity_name'] !== '' && $query['entity_name'] !== []) {
             if (is_array($query['entity_name'])) {
                 $qb->andWhere($expr->in(
                     'omeka_root.entityName',
@@ -115,10 +115,10 @@ class HitAdapter extends AbstractEntityAdapter
         }
 
         // The query may use "resource_id" or "entity_id".
-        if (isset($query['resource_id'])) {
+        if (isset($query['resource_id']) && $query['resource_id'] !== '' && $query['resource_id'] !== []) {
             $query['entity_id'] = $query['resource_id'];
         }
-        if (isset($query['entity_id'])) {
+        if (isset($query['entity_id']) && $query['entity_id'] !== '' && $query['entity_id'] !== []) {
             if (is_array($query['entity_id'])) {
                 $qb->andWhere($expr->in(
                     'omeka_root.entityId',
@@ -132,33 +132,19 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
-        if (isset($query['has_resource'])) {
-            $query['has_entity'] = $query['has_resource'];
+        if (isset($query['has_resource']) && $query['has_resource'] !== '') {
+            $query['has_entity'] = (bool) $query['has_resource'];
         }
-        if (isset($query['has_entity'])) {
+        if (isset($query['has_entity']) && $query['has_entity'] !== '') {
             $qb
                 ->andWhere(
-                    $query['has_entity']
+                    (bool) $query['has_entity']
                         ? $expr->neq('omeka_root.entityName', $this->createNamedParameter($qb, ''))
                         : $expr->eq('omeka_root.entityName', $this->createNamedParameter($qb, ''))
                 );
         }
 
-        if (isset($query['has_entity']) && $query['has_entity'] !== '') {
-            if ($query['has_entity']) {
-                $qb->andWhere($expr->neq(
-                    'omeka_root.entityId',
-                    $this->createNamedParameter($qb, '0')
-                ));
-            } else {
-                $qb->andWhere($expr->eq(
-                    'omeka_root.entityId',
-                    $this->createNamedParameter($qb, '0')
-                ));
-            }
-        }
-
-        if (isset($query['site_id'])) {
+        if (isset($query['site_id']) && $query['site_id'] !== '' && $query['site_id'] !== []) {
             if (is_array($query['site_id'])) {
                 $qb->andWhere($expr->in(
                     'omeka_root.siteId',
@@ -172,7 +158,7 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
-        if (isset($query['user_id'])) {
+        if (isset($query['user_id']) && $query['user_id'] !== '' && $query['user_id'] !== []) {
             if (is_array($query['user_id'])) {
                 $qb->andWhere($expr->in(
                     'omeka_root.userId',
@@ -216,7 +202,7 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
-        if (isset($query['ip'])) {
+        if (isset($query['ip']) && $query['ip'] !== '' && $query['ip'] !== []) {
             if (is_array($query['ip'])) {
                 $qb->andWhere($expr->in(
                     'omeka_root.ip',
@@ -230,7 +216,7 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
-        if (isset($query['referrer'])) {
+        if (isset($query['referrer']) && $query['referrer'] !== '' && $query['referrer'] !== []) {
             if (is_array($query['referrer'])) {
                 $qb->andWhere($expr->in(
                     'omeka_root.referrer',
@@ -253,7 +239,7 @@ class HitAdapter extends AbstractEntityAdapter
                 ));
         }
 
-        if (isset($query['user_agent'])) {
+        if (isset($query['user_agent']) && $query['user_agent'] !== '' && $query['user_agent'] !== []) {
             if (is_array($query['user_agent'])) {
                 $qb->andWhere($expr->in(
                     'omeka_root.userAgent',
@@ -267,7 +253,7 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
-        if (isset($query['accept_language'])) {
+        if (isset($query['accept_language']) && $query['accept_language'] !== '' && $query['accept_language'] !== []) {
             if (is_array($query['accept_language'])) {
                 $qb->andWhere($expr->in(
                     'omeka_root.acceptLanguage',
