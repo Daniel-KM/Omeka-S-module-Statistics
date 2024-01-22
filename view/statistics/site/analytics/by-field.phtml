@@ -1,6 +1,7 @@
 <?php
 /**
  * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Statistics\Form\AnalyticsByFieldForm $form
  * @var array $results
  * @var string $type "field"
  * @var string $field
@@ -24,11 +25,20 @@ $isAdminRequest = $this->status()->isAdminRequest();
 
 $totalResults = $this->pagination()->getPaginator()->getTotalCount();
 $currentUrl = $urlHelper(null, [], true);
+
+$submit = $form->get('submit');
+$form->remove('submit');
 ?>
 
 <?= $this->pageTitle(sprintf($translate('Analytics (%s total)'), $totalResults), 1, $isAdminRequest ? $translate('Analytics') : null) ?>
 
 <?= $this->partial('common/analytics-nav') ?>
+
+<?= $this->form($form) ?>
+
+<div id="page-actions">
+    <?= $this->formSubmit($submit) ?>
+</div>
 
 <p>
     <strong><?= sprintf($translate('By %s (%s)'), $labelField, $analytics->humanUserStatus($userStatus)) ?></strong>
@@ -39,9 +49,9 @@ $currentUrl = $urlHelper(null, [], true);
 
 <div class="browse-controls">
     <?= $pagination = $this->pagination() ?>
-    <?= $this->partial('common/analytics-quick-filters') ?>
     <?php //= $this->sortSelector($sortHeadings) ?>
 </div>
+
 <table class="tablesaw statistics-table" data-tablesaw-mode="stack">
     <thead>
         <tr>
@@ -57,7 +67,7 @@ $currentUrl = $urlHelper(null, [], true);
         </tr>
     </thead>
     <tbody>
-<?php foreach ($results as $position => $result): ?>
+<?php foreach ($results as /* $position => */ $result): ?>
         <tr class="statistics-stat">
             <td class="statistics-field"><?= $result[$field] ?></td>
             <td class="statistics-hits"><?= $result['hits'] ?></td>
@@ -71,8 +81,8 @@ $currentUrl = $urlHelper(null, [], true);
 <?php else: ?>
 
 <div class="browse-controls">
-    <?= $this->partial('common/analytics-quick-filters') ?>
 </div>
+
 <br class="clear" />
 <div class="no-resources">
 <?php if (!$totalHits): ?>

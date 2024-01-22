@@ -1,6 +1,7 @@
 <?php
 /**
  * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Statistics\Form\AnalyticsByDownloadForm|\Statistics\Form\AnalyticsByResourceForm $form
  * @var \Statistics\Api\Representation\StatRepresentation[] $stats
  * @var string $userStatus
  * @var string $type
@@ -24,20 +25,28 @@ $isAdminRequest = $this->status()->isAdminRequest();
 $totalResults = $this->pagination()->getPaginator()->getTotalCount();
 $currentUrl = $urlHelper(null, [], true);
 $basePath = $this->basePath();
+
+$submit = $form->get('submit');
+$form->remove('submit');
 ?>
 
 <?= $this->pageTitle(sprintf($translate('Analytics (%s total)'), $totalResults), 1, $isAdminRequest ? $translate('Analytics') : null) ?>
 
 <?= $this->partial('common/analytics-nav') ?>
 
+<?= $this->form($form) ?>
+
+<div id="page-actions">
+    <?= $this->formSubmit($submit) ?>
+</div>
+
 <?php if ($stats): ?>
 
 <div class="browse-controls">
     <?= $pagination = $this->pagination() ?>
-    <?php //= $this->hyperlink($translate('Advanced search'), $urlHelper(null, ['action' => 'search'], ['query' => $this->params()->fromQuery()], true), ['class' => 'advanced-search']) ?>
-    <?= $this->partial('common/analytics-quick-filters') ?>
     <?php //= $this->sortSelector($sortHeadings) ?>
 </div>
+
 <table class="tablesaw statistics-table" data-tablesaw-mode="stack">
     <thead>
         <tr>
@@ -105,9 +114,10 @@ $basePath = $this->basePath();
 <?php else: ?>
 
 <div class="browse-controls">
-    <?= $this->partial('common/analytics-quick-filters') ?>
 </div>
+
 <?php $totalStats = $this->api()->search('stats', ['limit' => 0])->getTotalResults(); ?>
+<br class="clear" />
 <div class="no-resources">
 <?php if (!$totalStats): ?>
     <p><?= $translate('Omeka could not find any statistics.') ?></p>

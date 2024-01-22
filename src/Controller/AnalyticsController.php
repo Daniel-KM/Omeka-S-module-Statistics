@@ -128,7 +128,10 @@ class AnalyticsController extends AbstractActionController
         // TODO Move the process into view helper Analytics.
         // TODO Enlarge byItemSet to byResource (since anything is resource).
 
+        $years  = $this->listYears('resource', null, null, true);
+
         $isAdminRequest = $this->status()->isAdminRequest();
+
         $settings = $this->settings();
 
         $userStatus = $isAdminRequest
@@ -143,9 +146,28 @@ class AnalyticsController extends AbstractActionController
             $whereStatus = '';
         }
 
-        $query = $this->params()->fromQuery();
-        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
-        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
+        $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
+        $query = [];
+
+        /** @var \Statistics\Form\AnalyticsBySiteForm $form */
+        $form = $this->getForm(\Statistics\Form\AnalyticsBySiteForm::class, [
+            'years' => $years,
+        ]);
+
+        if ($data) {
+            $form->setData($data);
+            if ($form->isValid()) {
+                $query = $form->getData();
+                unset($query['csrf'], $query['submit']);
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
+        }
+
+        $year = $query['year'] ?? null;
+        $month = $query['month'] ?? null;
+        $sortBy = empty($query['sort_by']) ? 'hitsInclusive' : $query['sort_by'];
+        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $appendDates = $this->whereDate($year, $month, [], []);
         $bind = $appendDates['bind'];
@@ -184,20 +206,13 @@ SQL;
         $this->paginator(count($results));
 
         // TODO Manage special sort fields.
-        $sortBy = $query['sort_by'] ?? null;
-        if (empty($sortBy) || !in_array($sortBy, ['site', 'hits', 'hitsInclusive'])) {
-            $sortBy = 'hitsInclusive';
-        }
-        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
-
         usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
             $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
             return $sortOrder === 'desc' ? -$cmp : $cmp;
         });
 
-        $years = $this->listYears('hit', null, null, false);
-
         $view = new ViewModel([
+            'form' => $form,
             'type' => 'site',
             'results' => $results,
             'years' => $years,
@@ -216,6 +231,9 @@ SQL;
         $isAdminRequest = $this->status()->isAdminRequest();
         $settings = $this->settings();
 
+        $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
+        $query = [];
+
         $userStatus = $isAdminRequest
             ? $settings->get('statistics_default_user_status_admin')
             : $settings->get('statistics_default_user_status_public');
@@ -224,15 +242,29 @@ SQL;
         $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
-        $query = $this->params()->fromQuery();
+        /** @var \Statistics\Form\AnalyticsByPageForm $form */
+        $form = $this->getForm(\Statistics\Form\AnalyticsByPageForm::class);
+
+        if ($data) {
+            $form->setData($data);
+            if ($form->isValid()) {
+                $query = $form->getData();
+                unset($query['csrf'], $query['submit']);
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
+        }
+
         $query['type'] = Stat::TYPE_PAGE;
         $query['user_status'] = $userStatus;
+        $query['has_resource'] ??= '';
 
         $response = $this->api()->search('stats', $query);
         $this->paginator($response->getTotalResults());
         $stats = $response->getContent();
 
         $view = new ViewModel([
+            'form' => $form,
             'resources' => $stats,
             'stats' => $stats,
             'userStatus' => $userStatus,
@@ -250,6 +282,9 @@ SQL;
         $isAdminRequest = $this->status()->isAdminRequest();
         $settings = $this->settings();
 
+        $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
+        $query = [];
+
         $userStatus = $isAdminRequest
             ? $settings->get('statistics_default_user_status_admin')
             : $settings->get('statistics_default_user_status_public');
@@ -258,7 +293,19 @@ SQL;
         $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
-        $query = $this->params()->fromQuery();
+        /** @var \Statistics\Form\AnalyticsByResourceForm $form */
+        $form = $this->getForm(\Statistics\Form\AnalyticsByResourceForm::class);
+
+        if ($data) {
+            $form->setData($data);
+            if ($form->isValid()) {
+                $query = $form->getData();
+                unset($query['csrf'], $query['submit']);
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
+        }
+
         $query['type'] = Stat::TYPE_RESOURCE;
         $query['user_status'] = $userStatus;
 
@@ -267,6 +314,7 @@ SQL;
         $stats = $response->getContent();
 
         $view = new ViewModel([
+            'form' => $form,
             'resources' => $stats,
             'stats' => $stats,
             'userStatus' => $userStatus,
@@ -284,6 +332,9 @@ SQL;
         $isAdminRequest = $this->status()->isAdminRequest();
         $settings = $this->settings();
 
+        $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
+        $query = [];
+
         $userStatus = $isAdminRequest
             ? $settings->get('statistics_default_user_status_admin')
             : $settings->get('statistics_default_user_status_public');
@@ -292,7 +343,19 @@ SQL;
         $userStatusBrowse = $defaultSorts[$userStatus] ?? 'total_hits';
         $this->setBrowseDefaults($userStatusBrowse);
 
-        $query = $this->params()->fromQuery();
+        /** @var \Statistics\Form\AnalyticsByDownloadForm $form */
+        $form = $this->getForm(\Statistics\Form\AnalyticsByDownloadForm::class);
+
+        if ($data) {
+            $form->setData($data);
+            if ($form->isValid()) {
+                $query = $form->getData();
+                unset($query['csrf'], $query['submit']);
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
+        }
+
         $query['type'] = Stat::TYPE_DOWNLOAD;
         $query['user_status'] = $userStatus;
 
@@ -301,6 +364,7 @@ SQL;
         $stats = $response->getContent();
 
         $view = new ViewModel([
+            'form' => $form,
             'resources' => $stats,
             'stats' => $stats,
             'userStatus' => $userStatus,
@@ -322,21 +386,23 @@ SQL;
             ? $settings->get('statistics_default_user_status_admin')
             : $settings->get('statistics_default_user_status_public');
 
-        $query = $this->params()->fromQuery();
+        $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
+        $query = [];
 
-        $fields = [
-            'referrer',
-            'query',
-            'user_agent',
-            'accept_language',
-            'language',
-        ];
+        /** @var \Statistics\Form\AnalyticsByFieldForm $form */
+        $form = $this->getForm(\Statistics\Form\AnalyticsByFieldForm::class);
 
-        $field = $query['field'] ?? null;
-        if (empty($field) || !in_array($field, $fields)) {
-            $field = 'referrer';
-            $query['field'] = $field;
+        if ($data) {
+            $form->setData($data);
+            if ($form->isValid()) {
+                $query = $form->getData();
+                unset($query['csrf'], $query['submit']);
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
         }
+
+        $field = empty($query['field']) ? 'referrer' : $query['field'];
 
         $query = $this->defaultSort($query, [$field, 'hits'], 'hits');
 
@@ -374,6 +440,7 @@ SQL;
         }
 
         $view = new ViewModel([
+            'form' => $form,
             'type' => 'field',
             'field' => $field,
             'labelField' => $labelField,
@@ -392,7 +459,28 @@ SQL;
         // TODO Move the process into view helper Analytics.
         // TODO Enlarge byItemSet to byResource (since anything is resource).
 
+        $years  = $this->listYears('resource', null, null, true);
+
         $isAdminRequest = $this->status()->isAdminRequest();
+
+        $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
+        $query = [];
+
+        /** @var \Statistics\Form\AnalyticsByItemSetForm $form */
+        $form = $this->getForm(\Statistics\Form\AnalyticsByItemSetForm::class, [
+            'years' => $years,
+        ]);
+
+        if ($data) {
+            $form->setData($data);
+            if ($form->isValid()) {
+                $query = $form->getData();
+                unset($query['csrf'], $query['submit']);
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
+        }
+
         $settings = $this->settings();
 
         $userStatus = $isAdminRequest
@@ -407,9 +495,10 @@ SQL;
             $whereStatus = '';
         }
 
-        $query = $this->params()->fromQuery();
         $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
         $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
+        $sortBy = empty($query['sort_by']) ? 'hitsInclusive' : $query['sort_by'];
+        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         $appendDates = $this->whereDate($year, $month, [], []);
         $bind = $appendDates['bind'];
@@ -469,12 +558,6 @@ SQL;
         $this->paginator(count($results));
 
         // TODO Manage special sort fields.
-        $sortBy = $query['sort_by'] ?? null;
-        if (empty($sortBy) || !in_array($sortBy, ['itemSet', 'hits', 'hitsInclusive'])) {
-            $sortBy = 'hitsInclusive';
-        }
-        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
-
         usort($results, function ($a, $b) use ($sortBy, $sortOrder) {
             $cmp = strnatcasecmp($a[$sortBy] ?? '', $b[$sortBy] ?? '');
             return $sortOrder === 'desc' ? -$cmp : $cmp;
@@ -483,6 +566,7 @@ SQL;
         $years = $this->listYears('hit', null, null, false);
 
         $view = new ViewModel([
+            'form' => $form,
             'type' => 'item-set',
             'results' => $results,
             'years' => $years,
@@ -500,6 +584,8 @@ SQL;
         // TODO Enlarge byItemSet to byResource (since anything is resource).
         // TODO Here, only items are analyzed.
 
+        $years  = $this->listYears('resource', null, null, true);
+
         $isAdminRequest = $this->status()->isAdminRequest();
         $settings = $this->settings();
 
@@ -515,25 +601,35 @@ SQL;
             $whereStatus = '';
         }
 
-        $query = $this->params()->fromQuery();
-        $year = empty($query['year']) || !is_numeric($query['year']) ? null : (int) $query['year'];
-        $month = empty($query['month']) || !is_numeric($query['month']) ? null : (int) $query['month'];
+        $data = $this->params()->fromQuery() ?: $this->params()->fromPost();
+        $query = [];
+
+        /** @var \Statistics\Form\AnalyticsByValueForm $form */
+        $form = $this->getForm(\Statistics\Form\AnalyticsByValueForm::class, [
+            'years' => $years,
+        ]);
+
+        if ($data) {
+            $form->setData($data);
+            if ($form->isValid()) {
+                $query = $form->getData();
+                unset($query['csrf'], $query['submit']);
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
+        }
+
+        $year = $query['year'] ?? null;
+        $month = $query['month'] ?? null;
         $property = $query['property'] ?? null;
         $typeFilter = $query['value_type'] ?? null;
-        $byPeriodFilter = isset($query['by_period']) && in_array($query['by_period'], ['year', 'month']) ? $query['by_period'] : 'all';
-
-        // A property is required to get stats, so get empty without a good one.
-        if ($property) {
-            $property = $this->easyMeta()->propertyTerm($property);
-            $propertyId = $this->easyMeta()->propertyId($property);
-        } else {
-            $property = null;
-            $propertyId = null;
-        }
+        $byPeriodFilter = $query['by_period'] ?? 'all';
+        $sortBy = empty($query['sort_by']) ? 'hitsInclusive' : $query['sort_by'];
+        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
         if ($property) {
             $joinProperty = ' AND property_id = :property_id';
-            $bind['property_id'] = $propertyId;
+            $bind['property_id'] = $this->easyMeta()->propertyId($property);
             $types['property_id'] = \Doctrine\DBAL\ParameterType::INTEGER;
         } elseif ($query) {
             $this->messenger()->addError(new Message('A property is required to get statistics.')); // @translate
@@ -562,6 +658,7 @@ SQL;
         }
 
         $view = new ViewModel([
+            'form' => $form,
             'type' => 'value',
             'results' => [],
             'years' => $this->listYears('hit', null, null, true),
@@ -582,12 +679,6 @@ SQL;
         // TODO There is no pagination currently in stats by value.
 
         // TODO Manage special sort fields.
-        $sortBy = $query['sort_by'] ?? null;
-        if (empty($sortBy) || !in_array($sortBy, ['value', 'hits', 'hitsInclusive'])) {
-            $sortBy = 'hitsInclusive';
-        }
-        $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
-
         // TODO Add a type filter for all, or no type filter.
         switch ($typeFilter) {
             default:
@@ -646,7 +737,7 @@ FROM hit hit $force
 JOIN value ON hit.entity_id = value.resource_id$joinProperty$joinResource
 WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth$whereFilterValue
 GROUP BY $typeFilterValue
-ORDER BY hits DESC ASC
+ORDER BY hits DESC
 ;
 SQL;
                 $result = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();
@@ -677,7 +768,7 @@ FROM hit hit$force
 JOIN value ON hit.entity_id = value.resource_id$joinProperty$joinResource
 WHERE hit.entity_name = "items"$whereStatus$whereYear$whereMonth$whereFilterValue
 GROUP BY $typeFilterValue
-ORDER BY hits DESC ASC
+ORDER BY hits DESC
 ;
 SQL;
             $results = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();

@@ -43,6 +43,13 @@ return [
             Form\SettingsFieldset::class => Form\SettingsFieldset::class,
         ],
         'factories' => [
+            Form\AnalyticsByDownloadForm::class => Service\Form\FormFactory::class,
+            Form\AnalyticsByFieldForm::class => Service\Form\FormFactory::class,
+            Form\AnalyticsByItemSetForm::class => Service\Form\FormFactory::class,
+            Form\AnalyticsByPageForm::class => Service\Form\FormFactory::class,
+            Form\AnalyticsByResourceForm::class => Service\Form\FormFactory::class,
+            Form\AnalyticsBySiteForm::class => Service\Form\FormFactory::class,
+            Form\AnalyticsByValueForm::class => Service\Form\FormFactory::class,
             Form\StatisticsBySiteForm::class => Service\Form\FormFactory::class,
             Form\StatisticsByValueForm::class => Service\Form\FormFactory::class,
         ],

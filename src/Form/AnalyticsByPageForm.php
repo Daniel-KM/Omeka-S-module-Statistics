@@ -1,0 +1,46 @@
+<?php declare(strict_types=1);
+
+namespace Statistics\Form;
+
+use Common\Form\Element as CommonElement;
+use Laminas\Form\Element;
+use Laminas\Form\Form;
+
+class AnalyticsByPageForm extends Form
+{
+    public function init(): void
+    {
+        $this
+            ->setAttribute('id', 'analytics')
+            ->setAttribute('method', 'GET')
+            ->add([
+                'name' => 'has_resource',
+                'type' => CommonElement\OptionalRadio::class,
+                'options' => [
+                    'label' => 'Filter pages with resources', // @ŧranslate
+                    'value_options' => [
+                        '' => 'All', // @translate
+                        '1' => 'Has resource', // @translate
+                        '0' => 'Has no resource', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'has_resource',
+                    'value' => '',
+                ],
+            ])
+            ->add([
+                'name' => 'submit',
+                'type' => Element\Submit::class,
+                'options' => [
+                    'label' => 'Submit', // @ŧranslate
+                ],
+                'attributes' => [
+                    'id' => 'submit',
+                    'form' => 'analytics',
+                    'value' => 'Submit',
+                ],
+            ])
+        ;
+    }
+}

@@ -1,6 +1,7 @@
 <?php
 /**
  * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Statistics\Form\AnalyticsBySiteForm $form
  * @var array $results
  * @var string $type "site"
  * @var array $hits
@@ -21,42 +22,20 @@ $this->htmlElement('body')->appendAttribute('class', 'statistics browse');
 $isAdminRequest = $this->status()->isAdminRequest();
 
 $currentUrl = $urlHelper(null, [], true);
+
+$submit = $form->get('submit');
+$form->remove('submit');
 ?>
 
 <?= $this->pageTitle($translate('By site'), 1, $isAdminRequest ? $translate('Analytics') : null) ?>
 
 <?= $this->partial('common/analytics-nav') ?>
 
-<form method="get">
-    <select name="year">
-        <option value=""><?= $translate('All years') ?></option>
-        <?php foreach ($years as $year): ?>
-            <option value="<?= $year ?>"<?= $yearFilter == $year ? ' selected="selected"' : '' ?>><?= $year ?></option>
-        <?php endforeach; ?>
-    </select>
+<?= $this->form($form) ?>
 
-    <?php $months = [
-        $translate('January'),
-        $translate('February'),
-        $translate('March'),
-        $translate('April'),
-        $translate('May'),
-        $translate('June'),
-        $translate('July'),
-        $translate('August'),
-        $translate('September'),
-        $translate('October'),
-        $translate('November'),
-        $translate('December'),
-    ]; ?>
-    <select name="month">
-        <option value=""><?= $translate('All months') ?></option>
-        <?php foreach ($months as $i => $month): ?>
-            <option value="<?= $i + 1 ?>"<?= $monthFilter == $i + 1 ? ' selected="selected"' : '' ?>><?= $month ?></option>
-        <?php endforeach; ?>
-    </select>
-    <button type="submit"><?= $translate('Filter') ?></button>
-</form>
+<div id="page-actions">
+    <?= $this->formSubmit($submit) ?>
+</div>
 
 <?php if (count($results)): ?>
 
@@ -72,7 +51,7 @@ $currentUrl = $urlHelper(null, [], true);
         </tr>
     </thead>
     <tbody>
-<?php foreach ($results as $position => $result): ?>
+<?php foreach ($results as /* $position => */ $result): ?>
         <tr class="statistics-stat">
             <td class="statistics-field"><?= $result['site'] ?></td>
             <td class="statistics-hits"><?= $result['hits'] ?></td>
