@@ -252,6 +252,8 @@ class StatisticsController extends AbstractActionController
         $sortBy = isset($query['sort_by']) && in_array($query['sort_by'], ['value', 'resources', 'item_sets', 'items', 'media']) ? $query['sort_by'] : 'total';
         $sortOrder = isset($query['sort_order']) && strtolower($query['sort_order']) === 'asc' ? 'asc' : 'desc';
 
+        $years  = $this->listYears('resource', null, null, true);
+
         $isMetadata = in_array($typeFilter, ['resource_class', 'resource_template', 'owner']);
 
         // A property is required to get stats, so get empty without a good one.
@@ -295,7 +297,7 @@ class StatisticsController extends AbstractActionController
             'results' => [],
             'totals' => [],
             'resourceTypes' => $resourceTypes,
-            'years' => $this->listYears('resource', null, null, true),
+            'years' => $years,
             'periods' => $periods,
             'yearFilter' => $year,
             'monthFilter' => $month,
@@ -464,7 +466,7 @@ class StatisticsController extends AbstractActionController
                     ;
                     break;
 
-                case 'access_resource':
+                case 'access':
                     if  (!$this->hasAccess) {
                         // Fake search without result.
                         $qb
@@ -475,7 +477,7 @@ class StatisticsController extends AbstractActionController
                             // TODO Finalize statistics with module Access.
                             ->select(
                                 'IDENTITY(omeka_root.owner) AS v', 'user.name AS l', 'COUNT(omeka_root.id) AS t')
-// TODO
+                            // TODO
                             ->leftJoin(\Access\Entity\AccessStatus::class, 'access', Join::WITH, 'omeka_root.owner = user')
                             ->groupBy('omeka_root.owner')
                         ;

@@ -194,7 +194,7 @@ HTML;
         $analytics = $plugins->get('analytics');
         $translate = $plugins->get('translate');
 
-        $html = '<ul>';
+        $html = '<ul class="value">';
         $html .= '<li>';
         $html .= sprintf(
             $translate('Views: %d (anonymous: %d / users: %d)'), // @translate

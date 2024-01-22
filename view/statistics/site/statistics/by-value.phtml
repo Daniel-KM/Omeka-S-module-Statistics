@@ -87,7 +87,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
             <label><input type="radio" name="value_type" value="resource_template"<?= $valueTypeFilter === 'resource_template' ? ' checked="checked"' : '' ?>><?= $translate('Resource template') ?></label>
             <label><input type="radio" name="value_type" value="owner"<?= $valueTypeFilter === 'owner' ? ' checked="checked"' : '' ?>><?= $translate('Owner') ?></label>
             <?php if (!empty($hasAccess)): ?>
-            <label><input type="radio" name="value_type" value="access_resource"<?= $valueTypeFilter === 'access_resource' ? ' checked="checked"' : '' ?>><?= $translate('Access resource') ?></label>
+            <label><input type="radio" name="value_type" value="access"<?= $valueTypeFilter === 'access' ? ' checked="checked"' : '' ?>><?= $translate('Access resource') ?></label>
             <?php endif; ?>
         </div>
 
@@ -97,7 +97,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
             <label><input type="radio" name="by_period" value="month"<?= $byPeriodFilter === 'month' ? ' checked="checked"' : '' ?>><?= $translate('By month') ?></label>
         </div>
 
-        <select name="year form-field">
+        <select name="year" class="form-field">
             <option value=""><?= $translate('All years') ?></option>
             <?php foreach ($years as $year): ?>
                 <option value="<?= $year ?>"<?= $yearFilter == $year ? ' selected="selected"' : '' ?>><?= $year ?></option>
@@ -118,7 +118,7 @@ $isYearPeriods = $byPeriodFilter === 'year';
             11 => $translate('November'),
             12 => $translate('December'),
         ]; ?>
-        <select name="month form-field">
+        <select name="month" class="form-field">
             <option value=""><?= $translate('All months') ?></option>
             <?php foreach ($months as $numberMonth => $month): ?>
                 <option value="<?= $numberMonth ?>"<?= $monthFilter == $numberMonth ? ' selected="selected"' : '' ?>><?= $month ?></option>
