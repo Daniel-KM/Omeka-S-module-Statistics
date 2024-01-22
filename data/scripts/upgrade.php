@@ -170,3 +170,62 @@ if (version_compare($oldVersion, '3.3.5', '<')) {
     );
     $messenger->addSuccess($message);
 }
+
+if (version_compare($oldVersion, '3.4.7', '<')) {
+    // Fill site pages in hit.
+    $sql = <<<'SQL'
+UPDATE `hit`
+INNER JOIN `site_page`
+    ON `site_page`.`slug` = SUBSTRING(`hit`.`url`, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 4)) + 2)
+INNER JOIN `site`
+    ON `site`.`slug` = SUBSTRING(`hit`.`url`, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) + 2, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 3)) - LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) - 1)
+        AND `site`.`id` = `site_page`.`site_id`
+SET
+    `entity_name` = "site_pages",
+    `entity_id` = `site_page`.`id`
+WHERE `entity_name` = ""
+    AND `entity_id` = 0
+    AND `url` LIKE "/s/%/page/%"
+;
+SQL;
+    $connection->executeStatement($sql);
+
+    // Fill site pages in stat.
+    $sql = <<<'SQL'
+UPDATE `stat`
+INNER JOIN `site_page`
+    ON `site_page`.`slug` = SUBSTRING(`stat`.`url`, LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 4)) + 2)
+INNER JOIN `site`
+    ON `site`.`slug` = SUBSTRING(`stat`.`url`, LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 2)) + 2, LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 3)) - LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 2)) - 1)
+        AND `site`.`id` = `site_page`.`site_id`
+SET
+    `entity_name` = "site_pages",
+    `entity_id` = `site_page`.`id`
+WHERE `entity_name` = ""
+    AND `entity_id` = 0
+    AND `url` LIKE "/s/%/page/%"
+;
+SQL;
+    $connection->executeStatement($sql);
+
+    // Fill sites in hit.
+    $sql = <<<'SQL'
+UPDATE `hit`
+INNER JOIN `site`
+    ON `site`.`slug` = SUBSTRING(`hit`.`url`, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) + 2, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 3)) - LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) - 1)
+SET
+    `site_id` = `site`.`id`
+WHERE `site_id` = 0
+    AND `url` LIKE "/s/%/page/%"
+;
+SQL;
+    $connection->executeStatement($sql);
+
+    if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActiveVersion('Common', '3.4.50')) {
+        $message = new Message(
+            'The module %1$s should be upgraded to version %2$s or later.', // @translate
+            'Common', '3.4.50'
+        );
+       throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $message);
+    }
+}
