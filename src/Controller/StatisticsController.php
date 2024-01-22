@@ -4,13 +4,13 @@ namespace Statistics\Controller;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+use Common\Stdlib\PsrMessage;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\Query\Expr\Join;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 use Omeka\Api\Adapter\Manager as AdapterManager;
-use Omeka\Stdlib\Message;
 use OpenSpout\Writer\Common\Creator\WriterEntityFactory;
 
 /**
@@ -257,17 +257,16 @@ class StatisticsController extends AbstractActionController
         $isMetadata = in_array($typeFilter, ['resource_class', 'resource_template', 'owner']);
 
         // A property is required to get stats, so get empty without a good one.
-        $propertyId = null;
-        if ($property && $propertyId = $this->getPropertyId($property)) {
-            if (is_numeric($property)) {
-                $property = $this->getPropertyId([$propertyId]);
-                $property = key($property);
-            }
-        } elseif (!$isMetadata) {
+        if ($property) {
+            $property = $this->easyMeta()->propertyTerm($property);
+            $propertyId = $this->easyMeta()->propertyId($property);
+        } else {
             $property = null;
-            if ($query) {
-                $this->messenger()->addError(new Message('A property is required to get statistics.')); // @translate
-            }
+            $propertyId = null;
+        }
+
+        if (!$property && !$isMetadata && $query) {
+            $this->messenger()->addError(new PsrMessage('A property is required to get statistics.')); // @translate
         }
 
         switch ($byPeriodFilter) {
@@ -281,7 +280,7 @@ class StatisticsController extends AbstractActionController
                     $periods = $this->listYearMonths('resource', (int) sprintf('%04d01', $year), (int) sprintf('%04d12', $year), true);
                 } elseif ($month) {
                     $periods = null;
-                    $this->messenger()->addError(new Message('A year is required to get details by month.')); // @translate
+                    $this->messenger()->addError(new PsrMessage('A year is required to get details by month.')); // @translate
                 } else {
                     $periods = $this->listYearMonths('resource', null, null, true);
                 }
@@ -998,12 +997,12 @@ class StatisticsController extends AbstractActionController
         extract($variables);
 
         if (!count($results)) {
-            $this->messenger()->addError(new Message('There is no results.')); // @translate
+            $this->messenger()->addError(new PsrMessage('There is no results.')); // @translate
             return null;
         }
 
         if ($type === 'value' && (!$propertyFilter || is_null($periods))) {
-            $this->messenger()->addError(new Message('Check the form.')); // @translate
+            $this->messenger()->addError(new PsrMessage('Check the form.')); // @translate
             return null;
         }
 
@@ -1045,7 +1044,10 @@ class StatisticsController extends AbstractActionController
                 break;
                 */
             default:
-                $this->messenger()->addError(new Message('The format "%s" is not supported to export statistics.', $output)); // @translate
+                $this->messenger()->addError(new PsrMessage(
+                    'The format "{format}" is not supported to export statistics.', // @translate
+                    ['format' => $output]
+                ));
                 return null;
         }
 

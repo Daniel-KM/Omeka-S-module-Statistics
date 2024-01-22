@@ -139,45 +139,4 @@ trait StatisticsTrait
 
         return array_replace($range, $periods);
     }
-
-    /**
-     * Get one or more property ids by JSON-LD terms or by numeric ids.
-     *
-     * @param array|int|string|null $termsOrIds One or multiple ids or terms.
-     * @return int[]|int|null The property ids matching terms or ids, or all
-     * properties by terms.
-     */
-    protected function getPropertyId($termsOrIds = null)
-    {
-        static $propertiesByTerms;
-        static $propertiesByTermsAndIds;
-
-        if (is_null($propertiesByTermsAndIds)) {
-            $qb = $this->connection->createQueryBuilder();
-            $qb
-                ->select(
-                    'DISTINCT CONCAT(vocabulary.prefix, ":", property.local_name) AS term',
-                    'property.id AS id',
-                    // Required with only_full_group_by.
-                    'vocabulary.id'
-                )
-                ->from('property', 'property')
-                ->innerJoin('property', 'vocabulary', 'vocabulary', 'property.vocabulary_id = vocabulary.id')
-                ->orderBy('vocabulary.id', 'asc')
-                ->addOrderBy('property.id', 'asc')
-            ;
-            $propertiesByTerms = array_map('intval', $this->connection->executeQuery($qb)->fetchAllKeyValue());
-            $propertiesByTermsAndIds = array_replace($propertiesByTerms, array_combine($propertiesByTerms, $propertiesByTerms));
-        }
-
-        if (is_null($termsOrIds)) {
-            return $propertiesByTerms;
-        }
-
-        if (is_scalar($termsOrIds)) {
-            return $propertiesByTermsAndIds[$termsOrIds] ?? null;
-        }
-
-        return array_intersect_key($propertiesByTermsAndIds, array_flip($termsOrIds));
-    }
 }

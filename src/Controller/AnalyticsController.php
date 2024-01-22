@@ -522,19 +522,21 @@ SQL;
         $typeFilter = $query['value_type'] ?? null;
         $byPeriodFilter = isset($query['by_period']) && in_array($query['by_period'], ['year', 'month']) ? $query['by_period'] : 'all';
 
-        if ($property && $propertyId = $this->getPropertyId($property)) {
-            if (is_numeric($property)) {
-                $property = $this->getPropertyId([$propertyId]);
-                $property = key($property);
-            }
+        // A property is required to get stats, so get empty without a good one.
+        if ($property) {
+            $property = $this->easyMeta()->propertyTerm($property);
+            $propertyId = $this->easyMeta()->propertyId($property);
+        } else {
+            $property = null;
+            $propertyId = null;
+        }
+
+        if ($property) {
             $joinProperty = ' AND property_id = :property_id';
             $bind['property_id'] = $propertyId;
             $types['property_id'] = \Doctrine\DBAL\ParameterType::INTEGER;
-        } else {
-            $property = null;
-            if ($query) {
-                $this->messenger()->addError(new Message('A property is required to get statistics.')); // @translate
-            }
+        } elseif ($query) {
+            $this->messenger()->addError(new Message('A property is required to get statistics.')); // @translate
         }
 
         switch ($byPeriodFilter) {
