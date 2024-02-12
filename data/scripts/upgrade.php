@@ -221,10 +221,10 @@ WHERE `site_id` = 0
 SQL;
     $connection->executeStatement($sql);
 
-    if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActiveVersion('Common', '3.4.50')) {
+    if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActiveVersion('Common', '3.4.51')) {
         $message = new Message(
             'The module %1$s should be upgraded to version %2$s or later.', // @translate
-            'Common', '3.4.50'
+            'Common', '3.4.51'
         );
        throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $message);
     }
