@@ -415,7 +415,7 @@ HTML;
         $fieldset = $form->get('module_tasks');
         $process = $fieldset->get('process');
         $valueOptions = $process->getValueOptions();
-        $valueOptions['db_statistics_index'] = 'Index statistics (module Statistics, needed only after direct import)'; // @translate
+        $valueOptions['db_statistics_index'] = 'Statistics: Index statistics (needed only after direct import)'; // @translate
         $process->setValueOptions($valueOptions);
     }
 
