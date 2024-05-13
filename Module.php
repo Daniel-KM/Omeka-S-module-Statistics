@@ -178,6 +178,18 @@ class Module extends AbstractModule
             [$this, 'handleMainSettings']
         );
 
+        // Add a job for EasyAdmin.
+        $sharedEventManager->attach(
+            \EasyAdmin\Form\CheckAndFixForm::class,
+            'form.add_elements',
+            [$this, 'handleEasyAdminJobsForm']
+        );
+        $sharedEventManager->attach(
+            \EasyAdmin\Controller\CheckAndFixController::class,
+            'easyadmin.job',
+            [$this, 'handleEasyAdminJobs']
+        );
+
         $sharedEventManager->attach(
             \BulkImport\Processor\EprintsProcessor::class,
             'bulk.import.after',
@@ -391,6 +403,29 @@ HTML;
 
         $html .= '</div>';
         echo $html;
+    }
+
+    public function handleEasyAdminJobsForm(Event $event): void
+    {
+        /**
+         * @var \EasyAdmin\Form\CheckAndFixForm $form
+         * @var \Laminas\Form\Element\Radio $process
+         */
+        $form = $event->getTarget();
+        $fieldset = $form->get('module_tasks');
+        $process = $fieldset->get('process');
+        $valueOptions = $process->getValueOptions();
+        $valueOptions['db_statistics_index'] = 'Index statistics (module Statistics, needed only after direct import)'; // @translate
+        $process->setValueOptions($valueOptions);
+    }
+
+    public function handleEasyAdminJobs(Event $event): void
+    {
+        $process = $event->getParam('process');
+        if ($process === 'db_statistics_index') {
+            $event->setParam('job', \Statistics\Job\AggregateHits::class);
+            $event->setParam('args', []);
+        }
     }
 
     public function handleBulkImportAfter(Event $event): void
