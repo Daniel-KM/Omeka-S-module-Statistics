@@ -306,7 +306,7 @@ Copyright
 [Archive Repertory]: https://gitlab.com/Daniel-KM/Omeka-S-module-ArchiveRepertory
 [Access]: https://gitlab.com/Daniel-KM/Omeka-S-module-Access
 [Derivative Media]: https://gitlab.com/Daniel-KM/Omeka-S-module-DerivativeMedia
-[Installing a module]: https://omeka.org/s/docs/user-manual/modules/
+[installing a module]: https://omeka.org/s/docs/user-manual/modules/
 [module issues]: https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics/issues
 [CeCILL v2.1]: https://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html
 [GNU/GPL]: https://www.gnu.org/licenses/gpl-3.0.html
