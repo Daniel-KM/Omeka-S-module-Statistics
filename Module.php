@@ -6,6 +6,7 @@ if (!class_exists(\Common\TraitModule::class)) {
     require_once dirname(__DIR__) . '/Common/TraitModule.php';
 }
 
+use Common\Stdlib\PsrMessage;
 use Common\TraitModule;
 use Laminas\EventManager\Event;
 use Laminas\EventManager\SharedEventManagerInterface;
@@ -403,6 +404,37 @@ HTML;
 
         $html .= '</div>';
         echo $html;
+    }
+
+    public function handleMainSettings(Event $event): void
+    {
+        $this->warnConfig();
+
+        $this->handleAnySettings($event, 'settings');
+    }
+
+    /**
+     * @see \Access\Module::warnConfig()
+     * @see \Statistics\Module::warnConfig()
+     */
+    protected function warnConfig(): void
+    {
+        $htaccess = file_get_contents(OMEKA_PATH . '/.htaccess');
+        if (strpos($htaccess, '/download/')) {
+            return;
+        }
+
+        $services = $this->getServiceLocator();
+        $message = new PsrMessage(
+            'To get statistics about files, you must add a rule in file .htaccess at the root of Omeka. See {link}readme{link_end}.', // @translate
+            [
+                'link' => '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics" target="_blank" rel="noopener">',
+                'link_end' => '</a>',
+            ]
+        );
+        $message->setEscapeHtml(false);
+        $messenger = $services->get('ControllerPluginManager')->get('messenger');
+        $messenger->addError($message);
     }
 
     public function handleEasyAdminJobsForm(Event $event): void
