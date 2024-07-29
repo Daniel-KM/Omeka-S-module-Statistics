@@ -19,6 +19,7 @@ use Omeka\Stdlib\Message;
 $plugins = $services->get('ControllerPluginManager');
 $api = $plugins->get('api');
 $settings = $services->get('Omeka\Settings');
+$translate = $plugins->get('translate');
 $connection = $services->get('Omeka\Connection');
 $messenger = $plugins->get('messenger');
 $entityManager = $services->get('Omeka\EntityManager');
@@ -229,3 +230,5 @@ WHERE `site_id` = 0
 SQL;
     $connection->executeStatement($sql);
 }
+
+$this->warnConfig();
