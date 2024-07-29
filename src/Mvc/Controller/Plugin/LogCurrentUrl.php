@@ -130,10 +130,10 @@ class LogCurrentUrl extends AbstractPlugin
             return null;
         } catch (\Exception $e) {
             $logger = $this->services->get('Omeka\Logger');
-            $logger->err(new \Omeka\Stdlib\Message(
-                'Exception when storing hit/stat: %1$s', // @translate
-                $e->getMessage()
-            ));
+            $logger->err(
+                'Exception when storing hit/stat: {message}', // @translate
+                ['message' => $e->getMessage()]
+            );
             return null;
         }
     }

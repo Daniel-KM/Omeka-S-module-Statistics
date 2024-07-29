@@ -152,10 +152,10 @@ class MvcListeners extends AbstractListenerAggregate
             // - the slug of a site page may have been updated.
         } catch (\Exception $e) {
             $logger = $this->services->get('Omeka\Logger');
-            $logger->err(new \Omeka\Stdlib\Message(
-                'Exception when storing hit/stat: %1$s', // @translate
-                $e->getMessage()
-            ));
+            $logger->err(
+                'Exception when storing hit/stat: {message}', // @translate
+                ['message' => $e->getMessage()]
+            );
         }
     }
 }
