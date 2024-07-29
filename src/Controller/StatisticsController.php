@@ -418,7 +418,7 @@ class StatisticsController extends AbstractActionController
 
             // The query should be overridden manually because event "api.search.pre"
             // is not triggered.
-            /** @see \AdvancedSearch\Mvc\Controller\Plugin\SearchResources::startOverrideQuery() */
+            /** @see \AdvancedSearch\Stdlib\SearchResources::startOverrideQuery() */
             $this->searchResources()
                 ->startOverrideRequest($request);
 
