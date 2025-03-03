@@ -144,6 +144,7 @@ class AnalyticsBySiteForm extends Form
                     'id' => 'submit',
                     'type' => 'submit',
                     'form' => 'analytics',
+                    'class' => 'button',
                 ],
             ])
         ;

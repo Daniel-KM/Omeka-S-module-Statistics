@@ -108,6 +108,7 @@ class StatisticsBySiteForm extends Form
                     'id' => 'submit',
                     'type' => 'submit',
                     'form' => 'statistics',
+                    'class' => 'button',
                 ],
             ])
         ;

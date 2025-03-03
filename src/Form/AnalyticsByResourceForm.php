@@ -202,6 +202,7 @@ class AnalyticsByResourceForm extends Form
                     'id' => 'submit',
                     'type' => 'submit',
                     'form' => 'analytics',
+                    'class' => 'button',
                 ],
             ])
         ;

@@ -160,6 +160,7 @@ class AnalyticsByValueForm extends Form
                     'id' => 'submit',
                     'type' => 'submit',
                     'form' => 'statistics',
+                    'class' => 'button',
                 ],
             ])
         ;
