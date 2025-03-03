@@ -420,7 +420,7 @@ HTML;
     protected function warnConfig(): void
     {
         $htaccess = file_get_contents(OMEKA_PATH . '/.htaccess');
-        if (strpos($htaccess, '/download/')) {
+        if (strpos($htaccess, '/download/') || strpos($htaccess, '/access/')) {
             return;
         }
 
