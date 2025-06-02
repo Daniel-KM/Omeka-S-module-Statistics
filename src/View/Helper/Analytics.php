@@ -1214,7 +1214,12 @@ class Analytics extends AbstractHelper
             $url = $this->currentUrl();
         }
         $userStatus = $this->normalizeUserStatus($userStatus);
-        $stat = $this->view->api()->searchOne('stats', ['url' => $url, 'type' => Stat::TYPE_PAGE])->getContent();
+        // Don't use searchOne for performance and simplicity.
+        try {
+            $stat = $this->view->api()->read('stats', ['url' => $url, 'type' => Stat::TYPE_PAGE])->getContent();
+        } catch (\Exception $e) {
+            $stat = null;
+        }
         return $this->view->partial('common/analytics-value', [
             'type' => Stat::TYPE_PAGE,
             'stat' => $stat,
@@ -1236,7 +1241,12 @@ class Analytics extends AbstractHelper
         if (empty($resource['type'])) {
             return '';
         }
-        $stat = $this->view->api()->searchOne('stats', ['entity_name' => $resource['type'], 'entity_id' => $resource['id'], 'type' => Stat::TYPE_RESOURCE])->getContent();
+        // Don't use searchOne for performance and simplicity.
+        try {
+            $stat = $this->view->api()->read('stats', ['entityName' => $resource['type'], 'entityId' => $resource['id'], 'type' => Stat::TYPE_RESOURCE])->getContent();
+        } catch (\Exception $e) {
+            $stat = null;
+        }
         $userStatus = $this->normalizeUserStatus($userStatus);
         return $this->view->partial('common/analytics-value', [
             'type' => Stat::TYPE_RESOURCE,
@@ -1255,12 +1265,23 @@ class Analytics extends AbstractHelper
     public function textDownload($downloadId, ?string $userStatus = null): string
     {
         $userStatus = $this->normalizeUserStatus($userStatus);
-        $stat = $this->view->api()->searchOne(
-            'stats',
-            is_numeric($downloadId)
-                ? ['entity_name' => 'media', 'entity_id' => $downloadId, 'type' => Stat::TYPE_DOWNLOAD]
-                : ['url' => $downloadId, 'type' => Stat::TYPE_DOWNLOAD]
-        )->getContent();
+
+        // Don't use searchOne for performance and simplicity.
+        try {
+            if (is_numeric($downloadId)) {
+                $stat = $this->view->api()->read(
+                    'stats',
+                    ['entityName' => 'media', 'entityId' => $downloadId, 'type' => Stat::TYPE_DOWNLOAD]
+                )->getContent();
+            } else {
+                $stat = $this->view->api()->read(
+                    'stats',
+                    ['url' => $downloadId, 'type' => Stat::TYPE_DOWNLOAD]
+                )->getContent();
+            }
+        } catch (\Exception $e) {
+            $stat = null;
+        }
         return $this->view->partial('common/analytics-value', [
             'type' => Stat::TYPE_DOWNLOAD,
             'stat' => $stat,
