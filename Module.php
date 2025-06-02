@@ -272,15 +272,14 @@ HTML;
         }
 
         $url = $plugins->get('url');
-        $api = $services->get('Omeka\ApiManager');
         $escape = $plugins->get('escapeHtml');
-        $analytics = $plugins->get('analytics');
         $settings = $services->get('Omeka\Settings');
         $translate = $plugins->get('translate');
+        $analytics = $plugins->get('analytics');
         $escapeAttr = $plugins->get('escapeHtmlAttr');
 
         $userStatus = $settings->get('statistics_default_user_status_admin');
-        $totalHits = $api->search('hits', ['user_status' => $userStatus], ['returnScalar' => 'id'])->getTotalResults();
+        $totalHits = $analytics->totalHits([], $userStatus);
 
         $statsTitle = $translate('Statistics'); // @translate
         $html = <<<HTML
@@ -298,9 +297,9 @@ HTML;
                 1 => $translate('Last 24 hours'),
             ];
             $lastTotals = [
-                30 => $api->search('hits', ['since' => date('Y-m-d', strtotime('-30 days')), 'user_status' => $userStatus], ['returnScalar' => 'id'])->getTotalResults(),
-                7 => $api->search('hits', ['since' => date('Y-m-d', strtotime('-7 days')), 'user_status' => $userStatus], ['returnScalar' => 'id'])->getTotalResults(),
-                1 => $api->search('hits', ['since' => date('Y-m-d', strtotime('-1 days')), 'user_status' => $userStatus], ['returnScalar' => 'id'])->getTotalResults(),
+                30 => $analytics->totalHits(['since' => date('Y-m-d', strtotime('-30 days'))], $userStatus),
+                7 => $analytics->totalHits(['since' => date('Y-m-d', strtotime('-7 days')), 'user_status' => $userStatus]),
+                1 => $analytics->totalHits(['since' => date('Y-m-d', strtotime('-1 days')), 'user_status' => $userStatus]),
             ];
             $html .= <<<HTML
     <h4><a href="$statsSummaryUrl">$statsSummaryText</a></h4>

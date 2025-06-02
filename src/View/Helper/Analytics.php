@@ -134,7 +134,7 @@ class Analytics extends AbstractHelper
         if (is_null($url)) {
             $url = $this->currentUrl();
         }
-        return $this->totalHits([
+        return $this->totalHitsForStat([
             'type' => Stat::TYPE_PAGE,
             'url' => $url,
         ], $userStatus);
@@ -151,7 +151,7 @@ class Analytics extends AbstractHelper
     public function totalResource($resourceOrEntityName, ?int $entityId = null, ?string $userStatus = null): int
     {
         $entity = $this->checkAndPrepareResource($resourceOrEntityName, $entityId);
-        return $this->totalHits([
+        return $this->totalHitsForStat([
             'type' => Stat::TYPE_RESOURCE,
             'entityName' => $entity['type'],
             'entityId' => $entity['id'],
@@ -210,16 +210,33 @@ class Analytics extends AbstractHelper
     {
         $criteria = $this->normalizeValueForDownload($value);
         return $criteria
-            ? $this->totalHits($criteria, $userStatus)
+            ? $this->totalHitsForStat($criteria, $userStatus)
             : 0;
     }
 
+   /**
+    * Get the total hits according to a criteria.
+    *
+    * The process is done against the whole table of hits, not against stats.
+    */
+    public function totalHits(array $criteria = [], ?string $userStatus = null): int
+    {
+        if ($userStatus) {
+            $criteria['user_status'] = $userStatus;
+        }
+        $request = new \Omeka\Api\Request('search', 'hits');
+        $request->setContent($criteria);
+        $request->setOption('returnScalar', 'id');
+        return $this->hitAdapter->search($request)->getTotalResults();
+    }
+
     /**
-     * Total count of specified hits.
+     * Total count of a specific stat, determined via criteria (url).
      *
+     * @param array $criteria The criterias should return one stat.
      * @param string $userStatus Can be hits (default), anonymous or identified.
      */
-    public function totalHits(array $criteria, ?string $userStatus = null): int
+    public function totalHitsForStat(array $criteria, ?string $userStatus = null): int
     {
         $userStatus = $this->normalizeUserStatus($userStatus);
         try {
@@ -301,7 +318,7 @@ class Analytics extends AbstractHelper
             }
         }
 
-        $totalHits = $this->totalHits($criteriaTotals, $userStatus);
+        $totalHits = $this->totalHitsForStat($criteriaTotals, $userStatus);
         if (!$totalHits) {
             return 0;
         }
