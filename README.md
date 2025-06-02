@@ -77,14 +77,14 @@ the root of the server.
 Just add a line in the beginning off `.htaccess`, after `RewriteEngine on`:
 
 ```apache
-RewriteRule ^files/original/(.*)$ https://example.org/download/files/original/$1 [NC,L]
+RewriteRule "^files/original/(.*)$" "/download/files/original/$1" [NC,L]
 ```
 
 In case of some issues in Apache or with an internal proxy, you can use (the use
 of http is not unsecure, because the redirect is internal):
 
 ```apache
-RewriteRule ^files/original/(.*)$ http://%{HTTP_HOST}/download/files/original/$1 [NC,L]
+RewriteRule "^files/original/(.*)$" "http://%{HTTP_HOST}/download/files/original/$1" [NC,L]
 ```
 
 If you use the module [Access] to allow access to some private files to some
