@@ -449,6 +449,7 @@ HTML;
          * @var \Laminas\Form\Element\Radio $process
          */
         $form = $event->getTarget();
+        $form->setAttribute('data-tasks-warning', $form->getAttribute('data-tasks-warning') . ',db_statistics_index');
         $fieldset = $form->get('module_tasks');
         $process = $fieldset->get('process');
         $valueOptions = $process->getValueOptions();
