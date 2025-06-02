@@ -184,7 +184,7 @@ class StatAdapter extends AbstractEntityAdapter
                 if ($queryQuery) {
                     // TODO Use a sub query-builder to avoid issues with big bases.
                     $api = $this->getServiceLocator()->get('Omeka\ApiManager');
-                    $subIds = $api->search($entityName, $queryQuery, ['returnScalar' => 'id'])->getContent();
+                    $subIds = array_keys($api->search($entityName, $queryQuery, ['returnScalar' => 'id'])->getContent());
                     if ($subIds) {
                         $subIdsAlias = $this->createAlias();
                         $qb

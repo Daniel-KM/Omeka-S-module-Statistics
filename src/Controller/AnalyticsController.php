@@ -200,7 +200,7 @@ class AnalyticsController extends AbstractActionController
         }
 
         if ($queryQuery && !in_array($resourceType, ['', 'resources', 'site_pages'])) {
-            $subIds = $this->api()->search($resourceType, $queryQuery, ['returnScalar' => 'id'])->getContent();
+            $subIds = array_keys($this->api()->search($resourceType, $queryQuery, ['returnScalar' => 'id'])->getContent());
             if ($subIds) {
                 $whereIn = 'AND hit.entity_id IN (:entity_ids)';
                 $bind['entity_ids'] = $subIds;
