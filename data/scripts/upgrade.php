@@ -50,33 +50,33 @@ if (version_compare($oldVersion, '3.3.4.2', '<')) {
 if (version_compare($oldVersion, '3.3.4.3', '<')) {
     // Update tables.
     $sql = <<<'SQL'
-DROP INDEX `IDX_20B8FF218CDE5729` ON `stat`;
-DROP INDEX `UNIQ_20B8FF218CDE5729F47645AE` ON `stat`;
-ALTER TABLE `stat`
-    CHANGE `type` `type` VARCHAR(8) NOT NULL,
-    CHANGE `url` `url` VARCHAR(1024) NOT NULL COLLATE `latin1_general_cs`,
-    CHANGE `modified` `modified` DATETIME NOT NULL;
-CREATE INDEX `IDX_20B8FF218CDE5729` ON `stat` (`type`);
-CREATE UNIQUE INDEX `UNIQ_20B8FF218CDE5729F47645AE` ON `stat` (`type`, `url`);
-
-DROP INDEX `IDX_5AD22641C44967C5` ON `hit`;
-DROP INDEX `IDX_5AD22641ED646567` ON `hit`;
-ALTER TABLE `hit`
-    ADD `site_id` INT DEFAULT 0 NOT NULL AFTER `entity_name`;
-ALTER TABLE `hit`
-    CHANGE `url` `url` VARCHAR(1024) NOT NULL COLLATE `latin1_general_cs`,
-    CHANGE `entity_id` `entity_id` INT DEFAULT 0 NOT NULL,
-    CHANGE `entity_name` `entity_name` VARCHAR(190) DEFAULT '' NOT NULL,
-    CHANGE `user_id` `user_id` INT DEFAULT 0 NOT NULL,
-    CHANGE `ip` `ip` VARCHAR(45) DEFAULT '' NOT NULL,
-    CHANGE `query` `query` LONGTEXT DEFAULT NULL COMMENT '(DC2Type:json)',
-    CHANGE `referrer` `referrer` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_cs`,
-    CHANGE `user_agent` `user_agent` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`,
-    CHANGE `accept_language` `accept_language` VARCHAR(190) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`;
-CREATE INDEX `IDX_5AD22641F6BD1646` ON `hit` (`site_id`);
-CREATE INDEX `IDX_5AD22641C44967C5` ON `hit` (`user_agent`);
-CREATE INDEX `IDX_5AD22641ED646567` ON `hit` (`referrer`);
-SQL;
+        DROP INDEX `IDX_20B8FF218CDE5729` ON `stat`;
+        DROP INDEX `UNIQ_20B8FF218CDE5729F47645AE` ON `stat`;
+        ALTER TABLE `stat`
+            CHANGE `type` `type` VARCHAR(8) NOT NULL,
+            CHANGE `url` `url` VARCHAR(1024) NOT NULL COLLATE `latin1_general_cs`,
+            CHANGE `modified` `modified` DATETIME NOT NULL;
+        CREATE INDEX `IDX_20B8FF218CDE5729` ON `stat` (`type`);
+        CREATE UNIQUE INDEX `UNIQ_20B8FF218CDE5729F47645AE` ON `stat` (`type`, `url`);
+        
+        DROP INDEX `IDX_5AD22641C44967C5` ON `hit`;
+        DROP INDEX `IDX_5AD22641ED646567` ON `hit`;
+        ALTER TABLE `hit`
+            ADD `site_id` INT DEFAULT 0 NOT NULL AFTER `entity_name`;
+        ALTER TABLE `hit`
+            CHANGE `url` `url` VARCHAR(1024) NOT NULL COLLATE `latin1_general_cs`,
+            CHANGE `entity_id` `entity_id` INT DEFAULT 0 NOT NULL,
+            CHANGE `entity_name` `entity_name` VARCHAR(190) DEFAULT '' NOT NULL,
+            CHANGE `user_id` `user_id` INT DEFAULT 0 NOT NULL,
+            CHANGE `ip` `ip` VARCHAR(45) DEFAULT '' NOT NULL,
+            CHANGE `query` `query` LONGTEXT DEFAULT NULL COMMENT '(DC2Type:json)',
+            CHANGE `referrer` `referrer` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_cs`,
+            CHANGE `user_agent` `user_agent` VARCHAR(1024) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`,
+            CHANGE `accept_language` `accept_language` VARCHAR(190) DEFAULT '' NOT NULL COLLATE `latin1_general_ci`;
+        CREATE INDEX `IDX_5AD22641F6BD1646` ON `hit` (`site_id`);
+        CREATE INDEX `IDX_5AD22641C44967C5` ON `hit` (`user_agent`);
+        CREATE INDEX `IDX_5AD22641ED646567` ON `hit` (`referrer`);
+        SQL;
     $sqls = array_filter(array_map('trim', explode(";\n", $sql)));
     foreach ($sqls as $sql) {
         try {
@@ -92,10 +92,10 @@ SQL;
     // $hitIds = $api->search('hits', ['not_empty' => 'query'], ['returnScalar' => 'id'])->getContent();
     $hitIds = $connection->executeQuery('SELECT `hit`.`id` FROM `hit` WHERE `hit`.`query` IS NOT NULL AND `hit`.`query` != "";')->fetchFirstColumn();
     $sql = <<<'SQL'
-UPDATE `hit`
-SET `hit`.`query` = :query
-WHERE `hit`.`id` = :id;
-SQL;
+        UPDATE `hit`
+        SET `hit`.`query` = :query
+        WHERE `hit`.`id` = :id;
+        SQL;
     foreach (array_chunk($hitIds, 100) as $chunk) {
         // $queries = $api->search('hits', ['id' => $chunk], ['returnScalar' => 'query'])->getContent();
         $queries = $connection->executeQuery('SELECT `hit`.`id`, `hit`.`query` FROM `hit` WHERE `hit`.`id` IN (:ids)', ['ids' => $chunk], ['ids' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY])->fetchAllKeyValue();
@@ -119,14 +119,14 @@ SQL;
         $bind = ['site_id' => $siteId, 'slug_eq' => "/s/$siteSlug", 'slug_like' => "/s/$siteSlug/%"];
         $types = ['site_id' => \Doctrine\DBAL\ParameterType::INTEGER, 'slug_eq' => \Doctrine\DBAL\ParameterType::STRING, 'slug_like' => \Doctrine\DBAL\ParameterType::STRING];
         $sql = <<<'SQL'
-UPDATE `hit`
-SET
-    `hit`.`site_id` = :site_id
-WHERE
-    (`hit`.`url` = :slug_eq OR `hit`.`url` LIKE :slug_like)
-    AND `hit`.`site_id` = 0
-;
-SQL;
+            UPDATE `hit`
+            SET
+                `hit`.`site_id` = :site_id
+            WHERE
+                (`hit`.`url` = :slug_eq OR `hit`.`url` LIKE :slug_like)
+                AND `hit`.`site_id` = 0
+            ;
+            SQL;
         $connection->executeStatement($sql, $bind, $types);
     }
 
@@ -138,31 +138,31 @@ SQL;
             $bind = ['site_id' => $siteId, 'page_id' => $pageId, 'page_url' => "/s/$siteSlug/page/$pageSlug"];
             $types = ['site_id' => \Doctrine\DBAL\ParameterType::INTEGER, 'page_id' => \Doctrine\DBAL\ParameterType::INTEGER, 'page_url' => \Doctrine\DBAL\ParameterType::STRING];
             $sql = <<<'SQL'
-UPDATE `hit`
-SET
-    `hit`.`entity_name` = "site_pages",
-    `hit`.`entity_id` = :page_id
-WHERE
-    `hit`.`url` = :page_url
-    AND `hit`.`site_id` = :site_id
-    AND `hit`.`entity_name` = ""
-    AND `hit`.`entity_id` = 0
-;
-SQL;
+                UPDATE `hit`
+                SET
+                    `hit`.`entity_name` = "site_pages",
+                    `hit`.`entity_id` = :page_id
+                WHERE
+                    `hit`.`url` = :page_url
+                    AND `hit`.`site_id` = :site_id
+                    AND `hit`.`entity_name` = ""
+                    AND `hit`.`entity_id` = 0
+                ;
+                SQL;
             $connection->executeStatement($sql, $bind, $types);
 
             unset($bind['site_id'], $types['site_id']);
             $sql = <<<'SQL'
-UPDATE `stat`
-SET
-    `stat`.`entity_name` = "site_pages",
-    `stat`.`entity_id` = :page_id
-WHERE
-    `stat`.`url` = :page_url
-    AND `stat`.`entity_name` = ""
-    AND `stat`.`entity_id` = 0
-;
-SQL;
+                UPDATE `stat`
+                SET
+                    `stat`.`entity_name` = "site_pages",
+                    `stat`.`entity_id` = :page_id
+                WHERE
+                    `stat`.`url` = :page_url
+                    AND `stat`.`entity_name` = ""
+                    AND `stat`.`entity_id` = 0
+                ;
+                SQL;
             $connection->executeStatement($sql, $bind, $types);
         }
     }
@@ -183,51 +183,51 @@ if (version_compare($oldVersion, '3.3.5', '<')) {
 if (version_compare($oldVersion, '3.4.7', '<')) {
     // Fill site pages in hit.
     $sql = <<<'SQL'
-UPDATE `hit`
-INNER JOIN `site_page`
-    ON `site_page`.`slug` = SUBSTRING(`hit`.`url`, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 4)) + 2)
-INNER JOIN `site`
-    ON `site`.`slug` = SUBSTRING(`hit`.`url`, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) + 2, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 3)) - LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) - 1)
-        AND `site`.`id` = `site_page`.`site_id`
-SET
-    `entity_name` = "site_pages",
-    `entity_id` = `site_page`.`id`
-WHERE `entity_name` = ""
-    AND `entity_id` = 0
-    AND `url` LIKE "/s/%/page/%"
-;
-SQL;
+        UPDATE `hit`
+        INNER JOIN `site_page`
+            ON `site_page`.`slug` = SUBSTRING(`hit`.`url`, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 4)) + 2)
+        INNER JOIN `site`
+            ON `site`.`slug` = SUBSTRING(`hit`.`url`, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) + 2, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 3)) - LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) - 1)
+                AND `site`.`id` = `site_page`.`site_id`
+        SET
+            `entity_name` = "site_pages",
+            `entity_id` = `site_page`.`id`
+        WHERE `entity_name` = ""
+            AND `entity_id` = 0
+            AND `url` LIKE "/s/%/page/%"
+        ;
+        SQL;
     $connection->executeStatement($sql);
 
     // Fill site pages in stat.
     $sql = <<<'SQL'
-UPDATE `stat`
-INNER JOIN `site_page`
-    ON `site_page`.`slug` = SUBSTRING(`stat`.`url`, LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 4)) + 2)
-INNER JOIN `site`
-    ON `site`.`slug` = SUBSTRING(`stat`.`url`, LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 2)) + 2, LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 3)) - LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 2)) - 1)
-        AND `site`.`id` = `site_page`.`site_id`
-SET
-    `entity_name` = "site_pages",
-    `entity_id` = `site_page`.`id`
-WHERE `entity_name` = ""
-    AND `entity_id` = 0
-    AND `url` LIKE "/s/%/page/%"
-;
-SQL;
+        UPDATE `stat`
+        INNER JOIN `site_page`
+            ON `site_page`.`slug` = SUBSTRING(`stat`.`url`, LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 4)) + 2)
+        INNER JOIN `site`
+            ON `site`.`slug` = SUBSTRING(`stat`.`url`, LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 2)) + 2, LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 3)) - LENGTH(SUBSTRING_INDEX(`stat`.`url`, "/", 2)) - 1)
+                AND `site`.`id` = `site_page`.`site_id`
+        SET
+            `entity_name` = "site_pages",
+            `entity_id` = `site_page`.`id`
+        WHERE `entity_name` = ""
+            AND `entity_id` = 0
+            AND `url` LIKE "/s/%/page/%"
+        ;
+        SQL;
     $connection->executeStatement($sql);
 
     // Fill sites in hit.
     $sql = <<<'SQL'
-UPDATE `hit`
-INNER JOIN `site`
-    ON `site`.`slug` = SUBSTRING(`hit`.`url`, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) + 2, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 3)) - LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) - 1)
-SET
-    `site_id` = `site`.`id`
-WHERE `site_id` = 0
-    AND `url` LIKE "/s/%/page/%"
-;
-SQL;
+        UPDATE `hit`
+        INNER JOIN `site`
+            ON `site`.`slug` = SUBSTRING(`hit`.`url`, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) + 2, LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 3)) - LENGTH(SUBSTRING_INDEX(`hit`.`url`, "/", 2)) - 1)
+        SET
+            `site_id` = `site`.`id`
+        WHERE `site_id` = 0
+            AND `url` LIKE "/s/%/page/%"
+        ;
+        SQL;
     $connection->executeStatement($sql);
 }
 

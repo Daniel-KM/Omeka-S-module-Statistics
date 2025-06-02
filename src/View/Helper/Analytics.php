@@ -224,9 +224,10 @@ class Analytics extends AbstractHelper
         if ($userStatus) {
             $criteria['user_status'] = $userStatus;
         }
+        $criteria['limit'] = 0;
         $request = new \Omeka\Api\Request('search', 'hits');
         $request->setContent($criteria);
-        $request->setOption('returnScalar', 'id');
+        // $request->setOption('returnScalar', 'id');
         return $this->hitAdapter->search($request)->getTotalResults();
     }
 

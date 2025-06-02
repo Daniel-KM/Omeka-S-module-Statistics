@@ -188,10 +188,13 @@ class HitRepresentation extends AbstractEntityRepresentation
         if (empty($id)) {
             return null;
         }
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->getServiceLocator()->get('Omeka\EntityManager');
         try {
-            $adapter = $this->getAdapter('users');
-            $entity = $adapter->findEntity(['id' => $id]);
-            return $adapter->getRepresentation($entity);
+            $entity = $entityManager->find(\Omeka\Entity\User::class, $id);
+            return $entity
+                ? $this->getAdapter('users')->getRepresentation($entity)
+                : null;
         } catch (NotFoundException $e) {
             return null;
         }

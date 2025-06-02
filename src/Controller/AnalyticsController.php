@@ -225,18 +225,18 @@ class AnalyticsController extends AbstractActionController
         }
 
         $sql = <<<SQL
-SELECT hit.site_id, COUNT(hit.id) AS total_hits
-FROM hit hit $force
-WHERE $whereEntityName
-    $whereStatus
-    $whereYear
-    $whereMonth
-    $whereBetween
-    $whereIn
-GROUP BY hit.site_id
-ORDER BY total_hits ASC
-;
-SQL;
+            SELECT hit.site_id, COUNT(hit.id) AS total_hits
+            FROM hit hit $force
+            WHERE $whereEntityName
+                $whereStatus
+                $whereYear
+                $whereMonth
+                $whereBetween
+                $whereIn
+            GROUP BY hit.site_id
+            ORDER BY total_hits ASC
+            ;
+            SQL;
 
         $hitsPerSite = $this->connection->executeQuery($sql, $bind, $types)->fetchAllKeyValue();
 
@@ -791,8 +791,8 @@ SQL;
         $analytics = $this->viewHelpers()->get('analytics');
         $results = $analytics->frequents($query, $currentPage, $resourcesPerPage);
         $totalResults = $analytics->countFrequents($query);
-        $totalHits = $this->api()->search('hits', ['user_status' => $userStatus], ['returnScalar' => 'id'])->getTotalResults();
-        $totalNotEmpty = $this->api()->search('hits', ['field' => $field, 'user_status' => $userStatus, 'not_empty' => $field], ['returnScalar' => 'id'])->getTotalResults();
+        $totalHits = $analytics->totalHits([], $userStatus);
+        $totalNotEmpty = $analytics->totalHits(['field' => $field, 'not_empty' => $field], $userStatus);
         $this->paginator($totalResults);
 
         switch ($field) {
@@ -905,18 +905,18 @@ SQL;
         }
 
         $sql = <<<SQL
-SELECT item_item_set.item_set_id, COUNT(hit.id) AS total_hits
-FROM hit hit $force
-JOIN item_item_set ON hit.entity_id = item_item_set.item_id
-WHERE hit.entity_name = "items"
-    $whereStatus
-    $whereYear
-    $whereMonth
-    $whereBetween
-GROUP BY item_item_set.item_set_id
-ORDER BY total_hits ASC
-;
-SQL;
+            SELECT item_item_set.item_set_id, COUNT(hit.id) AS total_hits
+            FROM hit hit $force
+            JOIN item_item_set ON hit.entity_id = item_item_set.item_id
+            WHERE hit.entity_name = "items"
+                $whereStatus
+                $whereYear
+                $whereMonth
+                $whereBetween
+            GROUP BY item_item_set.item_set_id
+            ORDER BY total_hits ASC
+            ;
+            SQL;
         $hitsPerItemSet = $this->connection->executeQuery($sql, $bind, $types)->fetchAllKeyValue();
 
         $removedItemSet = $this->translate('[Removed item set #%d]'); // @translate
@@ -1124,27 +1124,33 @@ SQL;
                 $joinResource = '';
                 $selectValue = 'value.value AS "value", "" AS "label"';
                 $typeFilterValue = 'value.value';
-                $whereFilterValue = 'AND value.value IS NOT NULL
-    AND value.value <> ""
-    AND (value.uri IS NULL OR value.uri = "")
-    AND (value.value_resource_id IS NULL OR value.value_resource_id = "")';
+                $whereFilterValue = <<<'SQL'
+                    AND value.value IS NOT NULL
+                    AND value.value <> ""
+                    AND (value.uri IS NULL OR value.uri = "")
+                    AND (value.value_resource_id IS NULL OR value.value_resource_id = "")
+                    SQL;
                 break;
             case 'resource':
                 $joinResource = 'LEFT JOIN resource ON resource.id = value.value_resource_id';
                 $selectValue = 'value.value_resource_id AS "value", resource.title AS "label"';
                 $typeFilterValue = 'value.value_resource_id';
-                $whereFilterValue = 'AND value.value_resource_id IS NOT NULL
-    AND value.value_resource_id <> 0
-    AND (value.value IS NULL OR value.value= "")
-    AND (value.uri IS NULL OR value.uri = "")';
+                $whereFilterValue = <<<'SQL'
+                    AND value.value_resource_id IS NOT NULL
+                    AND value.value_resource_id <> 0
+                    AND (value.value IS NULL OR value.value= "")
+                    AND (value.uri IS NULL OR value.uri = "")
+                    SQL;
                 break;
             case 'uri':
                 $joinResource = '';
                 $selectValue = 'value.uri AS "value", value.value AS "label"';
                 $typeFilterValue = 'value.uri';
-                $whereFilterValue = 'AND value.uri IS NOT NULL
-    AND value.uri <> ""
-    AND (value.value_resource_id IS NULL OR value.value_resource_id = "")';
+                $whereFilterValue = <<<'SQL'
+                    AND value.uri IS NOT NULL
+                    AND value.uri <> ""
+                    AND (value.value_resource_id IS NULL OR value.value_resource_id = "")
+                    SQL;
                 break;
         }
 
@@ -1191,21 +1197,21 @@ SQL;
                 }
 
                 $sql = <<<SQL
-SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hits_sub
-FROM hit hit $force
-JOIN value ON hit.entity_id = value.resource_id
-$joinProperty
-$joinResource
-WHERE $whereEntityName
-    $whereStatus
-    $whereYear
-    $whereMonth
-    $whereFilterValue
-    $whereIn
-GROUP BY $typeFilterValue
-ORDER BY hits DESC
-;
-SQL;
+                    SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hits_sub
+                    FROM hit hit $force
+                    JOIN value ON hit.entity_id = value.resource_id
+                    $joinProperty
+                    $joinResource
+                    WHERE $whereEntityName
+                        $whereStatus
+                        $whereYear
+                        $whereMonth
+                        $whereFilterValue
+                        $whereIn
+                    GROUP BY $typeFilterValue
+                    ORDER BY hits DESC
+                    ;
+                    SQL;
                 $result = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();
 
                 usort($result, [$this, $sortOrder === 'hits' ? 'orderByColumnNumber' : 'orderByColumnString']);
@@ -1234,21 +1240,21 @@ SQL;
             }
 
             $sql = <<<SQL
-SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hits_sub
-FROM hit hit $force
-JOIN value ON hit.entity_id = value.resource_id
-$joinProperty
-$joinResource
-WHERE $whereEntityName
-    $whereStatus
-    $whereYear
-    $whereMonth
-    $whereFilterValue
-    $whereIn
-GROUP BY $typeFilterValue
-ORDER BY hits DESC
-;
-SQL;
+                SELECT $selectValue, COUNT(hit.id) AS hits, "" AS hits_sub
+                FROM hit hit $force
+                JOIN value ON hit.entity_id = value.resource_id
+                $joinProperty
+                $joinResource
+                WHERE $whereEntityName
+                    $whereStatus
+                    $whereYear
+                    $whereMonth
+                    $whereFilterValue
+                    $whereIn
+                GROUP BY $typeFilterValue
+                ORDER BY hits DESC
+                ;
+                SQL;
             $results = $this->connection->executeQuery($sql, $bind, $types)->fetchAllAssociative();
 
             // TODO Reinclude sort order inside sql.

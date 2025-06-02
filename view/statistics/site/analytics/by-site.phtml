@@ -70,7 +70,7 @@ $form->prepare();
 <?php else: ?>
 
     <br class="clear" />
-    <?php $totalHits = $api->search('hits', ['return_scalar' => 'id'])->getTotalResults(); ?>
+    <?php $totalHits = $api->search('hits', ['limit' => 0])->getTotalResults(); ?>
     <?php if (!$totalHits): ?>
         <h2><?= $translate('There is no hit yet.') ?></h2>
     <?php else: ?>
