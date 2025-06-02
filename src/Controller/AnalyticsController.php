@@ -791,8 +791,8 @@ SQL;
         $analytics = $this->viewHelpers()->get('analytics');
         $results = $analytics->frequents($query, $currentPage, $resourcesPerPage);
         $totalResults = $analytics->countFrequents($query);
-        $totalHits = $this->api()->search('hits', ['user_status' => $userStatus, 'limit' => 0])->getTotalResults();
-        $totalNotEmpty = $this->api()->search('hits', ['field' => $field, 'user_status' => $userStatus, 'not_empty' => $field, 'limit' => 0])->getTotalResults();
+        $totalHits = $this->api()->search('hits', ['user_status' => $userStatus], ['returnScalar' => 'id'])->getTotalResults();
+        $totalNotEmpty = $this->api()->search('hits', ['field' => $field, 'user_status' => $userStatus, 'not_empty' => $field], ['returnScalar' => 'id'])->getTotalResults();
         $this->paginator($totalResults);
 
         switch ($field) {
