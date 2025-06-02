@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-22 00:00+0000\n"
+"POT-Creation-Date: 2025-06-02 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,110 +17,29 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: Module.php:43
+#: data/scripts/upgrade.php:29 Module.php:46
+#, php-format
+msgid "The module %1$s should be upgraded to version %2$s or later."
+msgstr ""
+
+#: Module.php:58
 #, php-format
 msgid ""
 "To compute access to files, you must add a rule in file .htaccess at the "
 "root of Omeka. See %sreadme%s."
 msgstr ""
 
-#: Module.php:185 view/statistics/admin/analytics/index.phtml:22
+#: Module.php:212 view/statistics/admin/analytics/index.phtml:20
 #: view/statistics/site/analytics/by-field.phtml:39
-#: view/statistics/site/analytics/by-hit.phtml:51
-#: view/statistics/site/analytics/by-item-set.phtml:36
-#: view/statistics/site/analytics/by-site.phtml:36
-#: view/statistics/site/analytics/by-stat.phtml:40
-#: view/statistics/site/analytics/by-value.phtml:50
+#: view/statistics/site/analytics/by-hit.phtml:52
+#: view/statistics/site/analytics/by-item-set.phtml:37
+#: view/statistics/site/analytics/by-site.phtml:37
+#: view/statistics/site/analytics/by-stat.phtml:38
+#: view/statistics/site/analytics/by-value.phtml:51
 msgid "Analytics"
 msgstr ""
 
-#: Module.php:207
-#, php-format
-msgid "Views: %d (anonymous: %d / users: %d)"
-msgstr ""
-
-#: Module.php:215
-#, php-format
-msgid "Position: %d (anonymous: %d / users: %d)"
-msgstr ""
-
-#: Module.php:252 view/statistics/site/statistics/by-site.phtml:40
-#: view/statistics/site/statistics/by-value.phtml:59
-#: view/statistics/site/statistics/index.phtml:21
-msgid "Statistics"
-msgstr ""
-
-#: Module.php:261 view/statistics/site/analytics/index.phtml:28
-#, php-format
-msgid "Total Hits: %d"
-msgstr ""
-
-#: Module.php:263
-msgid "Last 30 days"
-msgstr ""
-
-#: Module.php:264
-msgid "Last 7 days"
-msgstr ""
-
-#: Module.php:265 src/Controller/AnalyticsController.php:81
-#: src/Controller/StatisticsController.php:124
-msgid "Last 24 hours"
-msgstr ""
-
-#: Module.php:285 view/statistics/admin/analytics/index.phtml:76
-#: view/statistics/site/analytics/index.phtml:64
-msgid "Most viewed public pages"
-msgstr ""
-
-#: Module.php:296 Module.php:315 Module.php:331
-#: view/common/analytics-most-frequents.phtml:21
-#: view/statistics/site/analytics/index.phtml:70
-#: view/statistics/site/analytics/index.phtml:88
-#: view/statistics/site/analytics/index.phtml:106
-#, php-format
-msgid "%s (%d views)"
-msgstr ""
-
-#: Module.php:307
-msgid "Most viewed public item"
-msgstr ""
-
-#: Module.php:323
-msgid "Most viewed public item set"
-msgstr ""
-
-#: Module.php:339
-msgid "Most downloaded file"
-msgstr ""
-
-#: Module.php:347 view/statistics/site/analytics/index.phtml:124
-#, php-format
-msgid "%s (%d downloads)"
-msgstr ""
-
-#: Module.php:355
-msgid "Most frequent fields"
-msgstr ""
-
-#: Module.php:359
-msgid "Referrer"
-msgstr ""
-
-#: Module.php:361
-msgid "User Agent"
-msgstr ""
-
-#: Module.php:363
-msgid "Accepted Language"
-msgstr ""
-
-#: Module.php:368
-#, php-format
-msgid "%s: None"
-msgstr ""
-
-#: src/Api/Representation/StatisticTrait.php:92
+#: src/Api/Representation/StatisticTrait.php:97
 msgid "[untitled]"
 msgstr ""
 
@@ -164,64 +83,47 @@ msgstr ""
 msgid "This day"
 msgstr ""
 
+#: src/Controller/AnalyticsController.php:81
+#: src/Controller/StatisticsController.php:124
+msgid "Last 24 hours"
+msgstr ""
+
 #: src/Controller/AnalyticsController.php:82
 #: src/Controller/StatisticsController.php:125
 #, php-format
 msgid "Last %s days"
 msgstr ""
 
-#: src/Controller/AnalyticsController.php:243
-#, php-format
-msgid "[Removed site #%d]"
-msgstr ""
-
-#: src/Controller/AnalyticsController.php:801
-msgid "External Referrers"
-msgstr ""
-
-#: src/Controller/AnalyticsController.php:804
-msgid "Queries"
-msgstr ""
-
-#: src/Controller/AnalyticsController.php:807
-msgid "Browsers"
-msgstr ""
-
-#: src/Controller/AnalyticsController.php:810
-msgid "Full Accepted Languages"
-msgstr ""
-
-#: src/Controller/AnalyticsController.php:813
-msgid "Accepted Languages"
-msgstr ""
-
-#: src/Controller/AnalyticsController.php:922
-#, php-format
-msgid "[Removed item set #%d]"
-msgstr ""
-
-#: src/View/Helper/Analytics.php:1289
+#: src/View/Helper/Analytics.php:1326
 msgid "Annotation"
 msgstr ""
 
-#: src/View/Helper/Analytics.php:1320
+#: src/View/Helper/Analytics.php:1357
 msgid "anonymous users"
 msgstr ""
 
-#: src/View/Helper/Analytics.php:1322
+#: src/View/Helper/Analytics.php:1359
 msgid "identified users"
 msgstr ""
 
-#: src/View/Helper/Analytics.php:1325
+#: src/View/Helper/Analytics.php:1362
 msgid "all users"
 msgstr ""
 
-#: src/View/Helper/Analytics.php:1608
+#: src/View/Helper/Analytics.php:1645
 msgid "None."
 msgstr ""
 
+#: view/common/analytics-most-frequents.phtml:21
+#: view/statistics/site/analytics/index.phtml:68
+#: view/statistics/site/analytics/index.phtml:86
+#: view/statistics/site/analytics/index.phtml:104
+#, php-format
+msgid "%s (%d views)"
+msgstr ""
+
 #: view/common/analytics-nav.phtml:23 view/common/statistics-nav.phtml:25
-#: view/statistics/site/analytics/by-site.phtml:36
+#: view/statistics/site/analytics/by-site.phtml:37
 #: view/statistics/site/statistics/by-site.phtml:40
 msgid "By site"
 msgstr ""
@@ -243,12 +145,12 @@ msgid "By field"
 msgstr ""
 
 #: view/common/analytics-nav.phtml:28
-#: view/statistics/site/analytics/by-item-set.phtml:36
+#: view/statistics/site/analytics/by-item-set.phtml:37
 msgid "By item set"
 msgstr ""
 
 #: view/common/analytics-nav.phtml:29 view/common/statistics-nav.phtml:26
-#: view/statistics/site/analytics/by-value.phtml:50
+#: view/statistics/site/analytics/by-value.phtml:51
 #: view/statistics/site/statistics/by-value.phtml:59
 msgid "By value"
 msgstr ""
@@ -293,96 +195,101 @@ msgstr ""
 msgid "Position: %s (%s views)"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:22
+#: view/statistics/admin/analytics/index.phtml:20
 #: view/statistics/site/statistics/index.phtml:21
 #, php-format
 msgid "Summary (%s total)"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:26
+#: view/statistics/admin/analytics/index.phtml:24
 #, php-format
 msgid "Total Hits: %d [%d anonymous / %d identified]"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:31
+#: view/statistics/admin/analytics/index.phtml:29
 #, php-format
 msgid "Today: %d [%d / %d]"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:40
-#: view/statistics/site/analytics/index.phtml:34
+#: view/statistics/admin/analytics/index.phtml:38
+#: view/statistics/site/analytics/index.phtml:32
 #: view/statistics/site/statistics/index.phtml:49
 msgid "History"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:51
-#: view/statistics/site/analytics/index.phtml:43
+#: view/statistics/admin/analytics/index.phtml:49
+#: view/statistics/site/analytics/index.phtml:41
 #: view/statistics/site/statistics/index.phtml:60
 msgid "Current"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:62
-#: view/statistics/site/analytics/index.phtml:52
+#: view/statistics/admin/analytics/index.phtml:60
+#: view/statistics/site/analytics/index.phtml:50
 #: view/statistics/site/statistics/index.phtml:71
 msgid "Rolling Period"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:82
-#: view/statistics/admin/analytics/index.phtml:102
-#: view/statistics/admin/analytics/index.phtml:122
+#: view/statistics/admin/analytics/index.phtml:74
+#: view/statistics/site/analytics/index.phtml:62
+msgid "Most viewed public pages"
+msgstr ""
+
+#: view/statistics/admin/analytics/index.phtml:80
+#: view/statistics/admin/analytics/index.phtml:100
+#: view/statistics/admin/analytics/index.phtml:120
 #, php-format
 msgid "%s (%d views [%d / %d])"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:96
-#: view/statistics/site/analytics/index.phtml:82
+#: view/statistics/admin/analytics/index.phtml:94
+#: view/statistics/site/analytics/index.phtml:80
 msgid "Most viewed public records"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:116
-#: view/statistics/site/analytics/index.phtml:100
+#: view/statistics/admin/analytics/index.phtml:114
+#: view/statistics/site/analytics/index.phtml:98
 msgid "Most viewed public collections"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:136
-#: view/statistics/site/analytics/index.phtml:118
+#: view/statistics/admin/analytics/index.phtml:134
+#: view/statistics/site/analytics/index.phtml:116
 msgid "Most downloaded files"
 msgstr ""
 
-#: view/statistics/admin/analytics/index.phtml:142
+#: view/statistics/admin/analytics/index.phtml:140
 #, php-format
 msgid "%s (%d downloads [%d / %d])"
 msgstr ""
 
+#: view/statistics/admin/analytics/index.phtml:154
+#: view/statistics/site/analytics/index.phtml:134
+msgid "Most frequent external referrers"
+msgstr ""
+
+#: view/statistics/admin/analytics/index.phtml:155
+#: view/statistics/site/analytics/index.phtml:135
+msgid "Most frequent queries"
+msgstr ""
+
 #: view/statistics/admin/analytics/index.phtml:156
 #: view/statistics/site/analytics/index.phtml:136
-msgid "Most frequent external referrers"
+msgid "Most frequent accepted languages"
 msgstr ""
 
 #: view/statistics/admin/analytics/index.phtml:157
 #: view/statistics/site/analytics/index.phtml:137
-msgid "Most frequent queries"
+msgid "Most frequent languages"
 msgstr ""
 
 #: view/statistics/admin/analytics/index.phtml:158
 #: view/statistics/site/analytics/index.phtml:138
-msgid "Most frequent accepted languages"
-msgstr ""
-
-#: view/statistics/admin/analytics/index.phtml:159
-#: view/statistics/site/analytics/index.phtml:139
-msgid "Most frequent languages"
-msgstr ""
-
-#: view/statistics/admin/analytics/index.phtml:160
-#: view/statistics/site/analytics/index.phtml:140
 msgid "Most frequent browsers"
 msgstr ""
 
 #: view/statistics/site/analytics/by-field.phtml:39
-#: view/statistics/site/analytics/by-hit.phtml:51
-#: view/statistics/site/analytics/by-stat.phtml:40
-#: view/statistics/site/analytics/index.phtml:24
+#: view/statistics/site/analytics/by-hit.phtml:52
+#: view/statistics/site/analytics/by-stat.phtml:38
+#: view/statistics/site/analytics/index.phtml:22
 #, php-format
 msgid "Analytics (%s total)"
 msgstr ""
@@ -398,10 +305,10 @@ msgid "[%d filled values / %d total hits]"
 msgstr ""
 
 #: view/statistics/site/analytics/by-field.phtml:68
-#: view/statistics/site/analytics/by-item-set.phtml:55
-#: view/statistics/site/analytics/by-site.phtml:55
-#: view/statistics/site/analytics/by-stat.phtml:67
-#: view/statistics/site/analytics/by-value.phtml:82
+#: view/statistics/site/analytics/by-item-set.phtml:56
+#: view/statistics/site/analytics/by-site.phtml:56
+#: view/statistics/site/analytics/by-stat.phtml:65
+#: view/statistics/site/analytics/by-value.phtml:83
 msgid "Hits"
 msgstr ""
 
@@ -410,91 +317,107 @@ msgid "Percent"
 msgstr ""
 
 #: view/statistics/site/analytics/by-field.phtml:95
-#: view/statistics/site/analytics/by-item-set.phtml:74
-#: view/statistics/site/analytics/by-site.phtml:74
-#: view/statistics/site/analytics/by-value.phtml:139
+#: view/statistics/site/analytics/by-item-set.phtml:75
+#: view/statistics/site/analytics/by-site.phtml:75
+#: view/statistics/site/analytics/by-value.phtml:140
 msgid "There is no hit yet."
 msgstr ""
 
 #: view/statistics/site/analytics/by-field.phtml:97
-#: view/statistics/site/analytics/by-item-set.phtml:76
-#: view/statistics/site/analytics/by-site.phtml:76
-#: view/statistics/site/analytics/by-value.phtml:141
+#: view/statistics/site/analytics/by-item-set.phtml:77
+#: view/statistics/site/analytics/by-site.phtml:77
+#: view/statistics/site/analytics/by-value.phtml:142
 #, php-format
 msgid "The query searched %s hits and returned no results."
 msgstr ""
 
 #: view/statistics/site/analytics/by-field.phtml:98
-#: view/statistics/site/analytics/by-hit.phtml:242
-#: view/statistics/site/analytics/by-item-set.phtml:77
-#: view/statistics/site/analytics/by-site.phtml:77
-#: view/statistics/site/analytics/by-stat.phtml:222
-#: view/statistics/site/analytics/by-value.phtml:142
+#: view/statistics/site/analytics/by-hit.phtml:243
+#: view/statistics/site/analytics/by-item-set.phtml:78
+#: view/statistics/site/analytics/by-site.phtml:78
+#: view/statistics/site/analytics/by-stat.phtml:220
+#: view/statistics/site/analytics/by-value.phtml:143
 msgid "See all analytics."
 msgstr ""
 
-#: view/statistics/site/analytics/by-hit.phtml:67
+#: view/statistics/site/analytics/by-hit.phtml:68
 #: view/statistics/site/statistics/by-site.phtml:55
 #: view/statistics/site/statistics/by-value.phtml:74
 msgid "ODS"
 msgstr ""
 
-#: view/statistics/site/analytics/by-hit.phtml:68
+#: view/statistics/site/analytics/by-hit.phtml:69
 #: view/statistics/site/statistics/by-site.phtml:56
 #: view/statistics/site/statistics/by-value.phtml:75
 msgid "TSV"
 msgstr ""
 
-#: view/statistics/site/analytics/by-hit.phtml:69
+#: view/statistics/site/analytics/by-hit.phtml:70
 #: view/statistics/site/statistics/by-site.phtml:57
 #: view/statistics/site/statistics/by-value.phtml:76
 msgid "CSV"
 msgstr ""
 
-#: view/statistics/site/analytics/by-hit.phtml:167
-#: view/statistics/site/analytics/by-hit.phtml:170
+#: view/statistics/site/analytics/by-hit.phtml:168
+#: view/statistics/site/analytics/by-hit.phtml:171
 msgid "[no title]"
 msgstr ""
 
-#: view/statistics/site/analytics/by-hit.phtml:239
-#: view/statistics/site/analytics/by-stat.phtml:219
+#: view/statistics/site/analytics/by-hit.phtml:240
+#: view/statistics/site/analytics/by-stat.phtml:217
 msgid "Omeka could not find any statistics."
 msgstr ""
 
-#: view/statistics/site/analytics/by-hit.phtml:241
-#: view/statistics/site/analytics/by-stat.phtml:221
+#: view/statistics/site/analytics/by-hit.phtml:242
+#: view/statistics/site/analytics/by-stat.phtml:219
 #, php-format
 msgid "The query searched %s rows and returned no results."
 msgstr ""
 
-#: view/statistics/site/analytics/by-stat.phtml:72
+#: view/statistics/site/analytics/by-stat.phtml:70
 msgid "Anonymous"
 msgstr ""
 
-#: view/statistics/site/analytics/by-stat.phtml:77
+#: view/statistics/site/analytics/by-stat.phtml:75
 msgid "Identified"
 msgstr ""
 
-#: view/statistics/site/analytics/by-stat.phtml:82
+#: view/statistics/site/analytics/by-stat.phtml:80
 msgid "Dedicated resource"
 msgstr ""
 
-#: view/statistics/site/analytics/by-stat.phtml:114
+#: view/statistics/site/analytics/by-stat.phtml:112
 msgid "Last date"
 msgstr ""
 
-#: view/statistics/site/analytics/by-value.phtml:62
+#: view/statistics/site/analytics/by-value.phtml:63
 msgid "Select a property to get analytics on it."
 msgstr ""
 
-#: view/statistics/site/analytics/by-value.phtml:66
+#: view/statistics/site/analytics/by-value.phtml:67
 #: view/statistics/site/statistics/by-value.phtml:88
 msgid "Check the form."
 msgstr ""
 
-#: view/statistics/site/analytics/index.phtml:29
+#: view/statistics/site/analytics/index.phtml:26
+#, php-format
+msgid "Total Hits: %d"
+msgstr ""
+
+#: view/statistics/site/analytics/index.phtml:27
 #, php-format
 msgid "Today: %d"
+msgstr ""
+
+#: view/statistics/site/analytics/index.phtml:122
+#, php-format
+msgid "%s (%d downloads)"
+msgstr ""
+
+#: view/statistics/site/statistics/by-site.phtml:40
+#: view/statistics/site/statistics/by-value.phtml:59
+#: view/statistics/site/statistics/index.phtml:21
+msgid "Statistics"
 msgstr ""
 
 #: view/statistics/site/statistics/by-site.phtml:87
@@ -541,37 +464,81 @@ msgstr ""
 msgid "Today: %d [%d / %d / %d]"
 msgstr ""
 
-#: data/scripts/upgrade.php:34
+#: data/scripts/upgrade.php:43
 #, php-format
 msgid ""
 "To control access to files, you must add a rule in file .htaccess at the "
 "root of Omeka. See %sreadme%s."
 msgstr ""
 
-#: data/scripts/upgrade.php:162
+#: data/scripts/upgrade.php:171
 msgid "There are now analytics by period for properties."
 msgstr ""
 
-#: data/scripts/upgrade.php:169
+#: data/scripts/upgrade.php:178
 msgid "There are now statistics about resources and values."
 msgstr ""
 
-#: data/scripts/upgrade.php:226
-#, php-format
-msgid "The module %1$s should be upgraded to version %2$s or later."
+#: data/scripts/upgrade.php:238
+msgid ""
+"A new option allows to disable statistics on the admin dashboard. It is set "
+"by default."
 msgstr ""
 
-#: Module.php:397
+#: Module.php:233
+#, php-format
+msgid "Views: %d (anonymous: %d / users: %d)"
+msgstr ""
+
+#: Module.php:241
+#, php-format
+msgid "Position: %d (anonymous: %d / users: %d)"
+msgstr ""
+
+#: Module.php:336
+msgid "Most viewed public item"
+msgstr ""
+
+#: Module.php:352
+msgid "Most viewed public item set"
+msgstr ""
+
+#: Module.php:368
+msgid "Most downloaded file"
+msgstr ""
+
+#: Module.php:384
+msgid "Most frequent fields"
+msgstr ""
+
+#: Module.php:388 src/Form/AnalyticsByFieldForm.php:25
+msgid "Referrer"
+msgstr ""
+
+#: Module.php:390
+msgid "User Agent"
+msgstr ""
+
+#: Module.php:431
+msgid ""
+"To get statistics about files, you must add a rule in file .htaccess at the "
+"root of Omeka. See {link}readme{link_end}."
+msgstr ""
+
+#: Module.php:453
+msgid "Statistics: Index statistics (needed only after direct import)"
+msgstr ""
+
+#: Module.php:481
 msgid "Update of aggregated statistics: Start"
 msgstr ""
 
-#: Module.php:401
+#: Module.php:485
 msgid "Update of aggregated statistics: Ended."
 msgstr ""
 
 #: src/Mvc/MvcListeners.php:156 src/Mvc/Controller/Plugin/LogCurrentUrl.php:134
-#, php-format
-msgid "Exception when storing hit/stat: %1$s"
+msgid "Exception when storing hit/stat: {message}"
 msgstr ""
 
 #: src/Form/AnalyticsByDownloadForm.php:40
@@ -659,22 +626,26 @@ msgid "User status for public pages"
 msgstr ""
 
 #: src/Form/SettingsFieldset.php:94
+msgid "Disable statistics on admin dashboard"
+msgstr ""
+
+#: src/Form/SettingsFieldset.php:105
 msgid "Results per page (admin)"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:106
+#: src/Form/SettingsFieldset.php:117
 msgid "Results per page (public)"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:119
+#: src/Form/SettingsFieldset.php:130
 msgid "Allow public to access statistics"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:131
+#: src/Form/SettingsFieldset.php:142
 msgid "Allow public to access analytics summary"
 msgstr ""
 
-#: src/Form/SettingsFieldset.php:142
+#: src/Form/SettingsFieldset.php:153
 msgid "Allow public to access detailled analytics"
 msgstr ""
 
@@ -808,8 +779,38 @@ msgstr ""
 msgid "There is no headers."
 msgstr ""
 
+#: src/Controller/AnalyticsController.php:243
+#, php-format
+msgid "[Removed site #%d]"
+msgstr ""
+
 #: src/Controller/AnalyticsController.php:392
 #: src/Controller/AnalyticsController.php:547
 #: src/Controller/AnalyticsController.php:705
 msgid "Available"
+msgstr ""
+
+#: src/Controller/AnalyticsController.php:801
+msgid "External Referrers"
+msgstr ""
+
+#: src/Controller/AnalyticsController.php:804
+msgid "Queries"
+msgstr ""
+
+#: src/Controller/AnalyticsController.php:807
+msgid "Browsers"
+msgstr ""
+
+#: src/Controller/AnalyticsController.php:810
+msgid "Full Accepted Languages"
+msgstr ""
+
+#: src/Controller/AnalyticsController.php:813
+msgid "Accepted Languages"
+msgstr ""
+
+#: src/Controller/AnalyticsController.php:922
+#, php-format
+msgid "[Removed item set #%d]"
 msgstr ""
