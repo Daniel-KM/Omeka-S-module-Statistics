@@ -40,7 +40,7 @@ class HitAdapter extends AbstractEntityAdapter
         'referrer' => 'referrer',
         'user_agent' => 'userAgent',
         'accept_language' => 'acceptLanguage',
-        'language' => 'acceptLanguage',
+        'language' => 'language',
         'created' => 'created',
     ];
 
@@ -56,7 +56,7 @@ class HitAdapter extends AbstractEntityAdapter
         'referrer' => 'referrer',
         'user_agent' => 'userAgent',
         'accept_language' => 'acceptLanguage',
-        'language' => 'acceptLanguage',
+        'language' => 'language',
         'created' => 'created',
     ];
 
@@ -337,6 +337,20 @@ class HitAdapter extends AbstractEntityAdapter
             }
         }
 
+        if (isset($query['language']) && $query['language'] !== '' && $query['language'] !== []) {
+            if (is_array($query['language'])) {
+                $qb->andWhere($expr->in(
+                    'omeka_root.language',
+                    $this->createNamedParameter($qb, $query['language'])
+                ));
+            } else {
+                $qb->andWhere($expr->eq(
+                    'omeka_root.language',
+                    $this->createNamedParameter($qb, $query['language'])
+                ));
+            }
+        }
+
         if (isset($query['referrer']) && $query['referrer'] !== '' && $query['referrer'] !== []) {
             if (is_array($query['referrer'])) {
                 $qb->andWhere($expr->in(
@@ -390,13 +404,15 @@ class HitAdapter extends AbstractEntityAdapter
 
         // TODO @experimental or @deprecated Use "has_value".
         if (isset($query['field'])
-            && in_array($query['field'], ['query', 'referrer', 'user_agent', 'accept_language', 'userAgent', 'acceptLanguage'])
+            && in_array($query['field'], ['query', 'referrer', 'user_agent', 'accept_language', 'language', 'userAgent', 'acceptLanguage'])
         ) {
             $columns = [
                 'query' => 'query',
                 'referrer' => 'referrer',
                 'user_agent' => 'userAgent',
                 'accept_language' => 'acceptLanguage',
+                'language' => 'language',
+                // The camel case may be used.
                 'userAgent' => 'userAgent',
                 'acceptLanguage' => 'acceptLanguage',
             ];
@@ -426,13 +442,14 @@ class HitAdapter extends AbstractEntityAdapter
 
         // TODO @experimental or @deprecated
         if (isset($query['not_empty'])
-            && in_array($query['not_empty'], ['query', 'referrer', 'user_agent', 'accept_language'])
+            && in_array($query['not_empty'], ['query', 'referrer', 'user_agent', 'accept_language', 'language'])
         ) {
             $columns = [
                 'query' => 'query',
                 'referrer' => 'referrer',
                 'user_agent' => 'userAgent',
                 'accept_language' => 'acceptLanguage',
+                'language' => 'language',
             ];
             $field = $columns[$query['not_empty']];
             if ($field === 'query') {
@@ -553,6 +570,7 @@ class HitAdapter extends AbstractEntityAdapter
             'o:referrer' => 'setReferrer',
             'o:user_agent' => 'setUserAgent',
             'o:accept_language' => 'setAcceptLanguage',
+            'o:language' => 'setLanguage',
             // 'o:created' => 'setCreated',
         ];
         foreach ($data as $key => $value) {
@@ -709,6 +727,7 @@ class HitAdapter extends AbstractEntityAdapter
             'referrer' => 'o:referrer',
             'user_agent' => 'o:user_agent',
             'accept_language' => 'o:accept_language',
+            'language' => 'o:language',
             'created' => 'o:created',
         ];
 
@@ -774,6 +793,9 @@ class HitAdapter extends AbstractEntityAdapter
                         break;
                     case 'o:accept_language':
                         $value = substr((string) $currentRequest['accept_language'], 0, 190);
+                        break;
+                    case 'o:language':
+                        $value = substr((string) $currentRequest['accept_language'], 0, 2);
                         break;
                     case 'o:created':
                         $value = new DateTime('now');

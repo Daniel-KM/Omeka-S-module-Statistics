@@ -27,6 +27,7 @@ class HitRepresentation extends AbstractEntityRepresentation
             'o:site_id' => $this->siteId(),
             'o:user_id' => $this->userId(),
             'o:ip' => $this->ip(),
+            'o:language' => $this->language(),
             'o:referrer' => $this->referrer(),
             'o:query' => $this->query(),
             'o:user_agent' => $this->userAgent(),
@@ -128,6 +129,11 @@ class HitRepresentation extends AbstractEntityRepresentation
         return $this->resource->getIp() ?: null;
     }
 
+    public function language(): ?string
+    {
+        return $this->resource->language() ?: null;
+    }
+
     public function referrer(): ?string
     {
         return $this->resource->getReferrer() ?: null;
@@ -148,6 +154,9 @@ class HitRepresentation extends AbstractEntityRepresentation
         return $this->resource->acceptLanguage() ?: null;
     }
 
+    /**
+     * @deprecated Use language().
+     */
     public function acceptLanguageShort(): ?string
     {
         $value = $this->resource->acceptLanguage();

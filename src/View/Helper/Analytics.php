@@ -1623,7 +1623,7 @@ class Analytics extends AbstractHelper
             'user_agent' => 'userAgent',
             'accept_language' => 'acceptLanguage',
             'created' => 'created',
-            'language' => 'acceptLanguage',
+            'language' => 'language',
         ];
         return $fields[$query['field'] ?? null] ?? null;
     }

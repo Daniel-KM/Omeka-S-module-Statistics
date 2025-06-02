@@ -67,10 +67,10 @@ class Hit extends \Statistics\Entity\Hit implements \Doctrine\ORM\Proxy\Proxy
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'id', 'url', 'entityId', 'entityName', 'siteId', 'userId', 'ip', 'query', 'referrer', 'userAgent', 'acceptLanguage', 'created'];
+            return ['__isInitialized__', 'id', 'url', 'entityId', 'entityName', 'siteId', 'userId', 'ip', 'language', 'query', 'referrer', 'userAgent', 'acceptLanguage', 'created'];
         }
 
-        return ['__isInitialized__', 'id', 'url', 'entityId', 'entityName', 'siteId', 'userId', 'ip', 'query', 'referrer', 'userAgent', 'acceptLanguage', 'created'];
+        return ['__isInitialized__', 'id', 'url', 'entityId', 'entityName', 'siteId', 'userId', 'ip', 'language', 'query', 'referrer', 'userAgent', 'acceptLanguage', 'created'];
     }
 
     /**
@@ -410,6 +410,28 @@ class Hit extends \Statistics\Entity\Hit implements \Doctrine\ORM\Proxy\Proxy
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getAcceptLanguage', []);
 
         return parent::getAcceptLanguage();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setLanguage(?string $language): \Statistics\Entity\Hit
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setLanguage', [$language]);
+
+        return parent::setLanguage($language);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getLanguage(): string
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getLanguage', []);
+
+        return parent::getLanguage();
     }
 
     /**

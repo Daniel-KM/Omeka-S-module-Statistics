@@ -27,6 +27,7 @@ use Omeka\Entity\AbstractEntity;
  *         @Index(columns={"site_id"}),
  *         @Index(columns={"user_id"}),
  *         @Index(columns={"ip"}),
+ *         @Index(columns={"language"}),
  *         @Index(columns={"referrer"}),
  *         @Index(columns={"user_agent"}),
  *         @Index(columns={"accept_language"}),
@@ -140,6 +141,21 @@ class Hit extends AbstractEntity
      * )
      */
     protected $ip = '';
+
+    /**
+     * @var string
+     *
+     * @Column(
+     *     type="string",
+     *     length=2,
+     *     nullable=false,
+     *     options={
+     *         "default":"",
+     *         "collation": "latin1_general_ci"
+     *     }
+     * )
+     */
+    protected $language = '';
 
     /**
      * A text cannot have a default value, so use null.
@@ -323,6 +339,17 @@ class Hit extends AbstractEntity
     public function getAcceptLanguage(): string
     {
         return $this->acceptLanguage;
+    }
+
+    public function setLanguage(?string $language): self
+    {
+        $this->language = (string) $language;
+        return $this;
+    }
+
+    public function getLanguage(): string
+    {
+        return $this->language;
     }
 
     public function setCreated(DateTime $created): self
