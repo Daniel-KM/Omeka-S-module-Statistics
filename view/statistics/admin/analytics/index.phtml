@@ -15,8 +15,6 @@ $escapeAttr = $plugins->get('escapeHtmlAttr');
 $this->headLink()->prependStylesheet($assetUrl('css/statistics.css', 'Statistics'));
 
 $this->htmlElement('body')->appendAttribute('class', 'statistics index');
-
-$basePath = $this->basePath();
 ?>
 
 <?= $this->pageTitle(sprintf($translate('Summary (%s total)'), $results['all']['total']), 1, $translate('Analytics')) ?>
@@ -80,7 +78,7 @@ $basePath = $this->basePath();
         <ol>
         <?php foreach ($results['most_viewed_pages'] as $position => $stat): ?>
             <li><?= sprintf($translate('%s (%d views [%d / %d])'),
-                '<a href="' . $escapeAttr($basePath . $stat->hitUrl()) . '">' . $escape($stat->hitUrl()) . '</a>',
+                '<a href="' . $escapeAttr($stat->hitUrl(true)) . '">' . $escape($stat->hitUrl()) . '</a>',
                 $stat->totalHits(),
                 $stat->totalHits('anonymous'),
                 $stat->totalHits('identified'))
@@ -140,7 +138,7 @@ $basePath = $this->basePath();
         <ol>
         <?php foreach ($results['most_viewed_downloads'] as $position => $stat): ?>
             <li><?= sprintf($translate('%s (%d downloads [%d / %d])'),
-                '<a href="' . $escapeAttr($basePath . $stat->hitUrl()) . '">' . $escape($stat->hitUrl()) . '</a>',
+                '<a href="' . $escapeAttr($stat->hitUrl(true)) . '">' . $escape($stat->hitUrl()) . '</a>',
                 $stat->totalHits(),
                 $stat->totalHits('anonymous'),
                 $stat->totalHits('identified'))

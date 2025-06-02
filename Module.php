@@ -328,7 +328,7 @@ HTML;
                     $html .= sprintf(
                         $translate('%s (%d views)'),
                         // $stat->getPositionPage(),
-                        '<a href="' . $escapeAttr($stat->hitUrl()) . '">' . $escape($stat->hitUrl()) . '</a>',
+                        '<a href="' . $escapeAttr($stat->hitUrl(true)) . '">' . $escape($stat->hitUrl()) . '</a>',
                         $stat->totalHits($userStatus)
                     );
                     $html .= '</li>';

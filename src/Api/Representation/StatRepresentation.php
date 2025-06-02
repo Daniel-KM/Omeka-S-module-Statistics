@@ -73,9 +73,21 @@ class StatRepresentation extends AbstractEntityRepresentation
      * path. So `https://example.org/item/1` is saved as `/item/1` and home page
      * as `/`. For downloads, url stats with "/files/".
      */
-    public function hitUrl(): string
+    public function hitUrl(bool $prependBaseUrlPath = false): string
     {
-        return $this->resource->getUrl();
+        // The base path is generally "", but may be a sub-path like "/omeka".
+        static $baseUrlPath = null;
+
+        if (!$prependBaseUrlPath) {
+            return $this->resource->getUrl();
+        }
+
+        if (is_null($baseUrlPath)) {
+            $basePath = $this->getServiceLocator()->get('ViewHelperManager')->get('BasePath');
+            $baseUrlPath = $basePath();
+        }
+
+        return $baseUrlPath . $this->resource->getUrl();
     }
 
     /**

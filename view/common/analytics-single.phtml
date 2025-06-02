@@ -28,7 +28,7 @@ $escapeAttr = $plugins->get('escapeHtmlAttr');
                 ? $translate('%s downloads: %s [%s]') // @translate
                 : $translate('%s views: %s [%s]'), // @translate
                 '<span class="statistics-hits">' . $stat->totalHits($userStatus) . '</span>',
-                '<a href="' . $escapeAttr($stat->hitUrl()) . '"><span class="statistics-url">' . $escape($stat->hitUrl()) . '</span></a>',
+                '<a href="' . $escapeAttr($stat->hitUrl(true)) . '"><span class="statistics-url">' . $escape($stat->hitUrl()) . '</span></a>',
                 '<span class="statistics-resource-type">' . $escape($stat->humanResourceType($translate('No specific resource'))) . '</span>'
             );
         endif;

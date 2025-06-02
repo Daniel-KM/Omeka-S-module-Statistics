@@ -7,8 +7,6 @@
  * @var string $userStatus
  * @var string $type
  * @var array $columns
- *
- * @todo Add the basePath to the hit url.
  */
 
 $plugins = $this->getHelperPluginManager();
@@ -26,7 +24,6 @@ $isAdminRequest = $this->status()->isAdminRequest();
 
 $totalResults = $this->pagination()->getPaginator()->getTotalCount();
 $currentUrl = $urlHelper(null, [], true);
-$basePath = $this->basePath();
 $query = $this->params()->fromQuery();
 $queryNoSort = $query;
 unset($queryNoSort['sort_by']);
@@ -124,7 +121,7 @@ $form->prepare();
             <?php if (empty($columns) || in_array('url', $columns)): ?>
             <td class="statistics-url">
                 <div class="statistics-hover">
-                    <a href="<?= $escapeAttr($basePath . $stat->hitUrl()) ?>"><?= $escape($stat->hitUrl()) ?></a>
+                    <a href="<?= $escapeAttr($stat->hitUrl(true)) ?>"><?= $escape($stat->hitUrl()) ?></a>
                 </div>
             </td>
             <?php endif; ?>
