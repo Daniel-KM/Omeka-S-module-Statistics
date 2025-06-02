@@ -299,7 +299,7 @@ return [
             // Display.
             'statistics_default_user_status_admin' => 'hits',
             'statistics_default_user_status_public' => 'anonymous',
-            'statistics_disable_dashboard' => false,
+            'statistics_disable_dashboard' => true,
             'statistics_per_page_admin' => 100,
             'statistics_per_page_public' => 10,
             // Without roles.
