@@ -224,9 +224,10 @@ class Analytics extends AbstractHelper
         if ($userStatus) {
             $criteria['user_status'] = $userStatus;
         }
+        $criteria['limit'] = 0;
         $request = new \Omeka\Api\Request('search', 'hits');
         $request->setContent($criteria);
-        $request->setOption('returnScalar', 'id');
+        // $request->setOption('returnScalar', 'id');
         return $this->hitAdapter->search($request)->getTotalResults();
     }
 
@@ -1596,13 +1597,20 @@ class Analytics extends AbstractHelper
         $url = trim($url);
 
         // Strip out the protocol, host, base URL, and rightmost slash before
-        // comparing the URL to the current one
-        $stripOut = [$serverUrl . $basePath, @$_SERVER['HTTP_HOST'], $basePath];
-        $cleanedUrl = rtrim(str_replace($stripOut, '', $url), '/');
+        // comparing the URL to the current one.
+        $remove = [$serverUrl . $basePath => ''];
+        if (@$_SERVER['HTTP_HOST']) {
+            $remove[$_SERVER['HTTP_HOST']] = '';
+        }
+        if (strlen($basePath)) {
+            $remove[$basePath] = '';
+        }
+        $cleanedUrl = rtrim(strtr($url, $remove), '/');
 
         if (substr($cleanedUrl, 0, 4) === 'http' || substr($cleanedUrl, 0, 1) !== '/') {
             return '';
         }
+
         return $cleanedUrl;
     }
 

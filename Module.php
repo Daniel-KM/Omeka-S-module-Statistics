@@ -2,7 +2,7 @@
 
 namespace Statistics;
 
-if (!class_exists(\Common\TraitModule::class)) {
+if (!class_exists('Common\TraitModule', false)) {
     require_once dirname(__DIR__) . '/Common/TraitModule.php';
 }
 
@@ -212,12 +212,11 @@ class Module extends AbstractModule
         $statTitle = $view->translate('Analytics'); // @translate
         $statText = $this->resultResource($view, $representation);
         $html = <<<HTML
-<div class="meta-group">
-    <h4>$statTitle</h4>
-    $statText
-</div>
-
-HTML;
+            <div class="meta-group">
+                <h4>$statTitle</h4>
+                $statText
+            </div>
+            HTML . "\n";
         echo $html;
     }
 
@@ -283,10 +282,9 @@ HTML;
 
         $statsTitle = $translate('Statistics'); // @translate
         $html = <<<HTML
-<div id="stats" class="panel">
-    <h2>$statsTitle</h2>
-
-HTML;
+            <div id="stats" class="panel">
+                <h2>$statsTitle</h2>
+            HTML . "\n";
 
         if ($userIsAllowedSummary) {
             $statsSummaryUrl = $url('admin/analytics', [], true);
@@ -302,14 +300,13 @@ HTML;
                 1 => $analytics->totalHits(['since' => date('Y-m-d', strtotime('-1 days')), 'user_status' => $userStatus]),
             ];
             $html .= <<<HTML
-    <h4><a href="$statsSummaryUrl">$statsSummaryText</a></h4>
-    <ul>
-        <li>$lastTexts[30] : $lastTotals[30]</li>
-        <li>$lastTexts[7] : $lastTotals[7]</li>
-        <li>$lastTexts[1] : $lastTotals[1]</li>
-    </ul>
-
-HTML;
+                <h4><a href="$statsSummaryUrl">$statsSummaryText</a></h4>
+                <ul>
+                    <li>$lastTexts[30] : $lastTotals[30]</li>
+                    <li>$lastTexts[7] : $lastTotals[7]</li>
+                    <li>$lastTexts[1] : $lastTotals[1]</li>
+                </ul>
+            HTML . "\n";
         }
 
         if ($userIsAllowedBrowse) {

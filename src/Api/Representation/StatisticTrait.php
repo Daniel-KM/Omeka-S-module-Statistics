@@ -7,6 +7,9 @@ use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Representation\AbstractResourceRepresentation;
 use Statistics\View\Helper\Analytics;
 
+/**
+ * @fixme Unlike read(), findEntity() and find() don't check acl rights. So check anywhere it may be used.
+ */
 trait StatisticTrait
 {
     /**
@@ -24,6 +27,8 @@ trait StatisticTrait
 
     /**
      * Determine whether or not the page has or had a resource.
+     *
+     * @todo Check rights (but requires read, so long process). Preload the allowed list of ids?
      *
      * @return bool True if hit has a resource, even deleted.
      */
@@ -110,16 +115,10 @@ trait StatisticTrait
      */
     public function humanResourceType(?string $default = null): string
     {
-        $types = [
-            'items' => 'item',
-            'item_sets' => 'item set',
-            'media' => 'media',
-            'site_pages' => 'site page',
-            'annotation' => 'annotation',
-            'pages' => 'page',
-        ];
+        /** @var \Common\Stdlib\EasyMeta $easyMeta */
+        $easyMeta = $this->getServiceLocator()->get('Common\EasyMeta');
         $entityName = $this->resource->getEntityName();
-        return $types[$entityName] ?? $default ?? $entityName;
+        return $easyMeta->resourceLabel($entityName) ?? $default ?? $entityName;
     }
 
     protected function getApiAdapter(?string $resourceName): ?ApiAdapterInterface
@@ -133,8 +132,6 @@ trait StatisticTrait
 
     protected function getStatistic(): Analytics
     {
-        static $analytics;
-        return $analytics
-            ?? $analytics = $this->getServiceLocator()->get('ViewHelperManager')->get('analytics');
+        return $this->getServiceLocator()->get('ViewHelperManager')->get('analytics');
     }
 }

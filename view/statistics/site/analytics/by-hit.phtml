@@ -233,7 +233,7 @@ $resourceToControllers = [
 <div class="browse-controls">
 </div>
 
-<?php $totalStats = $api->search('hits', ['return_scalar' => 'id'])->getTotalResults(); ?>
+<?php $totalStats = $api->search('hits', ['limit' => 0])->getTotalResults(); ?>
 <br class="clear" />
 <div class="no-resources">
 <?php if (!$totalStats): ?>

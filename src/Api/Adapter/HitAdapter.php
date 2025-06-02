@@ -1053,12 +1053,11 @@ class HitAdapter extends AbstractEntityAdapter
             return null;
         }
 
-        try {
-            $media = $this->getAdapter('media')->findEntity(['storageId' => $storageId]);
-            return $media->getId();
-        } catch (\Omeka\Api\Exception\NotFoundException $e) {
-            return null;
-        }
+        $media = $this->getEntityManager()->getRepository(\Omeka\Entity\Media::class)
+            ->findOneBy(['storageId' => $storageId]);
+        return $media
+            ? $media->getId()
+            : null;
     }
 
     protected function currentUser(): ?User

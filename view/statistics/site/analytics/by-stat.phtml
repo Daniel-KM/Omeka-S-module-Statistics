@@ -186,7 +186,7 @@ $form->prepare();
             <?php if (empty($columns) || in_array('media_type', $columns)): ?>
             <td class="statistics-media-type">
                 <?php if ($statResource && $statResource instanceof \Omeka\Api\Representation\MediaRepresentation): ?>
-                    <?= $statResource->mediaType() ?></li>
+                    <?= $statResource->mediaType() ?>
                 <?php endif; ?>
             </td>
             <?php endif; ?>
@@ -210,7 +210,7 @@ $form->prepare();
 <div class="browse-controls">
 </div>
 
-<?php $totalStats = $api->search('stats', ['return_scalar' => 'id'])->getTotalResults(); ?>
+<?php $totalStats = $api->search('stats', ['limit' => 0])->getTotalResults(); ?>
 <br class="clear" />
 <div class="no-resources">
 <?php if (!$totalStats): ?>
