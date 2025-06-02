@@ -87,6 +87,17 @@ class SettingsFieldset extends Fieldset
                 ],
             ])
             ->add([
+                'name' => 'statistics_disable_dashboard',
+                'type' => Element\Checkbox::class,
+                'options' => [
+                    'element_group' => 'statistics',
+                    'label' => 'Disable statistics on admin dashboard', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'statistics_disable_dashboard',
+                ],
+            ])
+            ->add([
                 'name' => 'statistics_per_page_admin',
                 'type' => Element\Number::class,
                 'options' => [

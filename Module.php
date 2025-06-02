@@ -251,6 +251,16 @@ HTML;
 
     public function filterAdminDashboardPanels(Event $event): void
     {
+        /**
+         * @var \Statistics\View\Helper\Analytics $analytics
+         * @var \Omeka\Settings\Settings $settings
+         */
+        $services = $this->getServiceLocator();
+        $settings = $services->get('Omeka\Settings');
+        if ($settings->get('statistics_disable_dashboard')) {
+            return;
+        }
+
         $view = $event->getTarget();
         $plugins = $view->getHelperPluginManager();
         $userIsAllowed = $plugins->get('userIsAllowed');
@@ -261,10 +271,6 @@ HTML;
             return;
         }
 
-        /**
-         * @var \Statistics\View\Helper\Analytics $analytics
-         */
-        $services = $this->getServiceLocator();
         $url = $plugins->get('url');
         $api = $services->get('Omeka\ApiManager');
         $escape = $plugins->get('escapeHtml');
