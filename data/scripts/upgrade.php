@@ -231,4 +231,31 @@ if (version_compare($oldVersion, '3.4.7', '<')) {
     $connection->executeStatement($sql);
 }
 
+if (version_compare($oldVersion, '3.4.11', '<')) {
+    $settings->set('statistics_disable_dashboard', true);
+
+    $message = new Message(
+        'A new option allows to disable statistics on the admin dashboard. It is set by default.' // @translate
+    );
+    $messenger->addSuccess($message);
+
+    // Update tables.
+    $sql = <<<'SQL'
+        ALTER TABLE `hit`
+            ADD `language` VARCHAR(2) DEFAULT '' NOT NULL COLLATE `latin1_general_ci` AFTER `ip`;
+        CREATE INDEX `IDX_5AD22641D4DB71B5` ON `hit` (`language`);
+        UPDATE `hit`
+            SET `language` = SUBSTRING(`accept_language`, 1, 2);
+        SQL;
+    $sqls = array_filter(array_map('trim', explode(";\n", $sql)));
+    foreach ($sqls as $sql) {
+        try {
+            $connection->executeStatement($sql);
+        } catch (\Exception $e) {
+            // Already done.
+            // $messenger->addError($e->getMessage());
+        }
+    }
+}
+
 $this->warnConfig();
