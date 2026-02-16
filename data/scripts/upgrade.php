@@ -2,7 +2,7 @@
 
 namespace Statistics;
 
-use Omeka\Stdlib\Message;
+use Common\Stdlib\PsrMessage;
 
 /**
  * @var Module $this
@@ -29,7 +29,16 @@ if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActi
         $translate('The module %1$s should be upgraded to version %2$s or later.'), // @translate
         'Common', '3.4.79'
     );
-    throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $message);
+    $messenger->addError($message);
+    throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $translate('Missing requirement. Unable to upgrade.')); // @translate
+}
+
+if (!$this->checkModuleActiveVersion('Analytics')) {
+    $message = new PsrMessage(
+        'The module Statistics has been split into two modules: Analytics for web analytics (page views, downloads) and Statistics for internal statistics (counts by resources, values, etc.). The module Analytics should be installed and enabled first. If you do not need web analytics, for example if you use another tool such as Matomo, you can uninstall the module Analytics afterwards.' // @translate
+    );
+    $messenger->addError($message);
+    throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $translate('Missing requirement. Unable to upgrade.')); // @translate
 }
 
 if (version_compare($oldVersion, '3.3.4.2', '<')) {
@@ -39,9 +48,12 @@ if (version_compare($oldVersion, '3.3.4.2', '<')) {
     $settings->delete('statistics_public_allow_browse_downloads');
     $settings->delete('statistics_public_allow_browse_fields');
 
-    $message = new Message(
-        'To control access to files, you must add a rule in file .htaccess at the root of Omeka. See %sreadme%s.', // @translate
-        '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-Access" target="_blank" rel="noopener">', '</a>'
+    $message = new PsrMessage(
+        'To control access to files, you must add a rule in file .htaccess at the root of Omeka. See {link}readme{link_end}.', // @translate
+        [
+            'link' => '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-Access" target="_blank" rel="noopener">',
+            'link_end' => '</a>',
+        ]
     );
     $message->setEscapeHtml(false);
     $messenger->addWarning($message);
@@ -58,7 +70,7 @@ if (version_compare($oldVersion, '3.3.4.3', '<')) {
             CHANGE `modified` `modified` DATETIME NOT NULL;
         CREATE INDEX `IDX_20B8FF218CDE5729` ON `stat` (`type`);
         CREATE UNIQUE INDEX `UNIQ_20B8FF218CDE5729F47645AE` ON `stat` (`type`, `url`);
-        
+
         DROP INDEX `IDX_5AD22641C44967C5` ON `hit`;
         DROP INDEX `IDX_5AD22641ED646567` ON `hit`;
         ALTER TABLE `hit`
@@ -167,14 +179,14 @@ if (version_compare($oldVersion, '3.3.4.3', '<')) {
         }
     }
 
-    $message = new Message(
+    $message = new PsrMessage(
         'There are now analytics by period for properties.' // @translate
     );
     $messenger->addSuccess($message);
 }
 
 if (version_compare($oldVersion, '3.3.5', '<')) {
-    $message = new Message(
+    $message = new PsrMessage(
         'There are now statistics about resources and values.' // @translate
     );
     $messenger->addSuccess($message);
@@ -234,7 +246,7 @@ if (version_compare($oldVersion, '3.4.7', '<')) {
 if (version_compare($oldVersion, '3.4.11', '<')) {
     $settings->set('statistics_disable_dashboard', true);
 
-    $message = new Message(
+    $message = new PsrMessage(
         'A new option allows to disable statistics on the admin dashboard. It is set by default.' // @translate
     );
     $messenger->addSuccess($message);
@@ -257,5 +269,3 @@ if (version_compare($oldVersion, '3.4.11', '<')) {
         }
     }
 }
-
-$this->warnConfig();

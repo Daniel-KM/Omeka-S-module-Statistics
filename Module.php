@@ -19,7 +19,7 @@ use Omeka\Module\AbstractModule;
  * Provides statistical calculations on Omeka resources (counts by date, site,
  * value, etc.).
  *
- * @copyright Daniel Berthereau, 2014-2025
+ * @copyright Daniel Berthereau, 2014-2026
  * @license http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.txt
  */
 class Module extends AbstractModule
