@@ -236,7 +236,7 @@ trait StatisticsTrait
                 return null;
         }
 
-        $filename = $this->getFilename('analytics', $output);
+        $filename = $this->getFilename('statistics', $output);
         // $writer->openToFile($filePath);
         $writer->openToBrowser($filename);
 
