@@ -1,25 +1,31 @@
 {
     "name": "daniel-km/omeka-s-module-statistics",
-    "description": "Module for Omeka S that adds statistics about resources and analytics about viewed pages.",
-    "type": "library",
+    "type": "omeka-s-module",
+    "description": "Module for Omeka S: Statistics about resources, users and sites.",
+    "keywords": [
+        "Omeka S",
+        "Omeka S module",
+        "administration",
+        "statistics",
+        "analytics",
+        "curation"
+    ],
     "license": "CECILL-2.1",
+    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics",
     "authors": [
         {
             "name": "Daniel Berthereau",
-            "email": "Daniel.git@Berthereau.net"
+            "email": "Daniel.packagist@Berthereau.net"
         }
     ],
-    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics",
     "support": {
-        "issues": "https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics/-/issues",
+        "issues": "https://gitlab.com/Daniel-KM/Omeka-S-module-Statistics/issues",
         "forum": "https://forum.omeka.org/"
     },
-    "keywords": [
-        "Omeka S",
-        "module",
-        "admin",
-        "statistics"
-    ],
+    "_require (not set until Omeka S merges PR #2412)": {
+        "omeka/omeka-s": "^4.0",
+        "daniel-km/omeka-s-module-common": "*"
+    },
     "require": {
         "openspout/openspout": "^3.7"
     },
@@ -28,13 +34,17 @@
             "Statistics\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "StatisticsTest\\": "tests/StatisticsTest/"
+        }
+    },
     "config": {
         "platform": {
             "php": "7.4"
-        },
-        "allow-plugins": {
-            "composer/installers": true,
-            "oomphinc/composer-installers-extender": true
         }
+    },
+    "extra": {
+        "installer-name": "Statistics"
     }
 }
