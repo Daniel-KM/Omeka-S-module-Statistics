@@ -100,7 +100,7 @@ if (version_compare($oldVersion, '3.3.4.3', '<')) {
         // $queries = $api->search('hits', ['id' => $chunk], ['returnScalar' => 'query'])->getContent();
         $queries = $connection->executeQuery('SELECT `hit`.`id`, `hit`.`query` FROM `hit` WHERE `hit`.`id` IN (:ids)', ['ids' => $chunk], ['ids' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY])->fetchAllKeyValue();
         foreach ($queries as $id => $query) {
-            if (is_null($query) || $query === '') {
+            if ($query === null || $query === '') {
                 $query = null;
             } else {
                 // url_decode() is automatically run.

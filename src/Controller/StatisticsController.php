@@ -354,7 +354,7 @@ class StatisticsController extends AbstractActionController
         $view
             ->setTemplate($isAdminRequest ? 'statistics/admin/statistics/by-value' : 'statistics/site/statistics/by-value');
 
-        if (is_null($periods)
+        if ($periods === null
             || (!$property && !$isMetadata)
             || !$process
         ) {
@@ -1042,7 +1042,7 @@ class StatisticsController extends AbstractActionController
             return null;
         }
 
-        if ($type === 'value' && (!$propertyFilter || is_null($periods))) {
+        if ($type === 'value' && (!$propertyFilter || $periods === null)) {
             $this->messenger()->addError(new PsrMessage('Check the form.')); // @translate
             return null;
         }
