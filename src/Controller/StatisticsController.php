@@ -407,8 +407,11 @@ class StatisticsController extends AbstractActionController
             // Begin building the search query.
             /** @see \Omeka\Api\Adapter\AbstractEntityAdapter::search() */
             $entityClass = $adapter->getEntityClass();
-            $qb = $adapter->getEntityManager()
-                ->createQueryBuilder()
+            $isOldOmeka = version_compare(\Omeka\Module::VERSION, '4.2.0', '<');
+            $qb = $isOldOmeka
+                ? $adapter->getEntityManager()->createQueryBuilder()
+                : $adapter->createQueryBuilder();
+            $qb
                 ->select('omeka_root')
                 ->from($entityClass, 'omeka_root');
             $adapter->buildBaseQuery($qb, $query);
