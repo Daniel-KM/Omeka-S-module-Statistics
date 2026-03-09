@@ -9,7 +9,10 @@ use Doctrine\ORM\Query\Expr\Join;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 use Omeka\Api\Adapter\Manager as AdapterManager;
-use OpenSpout\Writer\Common\Creator\WriterEntityFactory;
+use OpenSpout\Common\Entity\Cell\StringCell;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Writer\CSV\Writer as CsvWriter;
+use OpenSpout\Writer\ODS\Writer as OdsWriter;
 
 /**
  * Controller to browse Statistics.
@@ -1049,7 +1052,7 @@ class StatisticsController extends AbstractActionController
 
         switch ($output) {
             case 'csv':
-                $writer = WriterEntityFactory::createCSVWriter();
+                $writer = new CsvWriter();
                 $writer
                     ->setFieldDelimiter(',')
                     ->setFieldEnclosure('"')
@@ -1060,7 +1063,7 @@ class StatisticsController extends AbstractActionController
                     ->setShouldAddBOM(true);
                 break;
             case 'tsv':
-                $writer = WriterEntityFactory::createCSVWriter();
+                $writer = new CsvWriter();
                 $writer
                     ->setFieldDelimiter("\t")
                     // Unlike import, chr(0) cannot be used, because it's output.
@@ -1077,11 +1080,11 @@ class StatisticsController extends AbstractActionController
                     ->setShouldAddBOM(true);
                 break;
             case 'ods':
-                $writer = WriterEntityFactory::createODSWriter();
+                $writer = new OdsWriter();
                 break;
             case 'xlsx':
                 /*
-                $writer = WriterEntityFactory::createXLSXWriter();
+                $writer = new \OpenSpout\Writer\XLSX\Writer();
                 break;
                 */
             default:
@@ -1103,14 +1106,14 @@ class StatisticsController extends AbstractActionController
                 $translate('Site'),
                 implode(' / ', $resourceTypes),
             ];
-            $rowFromValues = WriterEntityFactory::createRowFromArray($headers);
+            $rowFromValues = new Row(array_map(fn($v) => new StringCell((string) ($v ?? ''), null), $headers));
             $writer->addRow($rowFromValues);
             foreach ($results as $result) {
                 $cells = [
                     $result['label'],
                     implode(' / ', $result['count']),
                 ];
-                $rowFromValues = WriterEntityFactory::createRowFromArray($cells);
+                $rowFromValues = new Row(array_map(fn($v) => new StringCell((string) ($v ?? ''), null), $cells));
                 $writer->addRow($rowFromValues);
             }
         } elseif (in_array($type, ['value'])) {
@@ -1125,7 +1128,7 @@ class StatisticsController extends AbstractActionController
                     ? [$translate('Value'), $translate('Label')]
                     : [$translate('Value')];
                 $headers += $resourceTypes;
-                $rowFromValues = WriterEntityFactory::createRowFromArray($headers);
+                $rowFromValues = new Row(array_map(fn($v) => new StringCell((string) ($v ?? ''), null), $headers));
                 $writer->addRow($rowFromValues);
                 foreach ($results as $value => $result) {
                     $cells = $hasValueLabel
@@ -1134,7 +1137,7 @@ class StatisticsController extends AbstractActionController
                     foreach ($resourceTypes as $resourceType) {
                         $cells[] = $result['t'][$period][$resourceType] ?? '';
                     }
-                    $rowFromValues = WriterEntityFactory::createRowFromArray($cells);
+                    $rowFromValues = new Row(array_map(fn($v) => new StringCell((string) ($v ?? ''), null), $cells));
                     $writer->addRow($rowFromValues);
                 }
             } else {
@@ -1146,7 +1149,7 @@ class StatisticsController extends AbstractActionController
                         ? $period
                         : sprintf('%04d-%02d', substr((string) $period, 0, 4), substr((string) $period, 4, 2));
                 }
-                $rowFromValues = WriterEntityFactory::createRowFromArray($headers);
+                $rowFromValues = new Row(array_map(fn($v) => new StringCell((string) ($v ?? ''), null), $headers));
                 $writer->addRow($rowFromValues);
                 foreach ($results as $value => $result) {
                     $cells = $hasValueLabel
@@ -1159,7 +1162,7 @@ class StatisticsController extends AbstractActionController
                             : array_fill_keys($resourceTypes, null);
                         $cells[] = implode(' / ', $t);
                     }
-                    $rowFromValues = WriterEntityFactory::createRowFromArray($cells);
+                    $rowFromValues = new Row(array_map(fn($v) => new StringCell((string) ($v ?? ''), null), $cells));
                     $writer->addRow($rowFromValues);
                 }
             }
