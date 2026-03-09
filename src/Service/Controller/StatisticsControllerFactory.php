@@ -2,7 +2,7 @@
 
 namespace Statistics\Service\Controller;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Statistics\Controller\StatisticsController;
 
