@@ -33,11 +33,26 @@ if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActi
     throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $translate('Missing requirement. Unable to upgrade.')); // @translate
 }
 
+$hasError = false;
+
+if (PHP_VERSION_ID < 80100) {
+    $message = new \Omeka\Stdlib\Message(
+        $translate('The module %1$s requires PHP %2$s or later.'), // @translate
+        'Statistics', '8.1'
+    );
+    $messenger->addError($message);
+    $hasError = true;
+}
+
 if (!$this->checkModuleActiveVersion('Analytics')) {
     $message = new PsrMessage(
         'The module Statistics has been split into two modules: Analytics for web analytics (page views, downloads) and Statistics for internal statistics (counts by resources, values, etc.). The module Analytics should be installed and enabled first. If you do not need web analytics, for example if you use another tool such as Matomo, you can uninstall the module Analytics afterwards.' // @translate
     );
     $messenger->addError($message);
+    $hasError = true;
+}
+
+if ($hasError) {
     throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $translate('Missing requirement. Unable to upgrade.')); // @translate
 }
 
