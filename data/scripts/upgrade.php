@@ -108,7 +108,7 @@ if (version_compare($oldVersion, '3.3.4.3', '<')) {
     foreach ($sqls as $sql) {
         try {
             $connection->executeStatement($sql);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $messenger->addError($e->getMessage());
         }
     }
@@ -278,7 +278,7 @@ if (version_compare($oldVersion, '3.4.11', '<')) {
     foreach ($sqls as $sql) {
         try {
             $connection->executeStatement($sql);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Already done.
             // $messenger->addError($e->getMessage());
         }
