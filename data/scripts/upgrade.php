@@ -44,9 +44,25 @@ if (PHP_VERSION_ID < 80100) {
     $hasError = true;
 }
 
-if (!$this->checkModuleActiveVersion('Analytics')) {
+// Analytics is required only when legacy hit/stat tables exist with data
+// (split migration from old combined Statistics). A fresh Statistics install
+// has no such tables and works standalone.
+$hasLegacyData = false;
+$schemaManager = method_exists($connection, 'createSchemaManager')
+    ? $connection->createSchemaManager()
+    : $connection->getSchemaManager();
+if ($schemaManager->tablesExist(['hit']) || $schemaManager->tablesExist(['stat'])) {
+    $count = 0;
+    foreach (['hit', 'stat'] as $table) {
+        if ($schemaManager->tablesExist([$table])) {
+            $count += (int) $connection->fetchOne("SELECT COUNT(*) FROM `$table`");
+        }
+    }
+    $hasLegacyData = $count > 0;
+}
+if ($hasLegacyData && !$this->checkModuleActiveVersion('Analytics')) {
     $message = new PsrMessage(
-        'The module Statistics has been split into two modules: Analytics for web analytics (page views, downloads) and Statistics for internal statistics (counts by resources, values, etc.). The module Analytics should be installed and enabled first. If you do not need web analytics, for example if you use another tool such as Matomo, you can uninstall the module Analytics afterwards.' // @translate
+        'The module Statistics has been split into two modules: Analytics for web analytics (page views, downloads) and Statistics for internal statistics (counts by resources, values, etc.). Legacy hit/stat tables contain data, so the module Analytics should be installed and enabled first to take ownership of them. If you do not need web analytics, for example if you use another tool such as Matomo, you can uninstall the module Analytics afterwards (data is preserved).' // @translate
     );
     $messenger->addError($message);
     $hasError = true;
