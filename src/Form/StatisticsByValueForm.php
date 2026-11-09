@@ -79,7 +79,7 @@ class StatisticsByValueForm extends Form
                 'name' => 'value_type',
                 'type' => CommonElement\OptionalRadio::class,
                 'options' => [
-                    'label' => 'Value type', // @ŧranslate
+                    'label' => 'Value type', // @translate
                     'value_options' => [
                         'value' => 'Value',
                         'resource' => 'Resource',
@@ -100,7 +100,7 @@ class StatisticsByValueForm extends Form
                 'name' => 'by_period',
                 'type' => CommonElement\OptionalRadio::class,
                 'options' => [
-                    'label' => 'Group by period', // @ŧranslate
+                    'label' => 'Group by period', // @translate
                     'value_options' => [
                         'all' => 'All', // @translate
                         'year' => 'By year', // @translate
@@ -116,7 +116,7 @@ class StatisticsByValueForm extends Form
                 'name' => 'year',
                 'type' => CommonElement\OptionalSelect::class,
                 'options' => [
-                    'label' => 'Year', // @ŧranslate
+                    'label' => 'Year', // @translate
                     'value_options' => [
                         '' => 'All years', // @translate
                     ] + $this->years,
@@ -130,7 +130,7 @@ class StatisticsByValueForm extends Form
                 'name' => 'month',
                 'type' => CommonElement\OptionalSelect::class,
                 'options' => [
-                    'label' => 'Month', // @ŧranslate
+                    'label' => 'Month', // @translate
                     'value_options' => [
                         '' => 'All monthes', // @translate
                         1 => 'January',
@@ -158,7 +158,7 @@ class StatisticsByValueForm extends Form
                 'name' => 'compute',
                 'type' => CommonElement\OptionalRadio::class,
                 'options' => [
-                    'label' => 'Compute', // @ŧranslate
+                    'label' => 'Compute', // @translate
                     'value_options' => [
                         'count' => 'Counts', // @translate
                         'percent' => 'Repartition', // @translate
@@ -175,7 +175,7 @@ class StatisticsByValueForm extends Form
                 'name' => 'submit',
                 'type' => Element\Button::class,
                 'options' => [
-                    'label' => 'Submit', // @ŧranslate
+                    'label' => 'Submit', // @translate
                 ],
                 'attributes' => [
                     'id' => 'submit',
