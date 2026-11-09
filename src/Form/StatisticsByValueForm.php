@@ -47,7 +47,8 @@ class StatisticsByValueForm extends Form
                         'item_sets' => 'Item sets',
                         'items' => 'Items',
                         'media' => 'Medias',
-                        'digital_objects' => 'Digital objects'
+                        'digital_objects' => 'Digital objects',
+                        'concepts' => 'Concepts', // @translate
                     ],
                 ],
                 'attributes' => [
