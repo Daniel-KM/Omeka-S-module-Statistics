@@ -46,7 +46,8 @@ class StatisticsBySiteForm extends Form
                         'resources' => 'Resources',
                         'item_sets' => 'Item sets',
                         'items' => 'Items',
-                        'media' => 'Medias'
+                        'media' => 'Medias',
+                        'digital_objects' => 'Digital objects'
                     ],
                 ],
                 'attributes' => [
